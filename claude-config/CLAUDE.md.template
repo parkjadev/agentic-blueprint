@@ -1,0 +1,236 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code when working with this repository.
+
+## Stack
+
+| Layer | Technology | Notes |
+|---|---|---|
+| Framework | Next.js 15 (App Router) | Strict TypeScript, server components by default |
+| Language | TypeScript 5.7+ | `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` |
+| Auth | Clerk (web) + JWT (mobile) | Dual-mode — see Auth Architecture below |
+| Database | Neon (serverless Postgres) | Drizzle ORM, push migrations |
+| Rate Limiting | Upstash Redis | Sliding window, per-IP and per-user |
+| Background Jobs | Inngest | Event-driven, opt-in |
+| Payments | Stripe | Opt-in — gracefully skips when unconfigured |
+| Storage | Cloudflare R2 | Opt-in — gracefully skips when unconfigured |
+| Email | Resend | Opt-in — logs instead of sending when unconfigured |
+| Hosting | Vercel | Preview deploys per branch, edge runtime for health check |
+| Styling | Tailwind CSS 3 | `cn()` helper via clsx + tailwind-merge |
+| Testing | Vitest (unit), Playwright (E2E) | Strict CI: type-check + lint + test on every PR |
+| Mobile | Flutter (Riverpod, GoRouter, Dio) | TODO: Remove if no mobile companion |
+
+## Environments & Deployment
+
+| Environment | Branch | URL | Database |
+|---|---|---|---|
+| Development | Local | `http://localhost:3000` | Neon dev branch |
+| Preview | PR branches | `<branch>.vercel.app` | Neon preview branch |
+| Staging | `staging` | `TODO: staging.your-domain.com` | Neon staging branch |
+| Production | `master` | `TODO: your-domain.com` | Neon main branch |
+
+**Deploy flow:** feature branch → PR to staging → merge → staging auto-deploys → PR to master → merge → production auto-deploys
+
+**Vercel region:** `TODO: your-region` (set in `vercel.json`)
+
+## Hard Rules
+
+1. **Australian spelling throughout** — favour, colour, organisation, behaviour, licence (noun). Applies to all prose, comments, and string literals.
+
+2. **Plan before code** — always use the plan → approve → execute pattern. Never write code without an approved plan. Never skip the plan step.
+
+3. **Spec-driven development** — every feature starts as a spec document in `docs/specs/` before any code is written. Specs are committed to the repo.
+
+4. **No `any` types** — TypeScript strict mode is non-negotiable. Use proper generics, union types, or `unknown` with type guards. ESLint enforces `no-explicit-any`.
+
+5. **No `console.log`** — use the structured logger at `src/lib/logger.ts`. ESLint enforces `no-console`. The logger produces JSON with timestamps and levels.
+
+6. **All API responses use the envelope** — `{ success: true, data: T }` or `{ success: false, error: { message, code } }`. Use `ok()`, `created()`, `noContent()`, `handleError()` from `src/lib/api-response.ts`.
+
+7. **Auth via `getAuth()` only** — never call `auth()` directly in route handlers. Always use `getAuth()` from `src/lib/auth/get-auth.ts` which handles both Clerk sessions and mobile JWT.
+
+8. **Validate all inputs with Zod** — every API endpoint validates request body and query params with Zod schemas. Schemas live in `src/lib/validations/`. Never trust user input.
+
+9. **Rate limit all endpoints** — use `checkRateLimit()` from `src/lib/rate-limit.ts`. Public endpoints get `publicRateLimiter`, write operations get `writeRateLimiter`, authenticated requests get `rateLimiter`.
+
+10. **Soft delete, never hard delete** — set `status = 'deleted'`, never `DELETE FROM`. All queries should filter out deleted records.
+
+## Testing Structure
+
+```
+src/test/
+├── helpers.ts                    # Seed factories: createTestUser, createTestProject, etc.
+├── unit/
+│   └── api/
+│       └── health.test.ts        # Example unit test
+└── (add more test files here)
+```
+
+**Commands:**
+- `pnpm test` — run tests in watch mode
+- `pnpm test:ci` — run tests once (CI)
+- `pnpm check:all` — type-check + lint + test:ci (run before every commit)
+- `pnpm test:e2e` — Playwright E2E tests (requires dev server)
+
+**Test conventions:**
+- Unit tests live next to the code or in `src/test/unit/`
+- Use factories from `src/test/helpers.ts` — never hardcode test data
+- Mock external services (Clerk, Neon, Upstash) — test business logic, not integrations
+- Name test files `*.test.ts` or `*.test.tsx`
+
+## Auth Architecture
+
+Dual-mode authentication — Clerk for web, JWT for mobile:
+
+```
+Request arrives
+  ├─ Has Clerk session cookie?
+  │   └─ Yes → resolve via Clerk → get internal user by clerkId
+  ├─ Has Authorization: Bearer header?
+  │   └─ Yes → verify JWT (jose) → get internal user by userId
+  └─ Neither?
+      └─ Return 401 via ApiError.unauthorised()
+```
+
+**Key files:**
+- `src/lib/auth/get-auth.ts` — dual-mode resolver, single entry point
+- `src/lib/auth/resolve-clerk-user.ts` — Clerk webhook → local user upsert
+- `src/lib/mobile-jwt.ts` — `signMobileJwt()` / `verifyMobileJwt()`
+- `src/lib/auth-routing.ts` — public routes, auth routes, role-based access
+- `src/middleware.ts` — Clerk middleware, protects non-public routes
+
+**Roles:** `admin`, `user` (defined in `src/types/index.ts`, stored on user record)
+
+**Webhook sync:** Clerk fires `user.created` / `user.updated` / `user.deleted` → `POST /api/webhooks/clerk` → `resolveClerkUser()` upserts local record.
+
+## Key Patterns
+
+### API Route Handler
+
+```typescript
+// src/app/api/example/route.ts
+import { getAuth } from '@/lib/auth/get-auth';
+import { ok, created, handleError, ApiError } from '@/lib/api-response';
+import { checkRateLimit, publicRateLimiter } from '@/lib/rate-limit';
+import { getRequestContext } from '@/lib/request-context';
+import { parsePagination } from '@/lib/validations';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { ip } = await getRequestContext();
+    const { success } = await checkRateLimit(ip, publicRateLimiter);
+    if (!success) throw ApiError.rateLimited();
+
+    const { page, pageSize } = parsePagination(request.nextUrl.searchParams);
+    // ... query database ...
+    return ok({ data: items, pagination: { page, pageSize, total, totalPages } });
+  } catch (error) {
+    return handleError(error);
+  }
+}
+```
+
+### Server Action
+
+```typescript
+import { authAction } from '@/lib/actions';
+
+export async function createProject(formData: FormData) {
+  return authAction(async (userId) => {
+    // userId is guaranteed to be valid
+    const name = formData.get('name') as string;
+    // ... create project ...
+    return project;
+  });
+}
+```
+
+### Drizzle Schema
+
+```typescript
+export const tableName = pgTable('table_name', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  ownerId: uuid('owner_id').notNull().references(() => users.id),
+  name: varchar('name', { length: 255 }).notNull(),
+  status: statusEnum('status').notNull().default('active'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => [
+  index('table_name_owner_id_idx').on(table.ownerId),
+]);
+```
+
+### Optional Service Pattern
+
+```typescript
+// src/env.ts — optional Zod schema
+STRIPE_SECRET_KEY: z.string().optional(),
+
+// src/env.ts — service availability helper
+export const services = {
+  stripe: Boolean(env.STRIPE_SECRET_KEY),
+} as const;
+
+// Usage: gracefully skip when unconfigured
+if (!services.stripe) {
+  logger.info('Stripe not configured, skipping');
+  return null;
+}
+```
+
+## Do NOT Touch Without Review
+
+These files affect every request and should not be modified without careful review:
+
+| File | Why |
+|---|---|
+| `src/middleware.ts` | Controls auth for every route. Wrong config = security hole or broken app. |
+| `src/lib/auth/get-auth.ts` | Dual-mode auth resolver. Breaking this breaks all authenticated endpoints. |
+| `src/env.ts` | Environment validation. Breaking this prevents the app from starting. |
+| `src/lib/db/schema.ts` | Database schema. Changes require migration planning. |
+| `src/lib/api-response.ts` | Response envelope. Changing shape breaks all API consumers. |
+| `drizzle.config.ts` | Database connection config. |
+| `.github/workflows/ci.yml` | CI pipeline. Breaking this means broken PRs go undetected. |
+
+## Data Model
+
+```
+users
+├── id (uuid, PK)
+├── clerkId (varchar, unique) — synced from Clerk
+├── email (varchar)
+├── name (varchar, nullable)
+├── role (enum: admin, user)
+├── status (enum: active, suspended, deleted)
+├── passwordHash (text, nullable) — for mobile auth
+├── createdAt (timestamp)
+└── updatedAt (timestamp)
+
+projects (example owned resource)
+├── id (uuid, PK)
+├── name (varchar)
+├── description (text, nullable)
+├── ownerId (uuid, FK → users.id)
+├── status (enum: active, archived, deleted)
+├── createdAt (timestamp)
+└── updatedAt (timestamp)
+```
+
+**Relationships:**
+- `users` 1 ──── * `projects` (user owns many projects)
+
+**TODO:** Add your domain-specific tables below. Follow the same pattern: UUID primary key, timestamps, status enum for soft delete, foreign keys with explicit references.
+
+---
+
+## TODO: Customise This File
+
+After copying this template into your project:
+
+1. Update the **Stack** table — remove services you don't use, add new ones
+2. Fill in the **Environments** URLs and Vercel region
+3. Review the **Hard Rules** — add project-specific rules, remove any that don't apply
+4. Extend **Key Patterns** with your project's specific patterns as they emerge
+5. Update **Do NOT Touch** with your project's critical files
+6. Replace the example **Data Model** with your actual schema
+7. Keep this file current — update it as the project evolves

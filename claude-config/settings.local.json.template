@@ -1,0 +1,60 @@
+{
+  "permissions": {
+    "allow": [
+      // ─── Read access ───
+      "cat *",
+      "ls *",
+      "head *",
+      "tail *",
+      "wc *",
+      "find *",
+
+      // ─── pnpm scripts ───
+      "pnpm dev",
+      "pnpm build",
+      "pnpm type-check",
+      "pnpm lint",
+      "pnpm test",
+      "pnpm test:ci",
+      "pnpm check:all",
+      "pnpm db:push",
+      "pnpm db:generate",
+      "pnpm db:studio",
+      "pnpm install",
+      "pnpm add *",
+      "pnpm remove *",
+      "pnpm tsx scripts/*",
+
+      // ─── Git commands ───
+      "git status *",
+      "git diff *",
+      "git log *",
+      "git branch *",
+      "git checkout *",
+      "git add *",
+      "git commit *",
+      "git push *",
+      "git pull *",
+      "git fetch *",
+      "git merge *",
+      "git stash *",
+      "git cherry-pick *",
+      "git rebase *",
+      "git remote *",
+      "git tag *",
+
+      // ─── GitHub CLI ───
+      "gh issue *",
+      "gh pr *",
+      "gh run *",
+      "gh repo *",
+      "gh auth status",
+      "gh api *",
+
+      // ─── Health checks ───
+      "curl http://localhost:3000/api/health",
+      "curl https://*/api/health"
+    ],
+    "deny": []
+  }
+}
