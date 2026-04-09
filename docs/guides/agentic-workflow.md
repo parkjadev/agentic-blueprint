@@ -209,6 +209,7 @@ The check suite should include:
 | 10.2 | Delete the branch (local + remote) | Branch cleaned up |
 | 10.3 | Pull `main` locally, prune stale remotes | Local up to date |
 | 10.4 | Update CHANGELOG.md under `[Unreleased]` | Change documented |
+| 10.5 | Run the doc-sweep checklist (below) if the change touched anything user-visible | All docs in sync |
 
 ```bash
 # Via Claude Code
@@ -216,7 +217,21 @@ The check suite should include:
 > Pull main and prune. Add an entry to CHANGELOG.md under [Unreleased].
 ```
 
-**Exit criteria:** Issue closed, branch deleted, changelog updated, local `main` current
+#### Doc Sweep Checklist
+
+The Repo About section, README badges, and CHANGELOG all drift silently. If the change you just shipped touches anything user-visible (a new feature, a renamed endpoint, a stack swap, a deprecated module), walk this list **before closing the loop**:
+
+- [ ] **README** — does the headline still describe what the project does? Does the quickstart still work as written?
+- [ ] **CHANGELOG.md** — is the change under `[Unreleased]` with the issue number?
+- [ ] **GitHub repo description** — `gh repo view --json description --jq .description`. Still accurate?
+- [ ] **GitHub repo topics** — `gh repo view --json repositoryTopics --jq '.repositoryTopics[].name'`. Still reflect the stack?
+- [ ] **GitHub About URL** — `gh repo view --json homepageUrl --jq .homepageUrl`. Points at a live deployment?
+- [ ] **Architecture diagram** — if `docs/templates/architecture.md` references components that just moved, did you update it?
+- [ ] **CLAUDE.md.template** — did you change a Hard Rule, file path, or pattern that the template documents?
+
+> **Update GitHub-side metadata via the CLI**, not the web UI, so the change is scriptable: `gh repo edit --description "…" --add-topic foo --homepage https://…`. The web UI is the easiest place to forget.
+
+**Exit criteria:** Issue closed, branch deleted, changelog updated, local `main` current, doc sweep clean
 
 ### Phase 11: Maintain
 
