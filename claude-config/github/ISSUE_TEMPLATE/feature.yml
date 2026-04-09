@@ -58,7 +58,7 @@ body:
     id: scope
     attributes:
       label: Scope label
-      description: Which area of the codebase is primarily affected? (Apply the matching `scope:*` label after creating the issue.)
+      description: Which area of the codebase is primarily affected? The `scope:*` label is applied automatically by `.github/workflows/auto-label.yml` after the issue is created.
       options:
         - "scope:api"
         - "scope:dashboard"
