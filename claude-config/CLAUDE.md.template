@@ -65,6 +65,8 @@ We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-
 
    For pure additive changes (new column, new table, new index) you can ship all three steps in one PR — the rule only kicks in when something is being removed, renamed, or made stricter.
 
+   **Pre-launch corollary:** while you have no real users and the dev DB is fully reseedable, drop the ceremony — reseed freely, rename columns in one PR, do whatever shape changes the design needs. The rule kicks in the moment you have users you can't safely lose. Don't carry pre-launch complexity into post-launch ops, and don't carry post-launch ceremony back into pre-launch iteration.
+
 8. **No `any` types** — TypeScript strict mode is non-negotiable. Use proper generics, union types, or `unknown` with type guards. ESLint enforces `no-explicit-any`.
 
 9. **No `console.log`** — use the structured logger at `src/lib/logger.ts`. ESLint enforces `no-console`. The logger produces JSON with timestamps and levels.
