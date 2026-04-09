@@ -102,6 +102,31 @@ Apply at least one `type:*` and one `scope:*` label to every issue and PR. The l
 
 The `<type>` segment of the branch name (`feat/`, `fix/`, `chore/`, `docs/`) must match the `type:*` label on the issue.
 
+## Reusable Infrastructure
+
+These modules ship in `src/lib/*` — **reach for them before writing new helpers**. If you find yourself rolling a logger, an env-checker, a Drizzle wrapper, or an auth resolver, stop and check this list first.
+
+| Module | Path | Purpose |
+|---|---|---|
+| **Structured logger** | `src/lib/logger.ts` | JSON logger with timestamps/levels. Replaces `console.log` (which is lint-banned). |
+| **Rate limit** | `src/lib/rate-limit.ts` | Upstash sliding-window limiters: `publicRateLimiter`, `writeRateLimiter`, `rateLimiter`. Use `checkRateLimit()` from every endpoint. |
+| **Request context** | `src/lib/request-context.ts` | AsyncLocalStorage-backed `getRequestContext()` that returns `{ ip, userAgent, requestId }` from anywhere in the call stack. |
+| **Mobile JWT** | `src/lib/mobile-jwt.ts` | `signMobileJwt()` / `verifyMobileJwt()` (jose) for the mobile auth path. |
+| **API response envelope** | `src/lib/api-response.ts` | `ok()`, `created()`, `noContent()`, `handleError()`, `ApiError`. All API routes go through these — **do not** return raw `NextResponse.json()`. |
+| **Dual-mode auth** | `src/lib/auth/get-auth.ts` | `getAuth()` resolves both Clerk sessions (web) and mobile JWT (Authorization: Bearer) into a single internal user. **Always use this — never call Clerk's `auth()` directly in route handlers.** |
+| **Clerk user sync** | `src/lib/auth/resolve-clerk-user.ts` | Webhook handler that upserts the local `users` row when Clerk fires `user.created/updated/deleted`. |
+| **Auth routing** | `src/lib/auth-routing.ts` | Public/protected route lists, role-based access helpers. |
+| **Server actions** | `src/lib/actions/index.ts` | `action()` and `authAction()` wrappers — auth + error handling for Server Actions. |
+| **Database** | `src/lib/db/index.ts`, `src/lib/db/schema.ts` | Neon HTTP client + Drizzle schema. |
+| **Validations** | `src/lib/validations/index.ts` | Shared Zod schemas (`parsePagination`, UUID, etc.). |
+| **Background jobs** | `src/lib/jobs/client.ts` | Inngest client. Opt-in — gracefully skips if `INNGEST_*` env vars are unset. |
+| **Storage** | `src/lib/storage/index.ts` | Cloudflare R2 helpers. Opt-in. |
+| **Email** | `src/lib/email/send.ts` | Resend wrapper. Opt-in. |
+| **Stripe** | `src/lib/stripe/client.ts` | Stripe client. Opt-in. |
+| **Misc** | `src/lib/utils.ts` | `cn()` Tailwind classname helper (clsx + tailwind-merge). |
+
+> **Why this list exists:** the most expensive class of mistake on a long-running project is reinventing infrastructure that already exists. Before opening a new file in `src/lib/`, scan this table. If a module seems close-but-not-quite, extend it instead of duplicating it.
+
 ## Testing Structure
 
 ```
