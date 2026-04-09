@@ -219,12 +219,24 @@ For each merge, check if the changes affect:
 - Auth flows (src/lib/auth/**, src/middleware.ts) → update auth-spec.md
 - Environment variables (src/env.ts) → update deployment.md
 
+Then run the GitHub-side metadata check (see "Doc Sweep Checklist" in
+agentic-workflow.md Phase 10):
+
+  gh repo view --json description,homepageUrl,repositoryTopics
+
+Compare against the current README headline and tech stack. If any of:
+- description no longer reflects what the project does
+- homepageUrl is dead or points at a stale environment
+- topics are missing a major piece of the stack
+…then they should be updated as part of this sync.
+
 If documentation updates are needed:
 1. Create a branch: docs/sync-[date]
 2. Update the affected documentation to reflect the code changes
-3. Run a consistency check: do the docs match the current code?
-4. Create a PR with title "docs: sync documentation with recent changes"
-5. List each documentation file updated and what changed
+3. If GitHub metadata is stale, include the gh repo edit commands in the PR description
+4. Run a consistency check: do the docs match the current code?
+5. Create a PR with title "docs: sync documentation with recent changes"
+6. List each documentation file (and any GitHub metadata field) that needs updating
 
 If no documentation updates are needed, do nothing (no PR, no issue, no comment).
 ```
