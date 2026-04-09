@@ -40,6 +40,7 @@ export const projects = pgTable('projects', {
      Destructive changes (drop/rename/type-change/NOT NULL) MUST follow expand-migrate-contract
      across multiple PRs — see CLAUDE.md Hard Rules. -->
 
+- [ ] **Pre-launch?** If yes, the next three boxes don't apply — reseed the dev DB freely. The ceremony kicks in once you have users you can't safely lose.
 - [ ] Migration is additive (no column drops, renames, or type changes)
 - [ ] If destructive: split into expand → migrate → contract PRs
 - [ ] Tested on the PR's Neon preview branch before merging to `main`
