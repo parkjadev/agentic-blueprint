@@ -36,10 +36,13 @@ export const projects = pgTable('projects', {
 ### Migration Strategy
 
 <!-- How will the migration be applied? Any data backfill needed?
-     Consider: zero-downtime deployment, rollback plan, preview branch testing. -->
+     Consider: zero-downtime deployment, rollback plan, preview branch testing.
+     Destructive changes (drop/rename/type-change/NOT NULL) MUST follow expand-migrate-contract
+     across multiple PRs — see CLAUDE.md Hard Rules. -->
 
-- [ ] Migration is additive (no column drops or renames)
-- [ ] Tested on Neon preview branch before staging
+- [ ] Migration is additive (no column drops, renames, or type changes)
+- [ ] If destructive: split into expand → migrate → contract PRs
+- [ ] Tested on the PR's Neon preview branch before merging to `main`
 - [ ] Rollback plan documented
 
 ## API Changes
@@ -125,11 +128,12 @@ TODO: Describe UI changes or write "No UI changes"
 ## Rollout Plan
 
 <!-- How will this be deployed? Feature flag? Staged rollout? Big bang?
-     Include: staging validation steps, production monitoring, rollback trigger. -->
+     Include: preview verification steps, production monitoring, rollback trigger.
+     Reminder: GitHub Flow — preview-per-PR is your "staging environment". -->
 
-1. **Staging:** Deploy to staging branch → run test suite → manual smoke test
-2. **Production:** Merge to master → Vercel auto-deploys → monitor `/api/health`
-3. **Rollback trigger:** Error rate > 1% or P0 bug reported within 24h
+1. **Preview:** PR opens → Vercel builds preview + Neon preview DB branch → run smoke tests against the preview URL
+2. **Production:** Squash-merge to `main` → Vercel auto-deploys → verify `/api/health` and key endpoints
+3. **Rollback trigger:** Error rate > 1% or P0 bug reported within 24h → Vercel "Promote previous deployment"
 
 ## Dependencies
 

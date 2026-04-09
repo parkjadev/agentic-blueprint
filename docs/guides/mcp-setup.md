@@ -67,7 +67,7 @@ Key integrations:
 
 **Read build logs when deploy fails:**
 ```
-> The latest staging deployment failed. Show me the build logs.
+> The latest preview deployment for PR #42 failed. Show me the build logs.
 ```
 
 **Monitor preview deploys on PRs:**

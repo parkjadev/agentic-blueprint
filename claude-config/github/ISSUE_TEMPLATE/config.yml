@@ -1,0 +1,12 @@
+# GitHub issue template chooser configuration.
+# This file controls the issue picker shown when a contributor opens a new issue.
+# See: https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository
+
+# Disable blank issues — every issue must use one of the templates so we get
+# the labels, structure, and acceptance criteria the workflow depends on.
+blank_issues_enabled: false
+
+contact_links:
+  - name: Discussion / question
+    url: https://github.com/TODO-org/TODO-repo/discussions
+    about: For open-ended questions, ideas, or discussions that aren't actionable issues yet.

@@ -6,12 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- ## How to use this changelog
-     - Add entries under [Unreleased] as work is merged to staging
-     - When cutting a release, rename [Unreleased] to the version number and date
+     - Add entries under [Unreleased] as PRs are squash-merged to main
+     - When cutting a versioned release (optional — see release-workflow.md),
+       rename [Unreleased] to the version number and date
      - Create a new empty [Unreleased] section at the top
      - Categories: Added, Changed, Deprecated, Removed, Fixed, Security
      - Each entry should be one line, written from the user's perspective
-     - Include the GitHub issue number where applicable
+     - Include the GitHub issue number, e.g. (#42)
      - Most recent version at the top
 -->
 
@@ -63,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Role-based access control (admin, user)
 - Rate limiting via Upstash Redis
 - CI pipeline with type-check, lint, and unit tests
-- Staging and production deployment via Vercel
+- Preview-per-PR and production deployment via Vercel
 -->
 
 ---

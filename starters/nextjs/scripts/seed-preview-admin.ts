@@ -1,11 +1,11 @@
 /**
- * Seed a preview admin user for staging/preview environments.
+ * Seed a preview admin user for Vercel preview deployments.
  * Creates (or updates) a single admin user that can be used for testing.
  *
  * Usage: pnpm tsx scripts/seed-preview-admin.ts
  *
  * Set PREVIEW_ADMIN_CLERK_ID in your environment to match a real Clerk user
- * in your staging Clerk instance.
+ * in your Clerk dev instance (the same instance preview deploys talk to).
  */
 
 import { neon } from '@neondatabase/serverless';

@@ -14,17 +14,19 @@ Post-deploy verification ensures that a deployment is healthy before you move on
 
 The simplest verification — hit the health endpoint and check the response.
 
+> The blueprint uses GitHub Flow with one long-lived branch (`main`) and a Vercel preview deployment per PR. The hook examples below assume that model. There is no `staging` branch — preview URLs are your "staging".
+
 ### As a Claude Code Hook
 
-Run after every `git push` to a deploy branch:
+Run after every `git push` to `main` (i.e. after a squash-merge lands):
 
 ```json
 {
   "hooks": {
     "post-push": [
       {
-        "command": "sleep 30 && curl -sf https://staging.your-domain.com/api/health || echo 'DEPLOY HEALTH CHECK FAILED'",
-        "description": "Verify staging health after push",
+        "command": "sleep 30 && curl -sf https://your-domain.com/api/health || echo 'DEPLOY HEALTH CHECK FAILED'",
+        "description": "Verify production health after push to main",
         "blocking": false
       }
     ]
@@ -34,7 +36,7 @@ Run after every `git push` to a deploy branch:
 
 ### As a Manual Check
 
-After merging to master or staging:
+After merging to `main`:
 
 ```bash
 # Wait for Vercel to finish deploying (check Vercel dashboard or MCP)
@@ -67,7 +69,8 @@ Create a script that tests critical paths:
 
 ```typescript
 // scripts/smoke-test.ts
-const BASE_URL = process.env.SMOKE_TEST_URL ?? 'https://staging.your-domain.com';
+// Default to production; pass SMOKE_TEST_URL=<preview-url> to run against a PR preview.
+const BASE_URL = process.env.SMOKE_TEST_URL ?? 'https://your-domain.com';
 
 type TestCase = {
   name: string;
@@ -111,8 +114,11 @@ run();
 ### Usage
 
 ```bash
-# After deploy
-SMOKE_TEST_URL=https://staging.your-domain.com pnpm tsx scripts/smoke-test.ts
+# Against a PR preview (run before merging)
+SMOKE_TEST_URL=https://your-project-pr-42.vercel.app pnpm tsx scripts/smoke-test.ts
+
+# Against production (run immediately after merging to main)
+SMOKE_TEST_URL=https://your-domain.com pnpm tsx scripts/smoke-test.ts
 ```
 
 ### As a Hook
@@ -122,8 +128,8 @@ SMOKE_TEST_URL=https://staging.your-domain.com pnpm tsx scripts/smoke-test.ts
   "hooks": {
     "post-push": [
       {
-        "command": "sleep 45 && SMOKE_TEST_URL=https://staging.your-domain.com pnpm tsx scripts/smoke-test.ts",
-        "description": "Run smoke tests after staging deploy",
+        "command": "sleep 45 && SMOKE_TEST_URL=https://your-domain.com pnpm tsx scripts/smoke-test.ts",
+        "description": "Run smoke tests after production deploy",
         "blocking": false
       }
     ]

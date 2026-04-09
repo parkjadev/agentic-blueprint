@@ -125,7 +125,7 @@ The task description is everything. Claude will work autonomously — no back-an
 
 > In parkjadev/agentic-blueprint, create a PR that adds a post-deploy health check pattern to docs/guides/release-workflow.md. Add a new section after "Verify Production" that describes hitting /api/health and checking response time. Follow the writing style of the existing guide.
 
-> In parkjadev/sentinel, fix the 401 error on GET /api/projects when using mobile JWT. The issue is in src/lib/auth/get-auth.ts — the token verification checks the `sub` claim but mobile tokens use `userId`. See issue #42 for details. Include a regression test.
+> In <owner>/<repo>, fix the 401 error on GET /api/projects when using mobile JWT. The issue is in src/lib/auth/get-auth.ts — the token verification checks the `sub` claim but mobile tokens use `userId`. See issue #42 for details. Include a regression test.
 
 **Bad task descriptions:**
 
@@ -157,7 +157,7 @@ These are proven patterns that work well as Dispatch tasks:
 ```
 In [repo], fix [specific bug description]. The issue is in [file] — [root cause].
 See issue #[number] for full details. Include a regression test.
-Create a PR to staging when done.
+Create a PR to main when done. Reference the issue with "Closes #N".
 ```
 
 #### Documentation Update
@@ -191,7 +191,7 @@ Create a PR if all checks pass.
 ```
 In [repo], add [specific small feature]. See the spec at [spec path].
 Follow existing patterns in [reference file]. Include tests.
-Create a PR to staging when done.
+Create a PR to main when done. Reference the issue with "Closes #N".
 ```
 
 ### Tips for Dispatch

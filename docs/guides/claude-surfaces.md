@@ -47,7 +47,7 @@ This is the primary reference table. For every stage of the product lifecycle, i
 | **Feature Development** | Claude Code (Terminal) | VS Code Extension | Plan → approve → code → test → PR |
 | **Code Review** | Claude Code (Terminal) | VS Code Extension | Review diffs, run checks, approve or request changes |
 | **Testing** | Claude Code (Terminal) | — | Write + run tests, lint, type-check |
-| **Deployment** | Claude Code + Vercel MCP | — | Push → monitor deploy → promote staging → production |
+| **Deployment** | Claude Code + Vercel MCP | — | Open PR → smoke-test Vercel preview → squash-merge to `main` → verify production |
 | **CI Monitoring** | Scheduled Tasks | Remote Control (mobile) | Auto-triage failures → notify → fix or escalate |
 | **PR Triage** | Scheduled Tasks | — | Daily automated review → comment on PRs → flag issues |
 | **Dependency Audit** | Scheduled Tasks | — | Weekly scan → create update PR → await human merge |

@@ -1,0 +1,87 @@
+name: Bug
+description: Report something that is broken or behaving incorrectly.
+title: "fix: <short description>"
+labels: ["type:fix", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Please give us enough detail to reproduce the issue locally.
+
+        The branch that fixes this issue must be named `fix/<this-issue-number>-<slug>`.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: One sentence describing the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Numbered, minimal steps that reliably trigger the bug.
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What should have happened?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+      description: What actually happened? Include error messages, screenshots, or log snippets.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: Where did this happen?
+      options:
+        - Local development
+        - Vercel preview deployment
+        - Production
+    validations:
+      required: true
+
+  - type: input
+    id: commit
+    attributes:
+      label: Commit / deployment
+      description: SHA, deployment ID, or release tag where the bug was observed.
+      placeholder: "abc1234 or vercel.com/.../<deployment>"
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope label
+      description: Which area of the codebase is affected? (Apply the matching `scope:*` label after creating the issue.)
+      options:
+        - "scope:api"
+        - "scope:dashboard"
+        - "scope:mobile"
+        - "scope:schema"
+        - "scope:auth"
+        - "scope:workflow"
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Anything else that might help — recent changes, related issues, suspected root cause.

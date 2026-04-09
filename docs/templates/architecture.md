@@ -128,12 +128,13 @@ TODO: Add flows specific to your application
 
 <!-- How environments relate to each other and what infrastructure each uses. -->
 
-| Environment | Branch | Database | URL | Purpose |
+| Environment | Trigger | Database | URL | Purpose |
 |---|---|---|---|---|
-| Development | Local | Neon dev branch | `localhost:3000` | Local development |
-| Preview | PR branches | Neon preview branch | `*.vercel.app` | PR review |
-| Staging | `staging` | Neon staging branch | `staging.example.com` | Pre-production testing |
-| Production | `master` | Neon main branch | `example.com` | Live users |
+| Development | Local checkout | Neon dev branch | `localhost:3000` | Local development |
+| Preview (per PR) | Open PR against `main` | Neon preview branch (auto-created) | `<project>-<pr>.vercel.app` | PR review, smoke testing, stakeholder demos |
+| Production | Squash-merge to `main` | Neon `main` branch | `example.com` | Live users |
+
+> No long-lived `staging` branch — see `docs/guides/feature-workflow.md` for the rationale.
 
 ## Security Architecture
 

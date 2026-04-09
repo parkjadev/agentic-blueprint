@@ -22,38 +22,75 @@ This file provides guidance to Claude Code when working with this repository.
 
 ## Environments & Deployment
 
-| Environment | Branch | URL | Database |
-|---|---|---|---|
-| Development | Local | `http://localhost:3000` | Neon dev branch |
-| Preview | PR branches | `<branch>.vercel.app` | Neon preview branch |
-| Staging | `staging` | `TODO: staging.your-domain.com` | Neon staging branch |
-| Production | `master` | `TODO: your-domain.com` | Neon main branch |
+We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow): one long-lived branch (`main`), short-lived branches per issue, a Vercel preview deployment (with its own Neon database branch) per PR, and production deploys on merge to `main`. **There is no `staging` branch.** If you need a shared environment for QA or stakeholder review, use a Vercel preview alias — never a long-lived branch (see Hard Rule #3).
 
-**Deploy flow:** feature branch → PR to staging → merge → staging auto-deploys → PR to master → merge → production auto-deploys
+| Environment | Branch / Source | URL | Database |
+|---|---|---|---|
+| Development | Local checkout | `http://localhost:3000` | Neon dev branch |
+| Preview (per PR) | Open PR against `main` | `<project>-<pr>.vercel.app` | Neon preview branch (auto-created per PR) |
+| Production | `main` | `TODO: your-domain.com` | Neon `main` branch |
+
+**Deploy flow:** issue → branch from `main` (`<type>/<N>-<slug>`) → PR to `main` → CI + Vercel preview → smoke-test the preview → squash-merge → production auto-deploys
 
 **Vercel region:** `TODO: your-region` (set in `vercel.json`)
+
+> **Merge UI gotcha:** always use **squash merge**, never "Rebase and merge". GitHub's rebase merge rewrites commit SHAs at merge time. With a single long-lived branch this is harmless, but it's the landmine that makes any two-tier branch flow drift.
 
 ## Hard Rules
 
 1. **Australian spelling throughout** — favour, colour, organisation, behaviour, licence (noun). Applies to all prose, comments, and string literals.
 
-2. **Plan before code** — always use the plan → approve → execute pattern. Never write code without an approved plan. Never skip the plan step.
+2. **Issue before branch** — every change starts as a GitHub issue, even one-line fixes. Branch names must encode the issue number: `<type>/<issue-number>-<slug>` where `<type>` is one of `feat`, `fix`, `chore`, `docs`. Example: `feat/42-user-profile`. The commit footer references the issue (`Refs: #42`) and the PR body uses `Closes #42`. No exceptions — including for hotfixes.
 
-3. **Spec-driven development** — every feature starts as a spec document in `docs/specs/` before any code is written. Specs are committed to the repo.
+3. **One long-lived branch (`main`)** — use GitHub Flow. Never create a `staging`, `develop`, or `release/*` long-lived branch. If you need a shared environment for QA, use a Vercel preview alias. Long-lived secondary branches drift on every merge because GitHub's rebase-merge rewrites commit SHAs.
 
-4. **No `any` types** — TypeScript strict mode is non-negotiable. Use proper generics, union types, or `unknown` with type guards. ESLint enforces `no-explicit-any`.
+4. **Squash-merge PRs to `main`** — never use "Rebase and merge" or "Create a merge commit" in the GitHub UI. Squash merge keeps `main` linear and audit-friendly, and avoids the SHA-rewrite drift that breaks two-tier flows.
 
-5. **No `console.log`** — use the structured logger at `src/lib/logger.ts`. ESLint enforces `no-console`. The logger produces JSON with timestamps and levels.
+5. **Plan before code** — always use the plan → approve → execute pattern. Never write code without an approved plan. Never skip the plan step.
 
-6. **All API responses use the envelope** — `{ success: true, data: T }` or `{ success: false, error: { message, code } }`. Use `ok()`, `created()`, `noContent()`, `handleError()` from `src/lib/api-response.ts`.
+6. **Spec-driven development** — every feature starts as a spec document in `docs/specs/` before any code is written. Specs are committed to the repo.
 
-7. **Auth via `getAuth()` only** — never call `auth()` directly in route handlers. Always use `getAuth()` from `src/lib/auth/get-auth.ts` which handles both Clerk sessions and mobile JWT.
+7. **Expand-migrate-contract for schema changes** — never ship a destructive schema change (column drop, rename, type change, NOT NULL on existing data) in a single PR. Split it across deploys:
 
-8. **Validate all inputs with Zod** — every API endpoint validates request body and query params with Zod schemas. Schemas live in `src/lib/validations/`. Never trust user input.
+   1. **Expand:** add the new column/table alongside the old one. Deploy. Both old and new code paths work.
+   2. **Migrate:** backfill data into the new shape. Switch reads and writes to the new column. Deploy.
+   3. **Contract:** drop the old column once nothing references it. Deploy.
 
-9. **Rate limit all endpoints** — use `checkRateLimit()` from `src/lib/rate-limit.ts`. Public endpoints get `publicRateLimiter`, write operations get `writeRateLimiter`, authenticated requests get `rateLimiter`.
+   *Why:* Vercel rolling deploys run old and new code concurrently for ~30 seconds during a release. A single-PR rename means the old containers query a column that no longer exists and start serving 500s mid-deploy.
 
-10. **Soft delete, never hard delete** — set `status = 'deleted'`, never `DELETE FROM`. All queries should filter out deleted records.
+   *Concrete example — renaming `users.email` to `users.email_address`:*
+   - **PR 1 (expand):** add `email_address` column nullable, write to both `email` and `email_address`, read from `email`.
+   - **PR 2 (migrate):** backfill `email_address` from `email`, switch reads to `email_address`, drop the dual-write.
+   - **PR 3 (contract):** drop the `email` column.
+
+   For pure additive changes (new column, new table, new index) you can ship all three steps in one PR — the rule only kicks in when something is being removed, renamed, or made stricter.
+
+8. **No `any` types** — TypeScript strict mode is non-negotiable. Use proper generics, union types, or `unknown` with type guards. ESLint enforces `no-explicit-any`.
+
+9. **No `console.log`** — use the structured logger at `src/lib/logger.ts`. ESLint enforces `no-console`. The logger produces JSON with timestamps and levels.
+
+10. **All API responses use the envelope** — `{ success: true, data: T }` or `{ success: false, error: { message, code } }`. Use `ok()`, `created()`, `noContent()`, `handleError()` from `src/lib/api-response.ts`.
+
+11. **Auth via `getAuth()` only** — never call `auth()` directly in route handlers. Always use `getAuth()` from `src/lib/auth/get-auth.ts` which handles both Clerk sessions and mobile JWT.
+
+12. **Validate all inputs with Zod** — every API endpoint validates request body and query params with Zod schemas. Schemas live in `src/lib/validations/`. Never trust user input.
+
+13. **Rate limit all endpoints** — use `checkRateLimit()` from `src/lib/rate-limit.ts`. Public endpoints get `publicRateLimiter`, write operations get `writeRateLimiter`, authenticated requests get `rateLimiter`.
+
+14. **Soft delete, never hard delete** — set `status = 'deleted'`, never `DELETE FROM`. All queries should filter out deleted records.
+
+## Labels
+
+Apply at least one `type:*` and one `scope:*` label to every issue and PR. The label taxonomy is created on a fresh repo by `claude-config/scripts/setup-labels.sh`.
+
+| Group | Labels | When to use |
+|---|---|---|
+| `type:*` | `type:feature`, `type:fix`, `type:chore`, `type:docs` | What kind of change is this? |
+| `scope:*` | `scope:api`, `scope:dashboard`, `scope:mobile`, `scope:schema`, `scope:auth`, `scope:workflow` | Which area of the codebase? |
+| `vertical:*` | TODO: project-specific (e.g. `vertical:billing`, `vertical:onboarding`) | Optional — only if your product has clearly distinct verticals |
+| Status | `needs-triage`, `blocked`, `urgent` | Triage state — applied as needed |
+
+The `<type>` segment of the branch name (`feat/`, `fix/`, `chore/`, `docs/`) must match the `type:*` label on the issue.
 
 ## Testing Structure
 

@@ -1,0 +1,58 @@
+name: Chore
+description: Maintenance, refactor, dependency update, or non-user-visible cleanup.
+title: "chore: <short description>"
+labels: ["type:chore", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for work that doesn't add a feature or fix a user-visible bug — refactors, dependency upgrades, build/CI tweaks, internal tooling, etc.
+
+        The branch that implements this issue must be named `chore/<this-issue-number>-<slug>`.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What needs to be done
+      description: Describe the change at a high level.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why now
+      description: What's driving this? (Tech debt, blocking another change, security advisory, etc.)
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope label
+      description: Which area is affected?
+      options:
+        - "scope:api"
+        - "scope:dashboard"
+        - "scope:mobile"
+        - "scope:schema"
+        - "scope:auth"
+        - "scope:workflow"
+    validations:
+      required: true
+
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risk / blast radius
+      description: What could break? Anything that needs special verification on the preview deployment?

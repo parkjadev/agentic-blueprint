@@ -1,6 +1,6 @@
 # Next.js Starter
 
-Full-stack Next.js starter extracted from AccessFit247 production patterns.
+Full-stack Next.js starter extracted from production patterns.
 
 ## Stack
 

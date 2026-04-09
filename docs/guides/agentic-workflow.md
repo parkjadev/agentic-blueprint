@@ -4,6 +4,7 @@ The full lifecycle for building products with Claude as your primary collaborato
 
 **Surfaces:** All — Claude Desktop Chat, Claude Code (Terminal, VS Code, Web), Scheduled Tasks, Cowork, Dispatch, Remote Control
 **Related:** `claude-surfaces.md` (surface decision tree), individual workflow guides for each phase
+**Branching model:** [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow). One long-lived branch (`main`), short-lived branches per issue, preview deploy per PR. **No `staging` branch** — see `feature-workflow.md` for why.
 
 ---
 
@@ -16,7 +17,7 @@ The operating model:
 1. **Think** in Claude Desktop Chat — ideation, strategy, critical assessment
 2. **Document** in Claude Code — specs, schemas, architecture decisions committed to the repo
 3. **Build** in Claude Code — feature branches, test suites, CI pipelines
-4. **Deploy** in Claude Code + MCP — staging, production, monitoring
+4. **Deploy** in Claude Code + MCP — preview-per-PR, production on merge, monitoring
 5. **Maintain** with Scheduled Tasks — recurring automation, PR triage, dependency audits
 6. **Operate** with Cowork — non-code admin, document processing, research
 
@@ -66,15 +67,18 @@ Ideate → Document → Issue → Branch → Plan → Review Plan → Code → T
 
 **Surface:** Claude Code (Terminal)
 
+Hard rule: **issue before branch**. Every piece of work — feature, fix, chore, docs — starts as a GitHub issue. Use the issue templates shipped in `claude-config/github/ISSUE_TEMPLATE/`.
+
 | Step | Action | Output |
 |---|---|---|
 | 3.1 | Create GitHub issue with acceptance criteria | Issue with linked specs |
-| 3.2 | Add labels, assignee, project board | Tracked and visible |
+| 3.2 | Apply labels (`type:*`, `scope:*`), assignee, project board | Tracked and visible |
 | 3.3 | Link to specs and PRD | Full traceability |
 
 ```bash
 # Via Claude Code
-> Create a GitHub issue for [feature]. Link to the specs in docs/specs/[feature-name]/.
+> Create a GitHub issue for [feature] using the Feature template.
+> Link to the specs in docs/specs/[feature-name]/. Apply labels: type:feature, scope:[area].
 > Include acceptance criteria and a checklist of implementation steps.
 ```
 
@@ -87,15 +91,15 @@ Ideate → Document → Issue → Branch → Plan → Review Plan → Code → T
 
 | Step | Action | Output |
 |---|---|---|
-| 4.1 | Pull latest master and staging | Up to date |
-| 4.2 | Create feature branch from master | `feature/[name]` branch |
+| 4.1 | Pull latest `main` | Local up to date |
+| 4.2 | Create branch from `main` using `<type>/<issue-number>-<slug>` | `feat/42-user-profile` branch |
 
 ```bash
 # Via Claude Code
-> Pull master and staging, then create a feature branch called feature/[name] from master
+> Pull main, then create a branch called feat/42-user-profile from main
 ```
 
-**Exit criteria:** Clean feature branch created from latest master
+**Exit criteria:** Clean branch created from latest `main`, name encodes the issue number
 
 ### Phase 5: Plan
 
@@ -166,30 +170,32 @@ The check suite should include:
 
 | Step | Action | Output |
 |---|---|---|
-| 8.1 | Create PR to staging | PR with description |
-| 8.2 | Link to GitHub issue | Traceability |
+| 8.1 | Open PR to `main` using the PR template | PR with description |
+| 8.2 | Link to GitHub issue (`Closes #N`) | Traceability + auto-close |
 | 8.3 | Wait for CI to pass | Green checks |
+| 8.4 | Wait for Vercel preview | Preview URL posted on PR |
 
 ```bash
 # Via Claude Code
-> Create a PR from this branch to staging. Link to issue #[number].
-> Include a summary of what changed and how to test it.
+> Open a PR from this branch to main. Use the PR template.
+> Body should include "Closes #[number]" so the issue auto-closes on merge.
 ```
 
-**Exit criteria:** PR open, CI green, ready for review
+**Exit criteria:** PR open, CI green, preview URL ready for review
 
 ### Phase 9: Deploy
 
 **Surface:** Claude Code + Vercel MCP
-**Guide:** `release-workflow.md`
+**Guide:** `feature-workflow.md`
 
 | Step | Action | Output |
 |---|---|---|
-| 9.1 | Merge PR to staging | Staging auto-deploys |
-| 9.2 | Smoke test staging | Verified working |
-| 9.3 | Create PR from staging to master | Production PR |
-| 9.4 | Review and merge to master | Production auto-deploys |
-| 9.5 | Verify production health | `/api/health` returns OK |
+| 9.1 | Smoke test the Vercel preview URL | Verified in real environment |
+| 9.2 | Squash-merge PR to `main` | Production auto-deploys |
+| 9.3 | Verify production health | `/api/health` returns 200 |
+| 9.4 | Check Vercel runtime logs | No new errors |
+
+> **Watch out:** use **squash merge**, not "Rebase and merge". GitHub's rebase merge rewrites commit SHAs and is the reason this blueprint no longer uses a long-lived `staging` branch.
 
 **Exit criteria:** Feature live in production, health check passing
 
@@ -199,18 +205,18 @@ The check suite should include:
 
 | Step | Action | Output |
 |---|---|---|
-| 10.1 | Close the GitHub issue | Issue closed |
-| 10.2 | Delete the feature branch | Branch cleaned up |
-| 10.3 | Pull master and staging locally | Local branches up to date |
-| 10.4 | Update CHANGELOG.md | Change documented |
+| 10.1 | Close the GitHub issue (auto-closes via `Closes #N`) | Issue closed |
+| 10.2 | Delete the branch (local + remote) | Branch cleaned up |
+| 10.3 | Pull `main` locally, prune stale remotes | Local up to date |
+| 10.4 | Update CHANGELOG.md under `[Unreleased]` | Change documented |
 
 ```bash
 # Via Claude Code
-> Close issue #[number]. Delete the feature branch. Pull master and staging.
-> Add an entry to CHANGELOG.md under [Unreleased].
+> Confirm issue #[number] auto-closed. Delete the branch (local + remote).
+> Pull main and prune. Add an entry to CHANGELOG.md under [Unreleased].
 ```
 
-**Exit criteria:** Issue closed, branch deleted, changelog updated, local branches current
+**Exit criteria:** Issue closed, branch deleted, changelog updated, local `main` current
 
 ### Phase 11: Maintain
 
@@ -224,7 +230,7 @@ Automated recurring tasks handle ongoing maintenance:
 | PR review triage | Daily 07:00 AEST | Review open PRs, flag issues, approve clean ones |
 | CI failure monitor | Every 2 hours | Diagnose failures, attempt auto-fix, escalate |
 | Dependency audit | Weekly Monday 06:00 | Scan for vulnerabilities, create update PRs |
-| Doc sync | Post-merge to master | Update docs if API/schema/auth changed |
+| Doc sync | Post-merge to main | Update docs if API/schema/auth changed |
 
 ### Phase 12: Operate
 

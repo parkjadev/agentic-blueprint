@@ -27,7 +27,7 @@ agentic-blueprint/
 ## Hard Rules
 
 1. **Australian spelling throughout** — favour, colour, organisation, behaviour, licence (noun), etc. Applies to all prose, comments, and string literals in every file in this repo.
-2. **No domain-specific business logic in starters** — starters contain only generic infrastructure patterns. Replace any AccessFit247-specific logic with generic examples and `TODO:` markers.
+2. **No domain-specific business logic in starters** — starters contain only generic infrastructure patterns. Anything that ties a starter to a specific product, brand, or vertical must be replaced with a generic example and a `TODO:` marker before merging.
 3. **All starters must boot clean** — `starters/nextjs/` must pass `pnpm install && pnpm type-check && pnpm lint && pnpm test:ci` with zero errors. `starters/flutter/` must pass `flutter analyze && flutter test` with zero errors. Never merge code that breaks a starter's clean boot.
 4. **Optional services** — in starters, use optional Zod schemas in `env.ts` so services gracefully skip when env vars are missing. Only Neon + Clerk + Upstash are required; everything else (Stripe, R2, Inngest, Resend) must be opt-in.
 5. **Spec-driven** — every feature starts as a spec document before any code is written.

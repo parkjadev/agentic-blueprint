@@ -134,7 +134,7 @@ For each failed run in the last 2 hours:
    - Include the diagnosis, failure logs, and suggested approach
    - Label it as "bug" and "needs-triage"
 
-Do not merge any PRs. Do not modify the master or staging branches directly.
+Do not merge any PRs. Do not modify `main` directly.
 ```
 
 #### Expected Output
@@ -211,7 +211,7 @@ Keeps documentation in sync with code changes automatically.
 #### Prompt Template
 
 ```
-Check the git log for any commits merged to master since yesterday.
+Check the git log for any commits merged to main since yesterday.
 
 For each merge, check if the changes affect:
 - API routes (src/app/api/**) → update docs/api-reference.md

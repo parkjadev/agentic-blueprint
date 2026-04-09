@@ -25,7 +25,7 @@ How to take a raw idea and turn it into a structured Product Requirements Docume
 If this is a new venture, create a dedicated Claude Project:
 
 1. Open Claude Desktop → Projects → New Project
-2. Name it after the venture (e.g., "Sentinel", "AccessFit247")
+2. Name it after the venture (e.g., "Acme Web", "Acme Mobile")
 3. Add persistent context in the project instructions:
    - What the product does (one paragraph)
    - Who the target users are

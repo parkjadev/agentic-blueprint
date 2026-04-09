@@ -126,13 +126,14 @@ TODO: List additional webhook events or write "Standard webhook handling only"
 
 ## Testing Auth Flows
 
-<!-- How to test auth in development, CI, and staging. -->
+<!-- How to test auth in development, CI, and on PR previews. -->
 
 | Environment | Auth Setup |
 |---|---|
 | Development | Clerk dev instance, test users in seed data |
 | CI | Mock auth via test helpers (`src/test/helpers.ts`) |
-| Staging | Clerk staging instance, preview admin seeder |
+| Vercel preview (per PR) | Clerk dev instance, preview admin seeder runs as part of the build |
+| Production | Clerk production instance |
 
 ---
 

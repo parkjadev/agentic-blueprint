@@ -118,7 +118,7 @@ Read through each spec in your editor. Check:
 - [ ] API endpoints follow the `ApiResponse<T>` envelope
 - [ ] Auth matches the dual-mode pattern (Clerk + JWT)
 - [ ] Testing strategy covers unit, integration, and E2E where needed
-- [ ] Rollout plan includes staging validation and rollback trigger
+- [ ] Rollout plan includes preview-deploy validation and rollback trigger
 - [ ] No domain-specific business logic leaking from other projects
 
 ### 8. Commit the Specs

@@ -1,0 +1,52 @@
+name: Documentation
+description: Add, update, or fix documentation.
+title: "docs: <short description>"
+labels: ["type:docs", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for documentation work — README updates, spec edits, guide rewrites, code comments at scale.
+
+        The branch that implements this issue must be named `docs/<this-issue-number>-<slug>`.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What needs to change
+      description: Which docs are affected and what's wrong or missing?
+    validations:
+      required: true
+
+  - type: input
+    id: files
+    attributes:
+      label: Affected files
+      description: Comma-separated list of doc paths.
+      placeholder: "docs/guides/feature-workflow.md, README.md"
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      value: |
+        - [ ] Content updated
+        - [ ] Links verified
+        - [ ] Examples still compile / run
+    validations:
+      required: true
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope label
+      description: Apply the matching `scope:*` label after creating the issue.
+      options:
+        - "scope:api"
+        - "scope:dashboard"
+        - "scope:mobile"
+        - "scope:schema"
+        - "scope:auth"
+        - "scope:workflow"
+    validations:
+      required: true

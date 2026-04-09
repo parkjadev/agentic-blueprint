@@ -15,7 +15,7 @@ Claude is treated as a senior engineer and strategic advisor who needs context t
 1. **Think** in Claude Desktop — ideation, strategy, critical assessment, PRD drafting
 2. **Document** in Claude Code — specs, schemas, architecture decisions committed to the repo
 3. **Build** in Claude Code — feature branches, test suites, CI pipelines
-4. **Deploy** in Claude Code + MCP — staging, production, monitoring
+4. **Deploy** in Claude Code + MCP — preview-per-PR, production on merge to `main`, monitoring
 5. **Maintain** with Scheduled Tasks — recurring automation, PR triage, dependency audits
 6. **Operate** with Cowork — non-code admin, document processing, research
 
@@ -70,15 +70,20 @@ These are opt-in — the app starts and runs without them. Enable as needed:
 
 Optional services use Zod optional schemas in `src/env.ts`. When env vars are missing, the service gracefully skips — no errors, no crashes.
 
-### 5. Set Up Claude Code
+### 5. Set Up Claude Code + GitHub
 
 ```bash
 cp claude-config/CLAUDE.md.template CLAUDE.md
 mkdir -p .claude
 cp claude-config/settings.local.json.template .claude/settings.local.json
+
+# Issue templates, PR template, and label/branch-protection bootstrap
+cp -R claude-config/github/. .github/
+./claude-config/scripts/setup-labels.sh
+./claude-config/scripts/setup-branch-protection.sh
 ```
 
-Customise both files for your project. CLAUDE.md is the single most important file for Claude Code — it's loaded at the start of every session.
+Customise `CLAUDE.md` for your project — it's the single most important file for Claude Code and is loaded at the start of every session. The two scripts assume you have the `gh` CLI authenticated against the new repo.
 
 ### 6. Boot
 
@@ -99,11 +104,13 @@ curl http://localhost:3000/api/health
 
 ## The Workflow
 
-Every feature follows the same loop:
+Every change follows the same loop:
 
 ```
-Ideate → Document → Issue → Branch → Plan → Approve → Code → Test → PR → Deploy → Maintain
+Ideate → Document → Issue → Branch → Plan → Approve → Code → Test → PR → Preview → Merge → Maintain
 ```
+
+The blueprint uses [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow): one long-lived branch (`main`), one short-lived branch per issue (`<type>/<N>-<slug>`), one Vercel preview deployment per PR, and production auto-deploys on merge to `main`. **Issue before branch** and **squash-merge always** are hard rules — the [Feature Workflow](docs/guides/feature-workflow.md) explains why (short version: GitHub's "Rebase and merge" rewrites SHAs and breaks any two-tier branch flow).
 
 Two key guides anchor the entire workflow:
 
@@ -120,7 +127,7 @@ Two key guides anchor the entire workflow:
 | [Agentic Workflow](docs/guides/agentic-workflow.md) | Full lifecycle master reference — all 12 phases |
 | [Feature Workflow](docs/guides/feature-workflow.md) | Spec → issue → plan → code → test → deploy |
 | [Fix Workflow](docs/guides/fix-workflow.md) | Bug report → diagnose → fix → regression test → deploy |
-| [Release Workflow](docs/guides/release-workflow.md) | Staging → CI → production → cleanup → rollback procedures |
+| [Release Workflow](docs/guides/release-workflow.md) | Collapsed into Feature Workflow — explains the move to GitHub Flow and covers versioned release cuts |
 | [MCP Setup](docs/guides/mcp-setup.md) | Vercel MCP, GitHub CLI, Dispatch, custom MCP servers |
 | [Scheduled Tasks](docs/guides/scheduled-tasks.md) | Daily PR review, CI triage, dependency audits, doc sync |
 | [Cowork Ops](docs/guides/cowork-ops.md) | Invoices, contracts, research, venture admin |
@@ -176,11 +183,15 @@ Drop-in configuration for any project using Claude Code.
 
 | File | Purpose |
 |---|---|
-| [CLAUDE.md.template](claude-config/CLAUDE.md.template) | Full project guide — stack, rules, patterns, auth architecture, data model |
+| [CLAUDE.md.template](claude-config/CLAUDE.md.template) | Full project guide — stack, hard rules (issue-first, GitHub Flow, expand-migrate-contract), patterns, labels |
 | [settings.local.json.template](claude-config/settings.local.json.template) | Categorised permissions — read, pnpm, git, gh, curl |
 | [memory-guidelines.md](claude-config/memory-guidelines.md) | When to save memories, how to keep CLAUDE.md current, anti-patterns |
 | [hooks/pre-commit.md](claude-config/hooks/pre-commit.md) | Pre-commit patterns — full check suite, fast lint, auto-format |
 | [hooks/post-deploy.md](claude-config/hooks/post-deploy.md) | Post-deploy patterns — health check, smoke test, Vercel MCP status |
+| [github/ISSUE_TEMPLATE/](claude-config/github/ISSUE_TEMPLATE/) | Issue templates: feature, bug, chore, docs (+ blank-issue picker config) |
+| [github/pull_request_template.md](claude-config/github/pull_request_template.md) | PR template with linked issue, test plan, schema-change checklist, rollback |
+| [scripts/setup-branch-protection.sh](claude-config/scripts/setup-branch-protection.sh) | Locks down `main`: squash-only, required CI, linear history, `enforce_admins=true` |
+| [scripts/setup-labels.sh](claude-config/scripts/setup-labels.sh) | Bootstraps the `type:*` / `scope:*` / status label taxonomy |
 
 ---
 
@@ -342,7 +353,9 @@ agentic-blueprint/
 │   ├── CLAUDE.md.template      # Project guide template
 │   ├── settings.local.json.template
 │   ├── memory-guidelines.md
-│   └── hooks/                  # Pre-commit and post-deploy patterns
+│   ├── hooks/                  # Pre-commit and post-deploy patterns
+│   ├── github/                 # Issue + PR templates (copy into .github/)
+│   └── scripts/                # setup-branch-protection.sh, setup-labels.sh
 └── README.md
 ```
 
