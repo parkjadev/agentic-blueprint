@@ -13,8 +13,19 @@
 #   - Linear history required (forces squash merges)
 #   - Force pushes blocked
 #   - Deletion blocked
-#   - enforce_admins = true (admins cannot bypass — this is the bit teams
-#     usually get wrong; making it the default closes the most common loophole)
+#   - enforce_admins = true (admins cannot bypass — non-negotiable)
+#
+#     Why this is non-negotiable: setting it to false "for emergencies" is the
+#     single most common path back to broken branches. The temptation goes:
+#     "I just need to push this hotfix, I'll turn enforce_admins off for a
+#     minute, push, and turn it back on." Then nobody turns it back on, and
+#     three weeks later somebody force-pushes to main by accident.
+#
+#     If you genuinely need to bypass protection for a one-off emergency, run
+#     `unblock-protection.sh` instead — it temporarily disables enforce_admins,
+#     prints a 60-second countdown, and auto-restores. There is no path through
+#     this script (or any other in claude-config/scripts/) that leaves
+#     enforce_admins permanently off.
 #
 # Usage:
 #   ./setup-branch-protection.sh                        # uses gh's current repo + 'main'

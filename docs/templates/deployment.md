@@ -44,6 +44,8 @@ issue #N
 
 The exact branch protection settings are configured by `claude-config/scripts/setup-branch-protection.sh`.
 
+> **`enforce_admins=true` is non-negotiable.** If you genuinely need to push past protection for a one-off emergency, run `claude-config/scripts/unblock-protection.sh` — it temporarily disables enforce_admins, prints a 60-second countdown, and auto-restores. Never set `enforce_admins=false` permanently; that's how branches end up unprotected for months.
+
 ## DNS & Domains
 
 | Domain | Points to | Purpose |
