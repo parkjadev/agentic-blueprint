@@ -1,0 +1,75 @@
+# Auto-apply scope:* label from the issue form dropdown.
+#
+# Our issue templates (feature.yml, bug.yml, chore.yml, docs.yml) all include
+# a required "Scope label" dropdown whose options are the literal label names
+# (scope:api, scope:auth, etc.). GitHub renders the chosen value in the issue
+# body under a "### Scope label" heading, but it does NOT automatically apply
+# the chosen value as a label — the templates can only set static labels via
+# their `labels:` front-matter, not dynamic ones from form fields.
+#
+# This workflow closes that gap: on every issue open and edit, it parses the
+# body for the scope value, removes any stale scope:* labels, and applies the
+# matching one.
+#
+# Copy this file to .github/workflows/auto-label.yml in any repo that uses
+# our issue templates. No further configuration needed.
+
+name: Auto-label issue scope
+
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  apply-scope-label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse scope and apply label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.issue.body || '';
+
+            // Match the "### Scope label" heading produced by GitHub from
+            // the form's `id: scope` field, then capture the next non-empty
+            // line which should be `scope:foo` (or `_No response_` if the
+            // user somehow bypassed the required validation).
+            const sectionMatch = body.match(/###\s+Scope label\s*\n+([^\n]+)/);
+            if (!sectionMatch) {
+              core.info('No "Scope label" section found in issue body — skipping.');
+              return;
+            }
+
+            const value = sectionMatch[1].trim();
+            if (!/^scope:[a-z0-9-]+$/.test(value)) {
+              core.info(`Scope value "${value}" is not a recognised scope:* label — skipping.`);
+              return;
+            }
+
+            const issue_number = context.payload.issue.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Fetch current labels and strip any stale scope:* entries (the
+            // user may have edited the dropdown).
+            const current = await github.rest.issues.listLabelsOnIssue({
+              owner, repo, issue_number,
+            });
+            const staleScopes = current.data
+              .filter(l => l.name.startsWith('scope:') && l.name !== value)
+              .map(l => l.name);
+
+            for (const name of staleScopes) {
+              core.info(`Removing stale label: ${name}`);
+              await github.rest.issues.removeLabel({ owner, repo, issue_number, name });
+            }
+
+            // Apply the new scope label (idempotent — GitHub's API silently
+            // accepts an already-applied label).
+            core.info(`Applying label: ${value}`);
+            await github.rest.issues.addLabels({
+              owner, repo, issue_number, labels: [value],
+            });

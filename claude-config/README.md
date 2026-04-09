@@ -17,6 +17,7 @@ Reusable Claude Code configuration templates and GitHub project bootstrap files.
   - `ISSUE_TEMPLATE/docs.yml` — Documentation template
   - `ISSUE_TEMPLATE/config.yml` — Issue picker configuration (disables blank issues)
   - `pull_request_template.md` — Default PR template (linked issue, test plan, rollback)
+  - `workflows/auto-label.yml` — GitHub Action that auto-applies the `scope:*` label from the issue form dropdown on every issue open/edit
 - `scripts/` — Bootstrap and operational scripts for a GitHub repo
   - `setup-branch-protection.sh` — Locks down `main` (squash-only, required CI, enforce_admins=true)
   - `unblock-protection.sh` — Sanctioned escape hatch — temporarily disables enforce_admins with auto-restore
