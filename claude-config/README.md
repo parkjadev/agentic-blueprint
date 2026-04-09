@@ -29,6 +29,15 @@ Reusable Claude Code configuration templates and GitHub project bootstrap files.
 After "Use this template" on GitHub:
 
 ```bash
+# 0. File the bootstrap issue BEFORE any branch — Hard Rule #2 ("issue
+#    before branch") applies from the very first scaffold commit. The
+#    --label flag will fail until step 2 below; either drop it for now
+#    or run setup-labels.sh first.
+gh issue create \
+  --title "chore: initial scaffold" \
+  --label "type:chore" \
+  --body "Bootstrapping a new project from agentic-blueprint."
+
 # 1. Copy config into the new repo
 cp claude-config/CLAUDE.md.template CLAUDE.md
 cp -R claude-config/github/. .github/
@@ -39,6 +48,8 @@ cp -R claude-config/github/. .github/
 
 # 3. Customise CLAUDE.md (env URLs, region, project-specific rules)
 ```
+
+The bootstrap issue gives every subsequent commit something to reference and demonstrates the issue-first workflow from line 1. Without it, the first ten commits of any new project ship without an issue and the team learns the wrong lesson.
 
 ## Back-filling issues on an existing project
 

@@ -29,7 +29,20 @@ Every minute invested in Claude's ecosystem compounds across all projects.
 
 Click **"Use this template"** on GitHub → create a new repository.
 
-### 2. Copy the Starter
+### 2. File Issue #1 Before You Touch Anything
+
+Hard Rule #2 ("issue before branch") applies to the very first scaffold commit, not just to feature work. The bootstrap issue gives every subsequent commit something to reference and demonstrates the workflow from line 1.
+
+```bash
+gh issue create \
+  --title "chore: initial scaffold" \
+  --label "type:chore" \
+  --body "Bootstrapping a new project from agentic-blueprint. This issue tracks the initial scaffold commits and is closed by the first PR that lands the starter."
+```
+
+> If `setup-labels.sh` hasn't been run yet (you'll do that in step 5), the `--label` flag will fail because `type:chore` doesn't exist on the repo. Either drop the flag and add the label after running the script, or run `setup-labels.sh` first and circle back. Both orders work.
+
+### 3. Copy the Starter
 
 ```bash
 # For a web project — copy the Next.js starter to root
@@ -42,7 +55,7 @@ cp -r starters/nextjs/.github .
 cp -r starters/flutter/ mobile/
 ```
 
-### 3. Configure Required Services
+### 4. Configure Required Services
 
 ```bash
 cp .env.example .env.local
@@ -56,7 +69,7 @@ cp .env.example .env.local
 
 These three are required. The app will not start without them.
 
-### 4. Configure Optional Services
+### 5. Configure Optional Services
 
 These are opt-in — the app starts and runs without them. Enable as needed:
 
@@ -70,7 +83,7 @@ These are opt-in — the app starts and runs without them. Enable as needed:
 
 Optional services use Zod optional schemas in `src/env.ts`. When env vars are missing, the service gracefully skips — no errors, no crashes.
 
-### 5. Set Up Claude Code + GitHub
+### 6. Set Up Claude Code + GitHub
 
 ```bash
 cp claude-config/CLAUDE.md.template CLAUDE.md
@@ -85,7 +98,7 @@ cp -R claude-config/github/. .github/
 
 Customise `CLAUDE.md` for your project — it's the single most important file for Claude Code and is loaded at the start of every session. The two scripts assume you have the `gh` CLI authenticated against the new repo.
 
-### 6. Boot
+### 7. Boot
 
 ```bash
 pnpm install
@@ -93,7 +106,7 @@ pnpm db:push
 pnpm dev
 ```
 
-### 7. Verify
+### 8. Verify
 
 ```bash
 curl http://localhost:3000/api/health
