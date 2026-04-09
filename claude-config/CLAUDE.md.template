@@ -50,7 +50,15 @@ We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-
 
 6. **Spec-driven development** — every feature starts as a spec document in `docs/specs/` before any code is written. Specs are committed to the repo.
 
-7. **Expand-migrate-contract for schema changes** — never ship a destructive schema change (column drop, rename, type change, NOT NULL on existing data) in a single PR. Split it across deploys:
+7. **No business logic in chores** — a `chore:` PR must contain only the chore. If you're upgrading a dependency and notice an unrelated bug in the file you're touching, **file a separate issue and address it in its own PR**. Do not bundle bug fixes, refactors, or feature work into a chore commit. Reviewers should be able to skim a chore PR in 30 seconds and merge with confidence; unrelated changes destroy that property and make bisection painful.
+
+   *Concrete example:* You're bumping a logging library version. The diff is a one-line `package.json` change and a regenerated lockfile. While testing the upgrade you notice that one of the call sites swallows a thrown error in a `try { ... } catch {}` block. Do **not** add `catch (err) { logger.error(err) }` to the same PR — file a `fix:` issue, ship the chore, then fix the bug as PR #2. The chore stays auditable and the fix gets a proper test.
+
+8. **Verify file existence before recommending it from memory** — a recall that names a specific file path, function, flag, or symbol is a claim about a *past* state of the repo. Before proposing to use, backport, or refer to it, **read the file** (or grep for the symbol) and confirm it still exists with the shape you remember. Renames, deletes, and refactors invalidate memories silently and the only safe thing to do is re-verify at the moment of recommendation.
+
+   *Concrete example:* You remember a `lib/cache.ts` helper called `dedupeByKey(items, fn)` from earlier in the project and you're about to recommend it. **Before** suggesting it: read `src/lib/cache.ts`, confirm `dedupeByKey` is still exported, and confirm its signature still matches the call site you have in mind. If the file moved to `src/lib/utils/dedupe.ts` or the function was renamed to `uniqueBy`, the recommendation is wrong even though the *idea* was right. Recommending stale memories costs more cycles than the recall saves.
+
+9. **Expand-migrate-contract for schema changes** — never ship a destructive schema change (column drop, rename, type change, NOT NULL on existing data) in a single PR. Split it across deploys:
 
    1. **Expand:** add the new column/table alongside the old one. Deploy. Both old and new code paths work.
    2. **Migrate:** backfill data into the new shape. Switch reads and writes to the new column. Deploy.
@@ -67,19 +75,19 @@ We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-
 
    **Pre-launch corollary:** while you have no real users and the dev DB is fully reseedable, drop the ceremony — reseed freely, rename columns in one PR, do whatever shape changes the design needs. The rule kicks in the moment you have users you can't safely lose. Don't carry pre-launch complexity into post-launch ops, and don't carry post-launch ceremony back into pre-launch iteration.
 
-8. **No `any` types** — TypeScript strict mode is non-negotiable. Use proper generics, union types, or `unknown` with type guards. ESLint enforces `no-explicit-any`.
+10. **No `any` types** — TypeScript strict mode is non-negotiable. Use proper generics, union types, or `unknown` with type guards. ESLint enforces `no-explicit-any`.
 
-9. **No `console.log`** — use the structured logger at `src/lib/logger.ts`. ESLint enforces `no-console`. The logger produces JSON with timestamps and levels.
+11. **No `console.log`** — use the structured logger at `src/lib/logger.ts`. ESLint enforces `no-console`. The logger produces JSON with timestamps and levels.
 
-10. **All API responses use the envelope** — `{ success: true, data: T }` or `{ success: false, error: { message, code } }`. Use `ok()`, `created()`, `noContent()`, `handleError()` from `src/lib/api-response.ts`.
+12. **All API responses use the envelope** — `{ success: true, data: T }` or `{ success: false, error: { message, code } }`. Use `ok()`, `created()`, `noContent()`, `handleError()` from `src/lib/api-response.ts`.
 
-11. **Auth via `getAuth()` only** — never call `auth()` directly in route handlers. Always use `getAuth()` from `src/lib/auth/get-auth.ts` which handles both Clerk sessions and mobile JWT.
+13. **Auth via `getAuth()` only** — never call `auth()` directly in route handlers. Always use `getAuth()` from `src/lib/auth/get-auth.ts` which handles both Clerk sessions and mobile JWT.
 
-12. **Validate all inputs with Zod** — every API endpoint validates request body and query params with Zod schemas. Schemas live in `src/lib/validations/`. Never trust user input.
+14. **Validate all inputs with Zod** — every API endpoint validates request body and query params with Zod schemas. Schemas live in `src/lib/validations/`. Never trust user input.
 
-13. **Rate limit all endpoints** — use `checkRateLimit()` from `src/lib/rate-limit.ts`. Public endpoints get `publicRateLimiter`, write operations get `writeRateLimiter`, authenticated requests get `rateLimiter`.
+15. **Rate limit all endpoints** — use `checkRateLimit()` from `src/lib/rate-limit.ts`. Public endpoints get `publicRateLimiter`, write operations get `writeRateLimiter`, authenticated requests get `rateLimiter`.
 
-14. **Soft delete, never hard delete** — set `status = 'deleted'`, never `DELETE FROM`. All queries should filter out deleted records.
+16. **Soft delete, never hard delete** — set `status = 'deleted'`, never `DELETE FROM`. All queries should filter out deleted records.
 
 ## Labels
 
