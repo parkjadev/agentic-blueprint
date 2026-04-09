@@ -17,9 +17,11 @@ Reusable Claude Code configuration templates and GitHub project bootstrap files.
   - `ISSUE_TEMPLATE/docs.yml` — Documentation template
   - `ISSUE_TEMPLATE/config.yml` — Issue picker configuration (disables blank issues)
   - `pull_request_template.md` — Default PR template (linked issue, test plan, rollback)
-- `scripts/` — One-shot bootstrap scripts for a fresh GitHub repo
+- `scripts/` — Bootstrap and operational scripts for a GitHub repo
   - `setup-branch-protection.sh` — Locks down `main` (squash-only, required CI, enforce_admins=true)
+  - `unblock-protection.sh` — Sanctioned escape hatch — temporarily disables enforce_admins with auto-restore
   - `setup-labels.sh` — Creates the `type:*` / `scope:*` / status label taxonomy
+  - `gh-backfill-issues.sh` — Retroactively create closed issues from a manifest (for repos that adopted issue-first discipline late)
 
 ## Bootstrapping a fresh repo
 
@@ -36,3 +38,25 @@ cp -R claude-config/github/. .github/
 
 # 3. Customise CLAUDE.md (env URLs, region, project-specific rules)
 ```
+
+## Back-filling issues on an existing project
+
+If you're adopting agentic-blueprint on a repo that already has commit history and you want to back-fill issues to satisfy Hard Rule #2 ("issue before branch"), use `gh-backfill-issues.sh` with a manifest:
+
+```bash
+# manifest.txt — one issue per line
+#   <type>|<scope>|<title>|<commit-sha>|<body-file or ->
+cat > manifest.txt <<'EOF'
+feature|workflow|feat: add label taxonomy bootstrap script|abc1234|-
+chore|workflow|chore: scrub hardcoded brand references|def5678|-
+docs|workflow|docs: rewrite deployment template|9012abc|-
+EOF
+
+# Dry-run first to preview
+DRY_RUN=1 ./claude-config/scripts/gh-backfill-issues.sh manifest.txt
+
+# Run for real
+./claude-config/scripts/gh-backfill-issues.sh manifest.txt
+```
+
+Idempotent — re-running with the same manifest skips issues whose titles already exist.
