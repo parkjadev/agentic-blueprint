@@ -32,6 +32,16 @@ export const publicRateLimiter = new Ratelimit({
   prefix: 'ratelimit:public',
 });
 
+// Login / auth attempt limit: 5 requests per 15 minutes per IP.
+// Intentionally much stricter than the general rate limiter — brute-force
+// login attempts are the #1 reason to have per-endpoint limits.
+export const loginRateLimiter = new Ratelimit({
+  redis,
+  limiter: Ratelimit.slidingWindow(5, '900 s'),
+  analytics: true,
+  prefix: 'ratelimit:login',
+});
+
 export async function checkRateLimit(
   identifier: string,
   limiter: Ratelimit = rateLimiter,

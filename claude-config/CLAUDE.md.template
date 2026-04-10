@@ -111,7 +111,7 @@ These modules ship in `src/lib/*` — **reach for them before writing new helper
 | Module | Path | Purpose |
 |---|---|---|
 | **Structured logger** | `src/lib/logger.ts` | JSON logger with timestamps/levels. Replaces `console.log` (which is lint-banned). |
-| **Rate limit** | `src/lib/rate-limit.ts` | Upstash sliding-window limiters: `publicRateLimiter`, `writeRateLimiter`, `rateLimiter`. Use `checkRateLimit()` from every endpoint. |
+| **Rate limit** | `src/lib/rate-limit.ts` | Upstash sliding-window limiters: `publicRateLimiter`, `writeRateLimiter`, `rateLimiter`, `loginRateLimiter` (5 req / 15 min). Use `checkRateLimit()` from every endpoint. |
 | **Request context** | `src/lib/request-context.ts` | AsyncLocalStorage-backed `getRequestContext()` that returns `{ ip, userAgent, requestId }` from anywhere in the call stack. |
 | **Mobile JWT** | `src/lib/mobile-jwt.ts` | `signMobileJwt()` / `verifyMobileJwt()` (jose) for the mobile auth path. |
 | **API response envelope** | `src/lib/api-response.ts` | `ok()`, `created()`, `noContent()`, `handleError()`, `ApiError`. All API routes go through these — **do not** return raw `NextResponse.json()`. |
