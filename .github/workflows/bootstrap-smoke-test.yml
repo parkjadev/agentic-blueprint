@@ -1,0 +1,52 @@
+name: Bootstrap Smoke Test
+
+# Meta-CI: tests that the agentic-blueprint template, when scaffolded into a
+# fresh directory following the README quickstart, produces a project that
+# passes check:all. This is the dogfooding harness for the blueprint itself.
+#
+# Runs on every PR to the blueprint repo and on every push to main.
+# Does NOT run on the starters' own CI (those have their own workflows).
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bootstrap:
+    name: Scaffold + Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: starters/nextjs/pnpm-lock.yaml
+
+      # Flutter is optional — set up only if pubspec.yaml exists.
+      - name: Setup Flutter
+        if: hashFiles('starters/flutter/pubspec.yaml') != ''
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: stable
+          cache: true
+
+      - name: Run bootstrap smoke test
+        run: ./claude-config/scripts/bootstrap-smoke-test.sh
