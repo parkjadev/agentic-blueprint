@@ -124,7 +124,17 @@ Hard rule: **issue before branch**. Every piece of work — feature, fix, chore,
 - Are there any assumptions you disagree with?
 - Is it doing more than what was specified?
 
-**Exit criteria:** Plan reviewed and approved
+#### Plan-mode patterns
+
+Three patterns separate cheap plans from expensive ones. The first two come from the auto-memory system but apply to plans the same way; the third is plan-specific:
+
+1. **Pre-flight existence checks.** Every line in the plan that says *"X is missing"* or *"needs Y"* must be confirmed by a `Read` against the actual file before it enters the plan. Plans built from memory and assumption are 50% wrong on average — half the items downgrade once you actually read the current state. The fix is cheap: read the files first. See also Hard Rule #8 ("verify file existence before recommending it from memory") in `CLAUDE.md.template`.
+2. **Reference files by full path.** Every file the plan touches gets named by its repo-relative path (`src/lib/auth/get-auth.ts`), not by description (`the auth helper`). Implementation phase shouldn't have to re-grep to find the file the plan was talking about.
+3. **Reference the issue templates and label vocabulary.** When the plan calls for filing implementation issues, it should already know the type/scope label for each one rather than re-discovering them. The label set is in `CLAUDE.md.template` Labels section; the issue templates are in `claude-config/github/ISSUE_TEMPLATE/`. A plan that says "file `feat/profile` issue with `type:feature, scope:dashboard`" is ready to execute; "file an issue for the profile feature" is not.
+
+Every approved plan should also include a **"What's already in place (excluded from this plan)"** section near the top — see the `docs/templates/technical-spec.md` template. This section saves the implementation phase from re-exploring the same code the plan author already read, and prevents the LLM from re-suggesting work that's already done.
+
+**Exit criteria:** Plan reviewed and approved, all "missing/needs" claims verified by `Read`, all critical files referenced by full path
 
 ### Phase 6: Code
 
