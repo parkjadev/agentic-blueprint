@@ -173,6 +173,8 @@ Request arrives
 - `src/lib/auth-routing.ts` — public routes, auth routes, role-based access
 - `src/middleware.ts` — Clerk middleware, protects non-public routes
 
+**Webhook verification:** `svix` is pre-installed as a dependency. When you implement `src/app/api/webhooks/clerk/route.ts`, use `svix`'s `Webhook` class to verify the signature before processing the payload — never roll your own HMAC check. See [Clerk's svix integration guide](https://clerk.com/docs/integrations/webhooks/sync-data).
+
 **Roles:** `admin`, `user` (defined in `src/types/index.ts`, stored on user record)
 
 **Webhook sync:** Clerk fires `user.created` / `user.updated` / `user.deleted` → `POST /api/webhooks/clerk` → `resolveClerkUser()` upserts local record.
