@@ -130,7 +130,31 @@ TODO: Describe UI changes or write "No UI changes"
 
 <!-- How will this be deployed? Feature flag? Staged rollout? Big bang?
      Include: preview verification steps, production monitoring, rollback trigger.
-     Reminder: GitHub Flow — preview-per-PR is your "staging environment". -->
+     Reminder: GitHub Flow — preview-per-PR is your "staging environment".
+
+     Each phase below ends with an inline status marker: <!-- status: pending -->
+     When the PR for that phase lands, run:
+       claude-config/scripts/update-plan-status.sh <this-file> "Phase N" <pr-number>
+     and the marker becomes <!-- status: shipped (#PR) -->.
+     This is how the spec stays in sync with what's actually been built.
+     See claude-config/hooks/post-merge.md for the hook config. -->
+
+### Phase 1: Schema and types <!-- status: pending -->
+
+- TODO: data model migration
+- TODO: shared TypeScript types
+
+### Phase 2: API <!-- status: pending -->
+
+- TODO: route handlers
+- TODO: Zod validation
+- TODO: rate limiting
+
+### Phase 3: UI <!-- status: pending -->
+
+- TODO: pages and components
+
+### Production rollout
 
 1. **Preview:** PR opens → Vercel builds preview + Neon preview DB branch → run smoke tests against the preview URL
 2. **Production:** Squash-merge to `main` → Vercel auto-deploys → verify `/api/health` and key endpoints
