@@ -13,7 +13,15 @@ Step-by-step guide for building a new feature: from a GitHub issue through to a 
 
 Earlier versions of this blueprint prescribed a two-tier workflow: `feature → PR to staging → merge → PR to main → merge`. **Do not use that pattern.**
 
-GitHub's "Rebase and merge" rewrites commit SHAs at merge time. The commits that land on `staging` are not the same objects as the commits that land on `main`, so the two branches drift apart on every merge. Once they drift, every promotion PR shows phantom conflicts and you spend more time reconciling branches than shipping. This is the failure mode that informed the rewrite — don't relive it.
+**Every** GitHub merge button rewrites SHAs in some form:
+
+- **Squash merge** creates one new commit on the target branch with a new SHA. The original commits on the source branch are not the same objects as the squashed result.
+- **Rebase and merge** does *not* fast-forward — it creates new commits with new committer signatures. Even though the diffs match, the SHAs are different.
+- **Create a merge commit** creates a merge node and a new commit object.
+
+The only true fast-forward is `git push --ff-only` from the CLI, which the GitHub UI literally cannot perform. So any flow that runs two long-lived branches and uses the GitHub UI to promote between them will diverge on every release, regardless of which merge button you click. The two branches turn into phantom-conflict generators and you spend more time reconciling them than shipping. This is the failure mode that informed the rewrite — don't relive it.
+
+The fix is structural, not button-choice: **don't run two long-lived branches.** With one branch (`main`), the SHA-rewriting is harmless because there's no second branch to keep in sync.
 
 **Use this instead:** branch from `main`, open a PR to `main`, let Vercel build a preview deployment for that PR, smoke-test the preview, then merge. If you need a shared environment for QA or stakeholder review, use a long-lived **Vercel preview URL** — never a long-lived branch.
 

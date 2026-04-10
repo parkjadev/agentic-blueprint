@@ -34,7 +34,7 @@ We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-
 
 **Vercel region:** `TODO: your-region` (set in `vercel.json`)
 
-> **Merge UI gotcha:** always use **squash merge**, never "Rebase and merge". GitHub's rebase merge rewrites commit SHAs at merge time. With a single long-lived branch this is harmless, but it's the landmine that makes any two-tier branch flow drift.
+> **Merge UI gotcha — every GitHub merge button rewrites commit SHAs.** Squash merge creates one new commit on the target branch; rebase merge creates new commits with new committer signatures; merge-commit creates a merge node. **None of them are true fast-forwards.** Only `git push --ff-only` from CLI is. The single-branch model is what makes this safe — with one long-lived branch you don't care about SHA rewriting because there's no second branch to keep in sync. Reintroduce a second long-lived branch and you immediately re-create the divergence problem regardless of which merge button you click.
 
 ## Hard Rules
 
@@ -42,9 +42,9 @@ We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-
 
 2. **Issue before branch** — every change starts as a GitHub issue, even one-line fixes. Branch names must encode the issue number: `<type>/<issue-number>-<slug>` where `<type>` is one of `feat`, `fix`, `chore`, `docs`. Example: `feat/42-user-profile`. The commit footer references the issue (`Refs: #42`) and the PR body uses `Closes #42`. No exceptions — including for hotfixes.
 
-3. **One long-lived branch (`main`)** — use GitHub Flow. Never create a `staging`, `develop`, or `release/*` long-lived branch. If you need a shared environment for QA, use a Vercel preview alias. Long-lived secondary branches drift on every merge because GitHub's rebase-merge rewrites commit SHAs.
+3. **One long-lived branch (`main`)** — use GitHub Flow. Never create a `staging`, `develop`, or `release/*` long-lived branch. If you need a shared environment for QA, use a Vercel preview alias. Long-lived secondary branches drift on every merge because **every** GitHub merge button rewrites SHAs in some form, and the only true fast-forward is `git push --ff-only` from CLI.
 
-4. **Squash-merge PRs to `main`** — never use "Rebase and merge" or "Create a merge commit" in the GitHub UI. Squash merge keeps `main` linear and audit-friendly, and avoids the SHA-rewrite drift that breaks two-tier flows.
+4. **Any merge between two long-lived branches diverges them.** Squash merge creates a new commit on the target branch with a new SHA. Rebase merge creates new commits with new committer signatures. Merge-commit creates a merge node and a new commit object. **None of these are true fast-forwards** — only `git push --ff-only` from CLI is. Therefore: do not run two long-lived branches at all. With a single long-lived branch (`main`) this rule is automatic — squash merge is fine because there is no second branch to keep in sync. Use squash merge as the default merge button (it produces the cleanest linear history) but remember that the *real* protection is the single-branch model, not the merge button choice.
 
 5. **Plan before code** — always use the plan → approve → execute pattern. Never write code without an approved plan. Never skip the plan step.
 

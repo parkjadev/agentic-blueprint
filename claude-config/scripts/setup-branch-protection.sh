@@ -13,6 +13,17 @@
 #   - Linear history required (forces squash merges)
 #   - Force pushes blocked
 #   - Deletion blocked
+#   - Repo-level merge buttons: squash-only, no merge commit, no rebase merge.
+#     We disable rebase merge because despite the name it does NOT
+#     fast-forward — it creates new commits with new committer signatures.
+#     We disable merge commit because it creates merge nodes that pollute
+#     a linear history. Squash merge is the only sane default.
+#
+#     None of these merge buttons matter much when there's only one
+#     long-lived branch (`main`) — the *real* protection against SHA drift
+#     is the single-branch model. Squash-only is just the cleanest output.
+#     The moment you add a second long-lived branch, every merge button
+#     diverges them; see Hard Rule #4 in CLAUDE.md.template.
 #   - enforce_admins = true (admins cannot bypass — non-negotiable)
 #
 #     Why this is non-negotiable: setting it to false "for emergencies" is the
