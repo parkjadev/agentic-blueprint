@@ -48,6 +48,8 @@ We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-
 
 5. **Plan before code** — always use the plan → approve → execute pattern. Never write code without an approved plan. Never skip the plan step.
 
+   **Plan-mode hygiene:** every plan must (a) confirm "missing/needs verification" claims against the actual files via a `Read`, not from memory; (b) reference critical files by full repo-relative path so the implementation phase doesn't re-grep; (c) reference the issue templates and label vocabulary (`type:*`/`scope:*`) so issues can be filed without re-discovery; (d) include a "What's already in place (excluded from this plan)" section near the top — see `docs/templates/technical-spec.md`. See `docs/guides/agentic-workflow.md` Phase 5 for the worked patterns.
+
 6. **Spec-driven development** — every feature starts as a spec document in `docs/specs/` before any code is written. Specs are committed to the repo.
 
 7. **No business logic in chores** — a `chore:` PR must contain only the chore. If you're upgrading a dependency and notice an unrelated bug in the file you're touching, **file a separate issue and address it in its own PR**. Do not bundle bug fixes, refactors, or feature work into a chore commit. Reviewers should be able to skim a chore PR in 30 seconds and merge with confidence; unrelated changes destroy that property and make bisection painful.

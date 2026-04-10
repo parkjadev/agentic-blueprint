@@ -15,6 +15,22 @@
 
 TODO: Brief description of the feature and its purpose
 
+## What's Already in Place (excluded from this plan)
+
+<!-- The most expensive plan is one that re-discovers existing code. Before
+     filling out the rest of this spec, read the relevant src/lib/* modules
+     and list what's already built so the implementation phase doesn't
+     re-explore. Every line below should be backed by a Read of an actual
+     file — not a memory recall. See the Plan-mode patterns in
+     docs/guides/agentic-workflow.md Phase 5 for the rationale. -->
+
+| Capability | Where it lives | Notes |
+|---|---|---|
+| TODO: e.g. Dual-mode auth | `src/lib/auth/get-auth.ts:1-80` | Already handles Clerk + JWT — no work needed |
+| TODO: e.g. Rate limit factory | `src/lib/rate-limit.ts:15-60` | Has 3 limiters, need to add a 4th for this feature |
+
+**Excluded from scope:** TODO: list capabilities that look related but are explicitly *not* being touched in this plan.
+
 ## Data Model Changes
 
 <!-- New tables, columns, enums, indexes, or constraints.
