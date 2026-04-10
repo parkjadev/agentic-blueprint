@@ -9,6 +9,7 @@ Reusable Claude Code configuration templates and GitHub project bootstrap files.
 - `memory-guidelines.md` — How to use Claude memory effectively
 - `hooks/` — Claude Code hook patterns
   - `pre-commit.md` — Pre-commit automation patterns
+  - `post-merge.md` — Post-merge automation (plan status markers, doc sweep prompt)
   - `post-deploy.md` — Post-deploy verification patterns
 - `github/` — GitHub project metadata (copy into a new repo's `.github/`)
   - `ISSUE_TEMPLATE/feature.yml` — Feature request template
@@ -23,6 +24,7 @@ Reusable Claude Code configuration templates and GitHub project bootstrap files.
   - `unblock-protection.sh` — Sanctioned escape hatch — temporarily disables enforce_admins with auto-restore
   - `setup-labels.sh` — Creates the `type:*` / `scope:*` / status label taxonomy
   - `gh-backfill-issues.sh` — Retroactively create closed issues from a manifest (for repos that adopted issue-first discipline late)
+  - `update-plan-status.sh` — Update inline status markers in plan files when a phase ships (invoked from `hooks/post-merge.md`)
 
 ## Bootstrapping a fresh repo
 
