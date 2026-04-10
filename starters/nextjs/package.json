@@ -19,6 +19,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.12.0",
     "@neondatabase/serverless": "^0.10.4",
+    "@t3-oss/env-nextjs": "^0.11.1",
     "@upstash/ratelimit": "^2.0.5",
     "@upstash/redis": "^1.34.3",
     "@tanstack/react-query": "^5.64.1",
