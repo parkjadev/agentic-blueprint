@@ -1,10 +1,21 @@
 name: CI
 
+# Web-only CI — path-filtered to ignore mobile changes.
+# If this repo also has a mobile/ or starters/flutter/ directory, a separate
+# Flutter CI workflow handles those (see flutter.yml). Adjust the paths-ignore
+# below to match your layout after copying the starter to a fresh repo.
+
 on:
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'mobile/**'
+      - 'starters/flutter/**'
   push:
     branches: [main]
+    paths-ignore:
+      - 'mobile/**'
+      - 'starters/flutter/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
