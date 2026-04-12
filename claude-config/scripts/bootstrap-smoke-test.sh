@@ -80,8 +80,12 @@ fi
 
 cd "${TMPDIR}"
 
-echo "→ pnpm install --frozen-lockfile"
-if ! pnpm install --frozen-lockfile 2>&1; then
+# No --frozen-lockfile: the starter is a template and doesn't ship a
+# pnpm-lock.yaml. The lockfile gets generated on first install — that's
+# what we're simulating here. After the user commits the generated lockfile,
+# their own CI should use --frozen-lockfile for reproducibility.
+echo "→ pnpm install"
+if ! pnpm install 2>&1; then
   echo "FAIL: pnpm install failed." >&2
   exit 1
 fi
