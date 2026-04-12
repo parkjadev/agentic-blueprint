@@ -1,4 +1,4 @@
-import type { AuthUser, UserRole, UserStatus } from '@/types';
+import type { AuthUser } from '@/types';
 
 /**
  * Seed factory for test data.
