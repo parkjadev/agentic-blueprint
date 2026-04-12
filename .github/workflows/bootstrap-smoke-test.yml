@@ -36,8 +36,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
-          cache-dependency-path: starters/nextjs/pnpm-lock.yaml
+          # No pnpm cache here — the lockfile is nested inside starters/nextjs/
+          # and the bootstrap script creates a tmpdir with its own pnpm install.
+          # Repo-level caching doesn't help this workflow.
 
       # Flutter is optional — set up only if pubspec.yaml exists.
       - name: Setup Flutter
