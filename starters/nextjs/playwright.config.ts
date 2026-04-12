@@ -5,7 +5,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // Only set workers in CI (1 worker for determinism). Omit entirely
+  // otherwise so Playwright uses its default (half of CPU cores).
+  // Can't use `undefined` here because exactOptionalPropertyTypes is on.
+  ...(process.env.CI ? { workers: 1 } : {}),
   reporter: 'html',
   use: {
     baseURL: 'http://localhost:3000',
