@@ -20,13 +20,20 @@ export async function uploadFile(
 
   const url = `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${env.R2_BUCKET_NAME}/${key}`;
 
+  // Convert Buffer to Uint8Array — Node.js fetch types don't accept Buffer
+  // in the body parameter directly (Buffer is missing URLSearchParams methods
+  // that BodyInit requires). Uint8Array is the standard portable type.
+  const fetchBody: BodyInit = Buffer.isBuffer(body)
+    ? new Uint8Array(body)
+    : body;
+
   const response = await fetch(url, {
     method: 'PUT',
     headers: {
       'Content-Type': contentType,
       Authorization: `Bearer ${env.R2_ACCESS_KEY_ID}:${env.R2_SECRET_ACCESS_KEY}`,
     },
-    body,
+    body: fetchBody,
   });
 
   if (!response.ok) {
