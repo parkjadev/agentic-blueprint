@@ -65,7 +65,6 @@ export async function POST(request: NextRequest) {
       throw ApiError.unauthorised();
     }
 
-    const { ip } = await getRequestContext();
     const { success } = await checkRateLimit(`${user.id}:write`, writeRateLimiter);
     if (!success) {
       throw ApiError.rateLimited();

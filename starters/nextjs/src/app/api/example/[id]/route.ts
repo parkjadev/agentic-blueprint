@@ -6,7 +6,7 @@ import { projects } from '@/lib/db/schema';
 import { getAuth } from '@/lib/auth/get-auth';
 import { ok, noContent, handleError, ApiError } from '@/lib/api-response';
 import { uuidSchema, nameSchema } from '@/lib/validations';
-import { getRequestContext } from '@/lib/request-context';
+
 import { checkRateLimit, writeRateLimiter } from '@/lib/rate-limit';
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -69,7 +69,6 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       throw ApiError.unauthorised();
     }
 
-    const { ip } = await getRequestContext();
     const { success } = await checkRateLimit(`${user.id}:write`, writeRateLimiter);
     if (!success) {
       throw ApiError.rateLimited();
@@ -118,7 +117,6 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       throw ApiError.unauthorised();
     }
 
-    const { ip } = await getRequestContext();
     const { success } = await checkRateLimit(`${user.id}:write`, writeRateLimiter);
     if (!success) {
       throw ApiError.rateLimited();
