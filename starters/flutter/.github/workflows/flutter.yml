@@ -33,7 +33,6 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version-file: starters/flutter/pubspec.yaml
           channel: stable
           cache: true
 

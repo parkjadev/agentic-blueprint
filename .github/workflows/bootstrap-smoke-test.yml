@@ -45,7 +45,6 @@ jobs:
         if: hashFiles('starters/flutter/pubspec.yaml') != ''
         uses: subosito/flutter-action@v2
         with:
-          flutter-version-file: starters/flutter/pubspec.yaml
           channel: stable
           cache: true
 
