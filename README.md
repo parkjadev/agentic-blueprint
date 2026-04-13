@@ -196,15 +196,21 @@ Drop-in configuration for any project using Claude Code.
 
 | File | Purpose |
 |---|---|
-| [CLAUDE.md.template](claude-config/CLAUDE.md.template) | Full project guide — stack, hard rules (issue-first, GitHub Flow, expand-migrate-contract), patterns, labels |
+| [CLAUDE.md.template](claude-config/CLAUDE.md.template) | Full project guide — 16 Hard Rules, env matrix, Reusable Infrastructure cheat sheet, plan-mode patterns, labels |
 | [settings.local.json.template](claude-config/settings.local.json.template) | Categorised permissions — read, pnpm, git, gh, curl |
 | [memory-guidelines.md](claude-config/memory-guidelines.md) | When to save memories, how to keep CLAUDE.md current, anti-patterns |
 | [hooks/pre-commit.md](claude-config/hooks/pre-commit.md) | Pre-commit patterns — full check suite, fast lint, auto-format |
 | [hooks/post-deploy.md](claude-config/hooks/post-deploy.md) | Post-deploy patterns — health check, smoke test, Vercel MCP status |
+| [hooks/post-merge.md](claude-config/hooks/post-merge.md) | Post-merge patterns — plan status marker updates, doc-sweep prompt |
 | [github/ISSUE_TEMPLATE/](claude-config/github/ISSUE_TEMPLATE/) | Issue templates: feature, bug, chore, docs (+ blank-issue picker config) |
 | [github/pull_request_template.md](claude-config/github/pull_request_template.md) | PR template with linked issue, test plan, schema-change checklist, rollback |
-| [scripts/setup-branch-protection.sh](claude-config/scripts/setup-branch-protection.sh) | Locks down `main`: squash-only, required CI, linear history, `enforce_admins=true` |
+| [github/workflows/auto-label.yml](claude-config/github/workflows/auto-label.yml) | GitHub Action that auto-applies `scope:*` label from the issue form dropdown |
+| [scripts/setup-branch-protection.sh](claude-config/scripts/setup-branch-protection.sh) | Locks down `main`: squash-only, required CI, linear history, `enforce_admins=true`. `SOLO=1` for solo devs. |
+| [scripts/unblock-protection.sh](claude-config/scripts/unblock-protection.sh) | Temporary `enforce_admins` bypass with 60-second auto-restore — the sanctioned emergency escape hatch |
 | [scripts/setup-labels.sh](claude-config/scripts/setup-labels.sh) | Bootstraps the `type:*` / `scope:*` / status label taxonomy |
+| [scripts/gh-backfill-issues.sh](claude-config/scripts/gh-backfill-issues.sh) | Retroactive issue creator from a manifest file (for repos that adopted issue-first discipline late) |
+| [scripts/update-plan-status.sh](claude-config/scripts/update-plan-status.sh) | Updates inline `<!-- status: pending -->` markers in plan files when a phase ships |
+| [scripts/bootstrap-smoke-test.sh](claude-config/scripts/bootstrap-smoke-test.sh) | Dogfooding harness — scaffolds the template into a tmpdir and runs check:all against both starters |
 
 ---
 
@@ -362,13 +368,15 @@ agentic-blueprint/
 │       ├── lib/features/       # Auth, home, profile, example CRUD
 │       ├── lib/shared/         # Models, widgets, extensions
 │       └── test/               # Unit tests
-├── claude-config/              # Claude Code configuration templates
-│   ├── CLAUDE.md.template      # Project guide template
+├── claude-config/              # Claude Code configuration + GitHub bootstrap
+│   ├── CLAUDE.md.template      # Project guide (16 Hard Rules, Reusable Infrastructure, plan patterns)
 │   ├── settings.local.json.template
 │   ├── memory-guidelines.md
-│   ├── hooks/                  # Pre-commit and post-deploy patterns
-│   ├── github/                 # Issue + PR templates (copy into .github/)
-│   └── scripts/                # setup-branch-protection.sh, setup-labels.sh
+│   ├── hooks/                  # Pre-commit, post-merge, post-deploy patterns
+│   ├── github/                 # Issue + PR templates + auto-label workflow
+│   └── scripts/                # 6 bootstrap/operational scripts
+├── .github/workflows/          # Meta-CI for the blueprint itself
+│   └── bootstrap-smoke-test.yml
 └── README.md
 ```
 
