@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+
+- **Supabase as sole backend** — migrated from Neon + Clerk + Upstash + R2 to Supabase (PostgreSQL, Auth, Storage). Required services: 3 → 1. Required env vars: 6 → 4 (#71)
+- **Unified auth** — Supabase Auth replaces Clerk (web) + custom JWT (mobile). Single `getAuth()` path for both platforms via `@supabase/ssr` Bearer token forwarding (#71)
+- **Flutter auth** — `supabase_flutter` SDK replaces custom JWT + `flutter_secure_storage`. Router wired to actual feature screens (#71)
+- **Rate limiting** — in-memory sliding window with inline eviction replaces Upstash Redis (#71)
+- **Storage** — Supabase Storage replaces Cloudflare R2 (#71)
+
+### Added
+
+- Custom sign-in/sign-up pages with email confirmation flow and Suspense boundary (#71)
+- OAuth callback handler at `/auth/callback` (#71)
+- DB trigger `handle_new_user()` for automatic profile creation on sign-up (#71)
+- Supabase init error handling in Flutter `main.dart` (#71)
+- `.gitignore` entries for build artefacts (#71)
+
+### Removed
+
+- `@clerk/nextjs`, `@neondatabase/serverless`, `@upstash/ratelimit`, `@upstash/redis`, `jose`, `svix` packages (#71)
+- `flutter_secure_storage` package (#71)
+- `mobile-jwt.ts`, `resolve-clerk-user.ts`, `clerk.d.ts`, `auth_guard.dart`, `secure_storage.dart` (#71)
+- Clerk catch-all auth pages (`[[...sign-in]]`, `[[...sign-up]]`) (#71)
+
 ## [2.1.0] — 2026-04-13
 
 ### Added
