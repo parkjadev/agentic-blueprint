@@ -43,6 +43,14 @@
 #   ./setup-branch-protection.sh owner/repo             # explicit repo, default branch 'main'
 #   ./setup-branch-protection.sh owner/repo my-branch   # explicit repo + branch
 #   REQUIRED_CHECK="My Check Name" ./setup-branch-protection.sh
+#   SOLO=1 ./setup-branch-protection.sh               # no approval required (solo dev)
+#
+# Environment variables:
+#   REQUIRED_CHECK — CI job name (default: "Type Check, Lint & Test")
+#   SOLO           — set to 1 to skip the approval requirement (for
+#                    single-contributor repos where you can't approve
+#                    your own PRs). enforce_admins and all other
+#                    protections remain on.
 #
 # Requirements:
 #   - gh CLI authenticated with admin scope on the target repo
@@ -53,6 +61,7 @@ set -euo pipefail
 REPO="${1:-}"
 BRANCH="${2:-main}"
 REQUIRED_CHECK="${REQUIRED_CHECK:-Type Check, Lint & Test}"
+SOLO="${SOLO:-0}"
 
 if [[ -z "${REPO}" ]]; then
   if ! REPO="$(gh repo view --json nameWithOwner --jq .nameWithOwner 2>/dev/null)"; then
@@ -61,8 +70,14 @@ if [[ -z "${REPO}" ]]; then
   fi
 fi
 
+APPROVALS=1
+if [[ "${SOLO}" == "1" ]]; then
+  APPROVALS=0
+fi
+
 echo "Configuring branch protection on ${REPO}@${BRANCH}"
 echo "  required check: ${REQUIRED_CHECK}"
+echo "  approvals required: ${APPROVALS}$(if [[ "${SOLO}" == "1" ]]; then echo " (solo mode)"; fi)"
 echo
 
 # The branch protection API is finicky about field shapes. We send the full
@@ -81,7 +96,7 @@ gh api \
   "required_pull_request_reviews": {
     "dismiss_stale_reviews": true,
     "require_code_owner_reviews": false,
-    "required_approving_review_count": 1,
+    "required_approving_review_count": ${APPROVALS},
     "require_last_push_approval": false
   },
   "restrictions": null,
