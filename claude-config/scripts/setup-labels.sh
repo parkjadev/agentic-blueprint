@@ -40,7 +40,7 @@ labels=(
   "scope:dashboard|fbca04|Web dashboard / admin UI"
   "scope:mobile|fbca04|Flutter mobile companion"
   "scope:schema|fbca04|Database schema, migrations, Drizzle"
-  "scope:auth|fbca04|Clerk, JWT, middleware, roles"
+  "scope:auth|fbca04|Supabase Auth, middleware, roles"
   "scope:workflow|fbca04|CI, hooks, build, scripts, repo plumbing"
 
   # status — triage state

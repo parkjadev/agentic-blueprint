@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { createClient } from '@/lib/supabase/server';
 import { logger } from '@/lib/logger';
 
 type ActionResult<T> =
@@ -24,19 +24,22 @@ export async function action<T>(
 
 /**
  * Wrapper for server actions that require authentication.
- * Resolves the current user via Clerk before executing the action.
+ * Resolves the current user via Supabase before executing the action.
  */
 export async function authAction<T>(
   fn: (userId: string) => Promise<T>,
 ): Promise<ActionResult<T>> {
   try {
-    const { userId } = await auth();
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
-    if (!userId) {
+    if (!user) {
       return { success: false, error: 'Unauthenticated' };
     }
 
-    const data = await fn(userId);
+    const data = await fn(user.id);
     return { success: true, data };
   } catch (error) {
     const message = error instanceof Error ? error.message : 'An unexpected error occurred';

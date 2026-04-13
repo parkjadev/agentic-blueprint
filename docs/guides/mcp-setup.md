@@ -161,7 +161,7 @@ From the Claude mobile app:
 
 ### Best Practices
 
-- **Be specific.** "Fix the bug" is too vague. "Fix the 401 error on GET /api/projects when using mobile JWT — the token verification is checking the wrong claim" is actionable.
+- **Be specific.** "Fix the bug" is too vague. "Fix the 401 error on GET /api/projects when using Supabase Auth — the session verification is not refreshing expired tokens" is actionable.
 - **Reference files and issues.** "See issue #42 and the spec at docs/specs/auth/auth-spec.md" gives Claude context.
 - **Set clear acceptance criteria.** "The PR should include a regression test and all checks should pass."
 - **Don't use for interactive work.** If the task needs back-and-forth, wait until you're at your desk.

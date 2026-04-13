@@ -116,7 +116,7 @@ Read through each spec in your editor. Check:
 
 - [ ] Data model uses correct Drizzle syntax and follows existing patterns
 - [ ] API endpoints follow the `ApiResponse<T>` envelope
-- [ ] Auth matches the dual-mode pattern (Clerk + JWT)
+- [ ] Auth matches the Supabase Auth pattern
 - [ ] Testing strategy covers unit, integration, and E2E where needed
 - [ ] Rollout plan includes preview-deploy validation and rollback trigger
 - [ ] No domain-specific business logic leaking from other projects

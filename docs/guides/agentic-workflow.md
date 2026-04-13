@@ -314,7 +314,7 @@ For your first feature using this workflow:
 - [ ] Spec templates are in `docs/templates/`
 - [ ] CI pipeline is configured (`.github/workflows/ci.yml`)
 - [ ] Vercel project is connected
-- [ ] Clerk, Neon, and Upstash are configured
+- [ ] Supabase is configured (Auth, PostgreSQL, Storage)
 - [ ] You've read `claude-surfaces.md`
 
 Then follow the loop: Ideate → Document → Issue → Branch → Plan → Code → Test → PR → Deploy → Clean up.

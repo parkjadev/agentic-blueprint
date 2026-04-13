@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/register_screen.dart';
+import '../../features/example/presentation/example_detail_screen.dart';
+import '../../features/example/presentation/example_list_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
 import '../auth/auth_provider.dart';
 import 'routes.dart';
 
@@ -38,64 +44,35 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Auth routes
       GoRoute(
         path: Routes.login,
-        builder: (context, state) => const _PlaceholderScreen(title: 'Login'),
-        // TODO: Replace with LoginScreen from features/auth/
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: Routes.register,
-        builder: (context, state) =>
-            const _PlaceholderScreen(title: 'Register'),
-        // TODO: Replace with RegisterScreen from features/auth/
+        builder: (context, state) => const RegisterScreen(),
       ),
 
       // Main routes
       GoRoute(
         path: Routes.home,
-        builder: (context, state) => const _PlaceholderScreen(title: 'Home'),
-        // TODO: Replace with HomeScreen from features/home/
+        builder: (context, state) => const HomeScreen(),
       ),
       GoRoute(
         path: Routes.profile,
-        builder: (context, state) =>
-            const _PlaceholderScreen(title: 'Profile'),
-        // TODO: Replace with ProfileScreen from features/profile/
+        builder: (context, state) => const ProfileScreen(),
       ),
 
       // Example CRUD routes
       GoRoute(
         path: Routes.examples,
-        builder: (context, state) =>
-            const _PlaceholderScreen(title: 'Examples'),
-        // TODO: Replace with ExampleListScreen from features/example/
+        builder: (context, state) => const ExampleListScreen(),
       ),
       GoRoute(
         path: '/examples/:id',
         builder: (context, state) {
           final id = state.pathParameters['id']!;
-          return _PlaceholderScreen(title: 'Example $id');
-          // TODO: Replace with ExampleDetailScreen
+          return ExampleDetailScreen(id: id);
         },
       ),
     ],
   );
 });
-
-/// Placeholder screen — replace with actual feature screens.
-class _PlaceholderScreen extends StatelessWidget {
-  const _PlaceholderScreen({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(
-        child: Text(
-          '$title screen — replace with your implementation',
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-      ),
-    );
-  }
-}

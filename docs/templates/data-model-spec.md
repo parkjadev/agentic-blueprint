@@ -3,7 +3,7 @@
 **Author:** [Name]
 **Date:** [YYYY-MM-DD]
 **Status:** Draft | In Review | Approved
-**ORM:** Drizzle + Neon (serverless Postgres)
+**ORM:** Drizzle + Supabase PostgreSQL (connection via Supavisor pooler)
 
 ---
 
@@ -137,7 +137,7 @@ TODO: Define indexes
 
 - [ ] Migration is additive only (safe to roll back by dropping new objects)
 - [ ] No existing data is modified
-- [ ] Tested on Neon preview branch
+- [ ] Tested on Supabase dev project
 
 ## Seed Data
 

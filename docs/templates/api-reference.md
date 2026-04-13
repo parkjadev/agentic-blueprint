@@ -17,8 +17,8 @@ All authenticated endpoints accept one of:
 
 | Method | Mechanism | Header |
 |---|---|---|
-| Web (Clerk) | Session cookie | Automatic (set by Clerk) |
-| Mobile (JWT) | Bearer token | `Authorization: Bearer <token>` |
+| Web (Supabase Auth) | Session cookie | Automatic (set by `@supabase/ssr`) |
+| Mobile (Supabase Auth) | Bearer token | `Authorization: Bearer <token>` (via `supabase_flutter`) |
 
 Unauthenticated requests to protected endpoints return `401`.
 
@@ -77,32 +77,21 @@ Health check endpoint. Always public, no auth required.
 
 ---
 
-## Auth (Mobile)
+## Auth
 
-<!-- Endpoints for mobile JWT authentication. Web auth is handled entirely by Clerk. -->
-
-### `POST /api/auth/mobile/login`
-
-**Auth:** Public
-**Description:** Authenticate a mobile user and return a signed JWT.
-
-### `POST /api/auth/mobile/refresh`
-
-**Auth:** Bearer token (expired OK)
-**Description:** Refresh an expired JWT.
-
-TODO: Add mobile auth endpoints when implemented
+<!-- Supabase Auth handles both web and mobile authentication natively.
+     Web: @supabase/ssr manages session cookies.
+     Mobile: supabase_flutter handles sign-in, token refresh, and session persistence.
+     No custom auth endpoints are needed — the Supabase client SDKs communicate
+     directly with the Supabase Auth API. -->
 
 ---
 
-## Webhooks
+## User Sync
 
-### `POST /api/webhooks/clerk`
-
-**Auth:** Webhook signature (svix)
-**Description:** Receives Clerk user lifecycle events. Keeps local user table in sync.
-
-**Events handled:** `user.created`, `user.updated`, `user.deleted`
+<!-- User creation is handled by a PostgreSQL trigger (handle_new_user) on auth.users INSERT.
+     No webhook endpoint is needed — the trigger fires within the same transaction as sign-up.
+     users.id IS the Supabase Auth UUID (no separate external ID column). -->
 
 TODO: Add additional webhook endpoints (Stripe, Inngest, etc.)
 

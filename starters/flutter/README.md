@@ -7,8 +7,8 @@ Mobile companion starter with Riverpod state management, GoRouter navigation, an
 - Flutter (Material 3)
 - Riverpod + Hooks
 - GoRouter
-- Dio (HTTP client)
-- flutter_secure_storage (JWT)
+- Dio (HTTP client for Next.js API)
+- Supabase Auth (via supabase_flutter)
 - Freezed + json_serializable
 
 ## Setup

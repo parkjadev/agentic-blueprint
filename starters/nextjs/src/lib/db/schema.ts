@@ -14,22 +14,20 @@ export const userRoleEnum = pgEnum('user_role', ['admin', 'user']);
 export const userStatusEnum = pgEnum('user_status', ['active', 'suspended', 'deleted']);
 export const projectStatusEnum = pgEnum('project_status', ['active', 'archived', 'deleted']);
 
-// Users — synced from Clerk via webhook
+// Users — profile table keyed by Supabase Auth UID.
+// A database trigger on auth.users INSERT auto-creates the row (see supabase/migrations/).
 export const users = pgTable(
   'users',
   {
-    id: uuid('id').primaryKey().defaultRandom(),
-    clerkId: varchar('clerk_id', { length: 255 }).notNull().unique(),
+    id: uuid('id').primaryKey(), // Supabase Auth user UUID — no defaultRandom()
     email: varchar('email', { length: 255 }).notNull(),
     name: varchar('name', { length: 255 }),
     role: userRoleEnum('role').notNull().default('user'),
     status: userStatusEnum('status').notNull().default('active'),
-    passwordHash: text('password_hash'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
     updatedAt: timestamp('updated_at').notNull().defaultNow(),
   },
   (table) => [
-    index('users_clerk_id_idx').on(table.clerkId),
     index('users_email_idx').on(table.email),
   ],
 );

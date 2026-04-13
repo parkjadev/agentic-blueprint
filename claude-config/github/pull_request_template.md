@@ -44,7 +44,7 @@ Closes #
 <!-- What could break? If it does, how do we roll back? -->
 
 - **Risk:**
-- **Rollback:** Vercel → Deployments → Promote previous deploy. (For data corruption: Neon point-in-time recovery.)
+- **Rollback:** Vercel → Deployments → Promote previous deploy. (For data corruption: Supabase point-in-time recovery.)
 
 ## Screenshots / preview
 

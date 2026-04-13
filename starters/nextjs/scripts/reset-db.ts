@@ -6,8 +6,8 @@
  * WARNING: This destroys all data. Only use in development/preview environments.
  */
 
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import { sql } from 'drizzle-orm';
 import * as schema from '../src/lib/db/schema';
 
@@ -22,7 +22,7 @@ async function main() {
     throw new Error('Refusing to reset a production database. Check DATABASE_URL.');
   }
 
-  const client = neon(databaseUrl);
+  const client = postgres(databaseUrl);
   const db = drizzle(client, { schema });
 
   // eslint-disable-next-line no-console
@@ -35,11 +35,11 @@ async function main() {
   // eslint-disable-next-line no-console
   console.log('Seeding test data...');
 
-  // Seed users
+  // Seed users (IDs are UUIDs matching Supabase Auth — use deterministic UUIDs for seeds)
   const [adminUser] = await db
     .insert(schema.users)
     .values({
-      clerkId: 'clerk_seed_admin',
+      id: '00000000-0000-0000-0000-000000000001',
       email: 'admin@example.com',
       name: 'Admin User',
       role: 'admin',
@@ -50,7 +50,7 @@ async function main() {
   const [regularUser] = await db
     .insert(schema.users)
     .values({
-      clerkId: 'clerk_seed_user',
+      id: '00000000-0000-0000-0000-000000000002',
       email: 'user@example.com',
       name: 'Regular User',
       role: 'user',
@@ -82,6 +82,8 @@ async function main() {
 
   // eslint-disable-next-line no-console
   console.log('Done. Seeded 2 users and 3 projects.');
+
+  await client.end();
 }
 
 main().catch((error) => {

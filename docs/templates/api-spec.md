@@ -16,12 +16,12 @@ TODO: Describe the API domain
 
 ## Authentication
 
-<!-- Which auth methods does this API accept? Most APIs in the starter support both. -->
+<!-- Which auth methods does this API accept? Supabase Auth handles both web and mobile. -->
 
 | Method | Header | Use Case |
 |---|---|---|
-| Clerk Session | Cookie (automatic) | Web application |
-| Mobile JWT | `Authorization: Bearer <token>` | Mobile application |
+| Supabase Session | Cookie (automatic via `@supabase/ssr`) | Web application |
+| Supabase Auth | `Authorization: Bearer <token>` (via `supabase_flutter`) | Mobile application |
 
 ## Endpoints
 
@@ -204,7 +204,8 @@ TODO: Describe the API domain
 
 ## Rate Limiting
 
-<!-- Define rate limits per endpoint or per group. Uses Upstash Redis. -->
+<!-- Define rate limits per endpoint or per group. Uses in-memory rate limiter
+     (upgrade to Upstash Redis for distributed rate limiting if needed). -->
 
 | Scope | Limit | Window |
 |---|---|---|

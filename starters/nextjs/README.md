@@ -5,10 +5,9 @@ Full-stack Next.js starter extracted from production patterns.
 ## Stack
 
 - Next.js (App Router, strict TypeScript)
-- Clerk + JWT dual auth
-- Drizzle ORM + Neon (serverless Postgres)
-- Inngest (background jobs)
-- Upstash (rate limiting)
+- Supabase (Auth, PostgreSQL, Storage)
+- Drizzle ORM (type-safe queries)
+- Inngest (background jobs, opt-in)
 - Vercel (deployment)
 
 ## Setup

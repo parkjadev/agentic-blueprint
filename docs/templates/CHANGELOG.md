@@ -43,12 +43,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Improved pagination performance on project list endpoint (#41)
-- Updated Clerk webhook handler to sync user metadata (#40)
+- Updated Supabase Auth trigger to sync user metadata (#40)
 
 ### Fixed
 
-- Fixed rate limiter not resetting after window expiry (#39)
-- Fixed mobile JWT refresh returning 401 on valid tokens (#37)
+- Fixed in-memory rate limiter not resetting after window expiry (#39)
+- Fixed mobile session refresh returning 401 on valid tokens (#37)
 
 ### Security
 
@@ -59,10 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Initial release
-- Clerk authentication (web + mobile JWT)
+- Supabase Auth (unified web + mobile)
 - Project CRUD with ownership checks
 - Role-based access control (admin, user)
-- Rate limiting via Upstash Redis
+- Rate limiting via in-memory limiter
 - CI pipeline with type-check, lint, and unit tests
 - Preview-per-PR and production deployment via Vercel
 -->

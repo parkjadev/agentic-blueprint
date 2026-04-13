@@ -4,17 +4,17 @@
  *
  * Usage: pnpm tsx scripts/seed-preview-admin.ts
  *
- * Set PREVIEW_ADMIN_CLERK_ID in your environment to match a real Clerk user
- * in your Clerk dev instance (the same instance preview deploys talk to).
+ * Set PREVIEW_ADMIN_AUTH_ID in your environment to match a real Supabase Auth
+ * user in your Supabase project (the same project preview deploys talk to).
  */
 
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
+import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import { eq } from 'drizzle-orm';
 import * as schema from '../src/lib/db/schema';
 
 const PREVIEW_ADMIN = {
-  clerkId: process.env.PREVIEW_ADMIN_CLERK_ID ?? 'clerk_preview_admin',
+  id: process.env.PREVIEW_ADMIN_AUTH_ID ?? '00000000-0000-0000-0000-000000000099',
   email: process.env.PREVIEW_ADMIN_EMAIL ?? 'admin@preview.example.com',
   name: 'Preview Admin',
   role: 'admin' as const,
@@ -27,12 +27,12 @@ async function main() {
     throw new Error('DATABASE_URL is required');
   }
 
-  const client = neon(databaseUrl);
+  const client = postgres(databaseUrl);
   const db = drizzle(client, { schema });
 
   // Check if admin already exists
   const existing = await db.query.users.findFirst({
-    where: eq(schema.users.clerkId, PREVIEW_ADMIN.clerkId),
+    where: eq(schema.users.id, PREVIEW_ADMIN.id),
   });
 
   if (existing) {
@@ -46,7 +46,7 @@ async function main() {
         status: PREVIEW_ADMIN.status,
         updatedAt: new Date(),
       })
-      .where(eq(schema.users.clerkId, PREVIEW_ADMIN.clerkId));
+      .where(eq(schema.users.id, PREVIEW_ADMIN.id));
 
     // eslint-disable-next-line no-console
     console.log(`Updated preview admin: ${PREVIEW_ADMIN.email}`);
@@ -57,6 +57,8 @@ async function main() {
     // eslint-disable-next-line no-console
     console.log(`Created preview admin: ${PREVIEW_ADMIN.email}`);
   }
+
+  await client.end();
 }
 
 main().catch((error) => {

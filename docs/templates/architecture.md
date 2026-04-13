@@ -13,21 +13,18 @@
      Keep it simple — this is for orientation, not exhaustive documentation. -->
 
 ```
-┌─────────────┐     ┌─────────────────┐     ┌──────────────┐
-│  Web Client  │────▶│  Next.js (Vercel)│────▶│  Neon Postgres│
-│  (Browser)   │     │  API + SSR       │     │  (Database)   │
-└─────────────┘     └────────┬────────┘     └──────────────┘
-                             │
-┌─────────────┐              │              ┌──────────────┐
-│ Mobile Client│──────────────┤              │  Upstash Redis│
-│ (Flutter)    │              │              │ (Rate Limit)  │
-└─────────────┘              │              └──────────────┘
-                             │
+┌─────────────┐     ┌─────────────────┐     ┌───────────────────┐
+│  Web Client  │────▶│  Next.js (Vercel)│────▶│  Supabase         │
+│  (Browser)   │     │  API + SSR       │     │  PostgreSQL       │
+└─────────────┘     └────────┬────────┘     │  Auth             │
+                             │              │  Storage          │
+┌─────────────┐              │              │  (via Supavisor   │
+│ Mobile Client│──────────────┤              │   pooler)         │
+│ (Flutter)    │              │              └───────────────────┘
+└─────────────┘              │
                     ┌────────▼────────┐
-                    │  Clerk (Auth)    │
                     │  Inngest (Jobs)  │
                     │  Resend (Email)  │
-                    │  R2 (Storage)    │
                     │  Stripe (Payments│
                     └─────────────────┘
 ```
@@ -42,11 +39,11 @@ TODO: Customise the diagram for your project
 |---|---|---|---|
 | Web application | Server-rendered pages + API routes | `src/app/` | Next.js (App Router) |
 | API layer | REST endpoints with typed responses | `src/app/api/` | Next.js Route Handlers |
-| Auth | Dual-mode: Clerk sessions (web) + JWT (mobile) | `src/lib/auth/` | Clerk, jose |
-| Database | Data persistence, schema, migrations | `src/lib/db/` | Drizzle ORM, Neon |
+| Auth | Supabase Auth (unified web + mobile) | `src/lib/auth/` | Supabase Auth, @supabase/ssr |
+| Database | Data persistence, schema, migrations | `src/lib/db/` | Drizzle ORM, Supabase PostgreSQL (Supavisor pooler) |
 | Background jobs | Async processing, scheduled work | `src/lib/jobs/` | Inngest |
-| Rate limiting | Request throttling per IP/user | `src/lib/rate-limit.ts` | Upstash Redis |
-| Storage | File uploads and media | `src/lib/storage/` | Cloudflare R2 |
+| Rate limiting | Request throttling per IP/user | `src/lib/rate-limit.ts` | In-memory (Upstash Redis as upgrade path) |
+| Storage | File uploads and media | `src/lib/storage/` | Supabase Storage |
 | Email | Transactional email delivery | `src/lib/email/` | Resend |
 | Payments | Billing, subscriptions, webhooks | `src/lib/stripe/` | Stripe |
 | Mobile app | Native mobile client | `starters/flutter/` | Flutter, Riverpod |
@@ -63,9 +60,9 @@ TODO: Add or remove components for your project
 
 ```
 Client Request
-  → Next.js Middleware (Clerk auth, CSP headers)
+  → Next.js Middleware (Supabase session refresh, CSP headers)
     → Route Handler (src/app/api/...)
-      → Auth resolution (get-auth.ts — Clerk or JWT)
+      → Auth resolution (get-auth.ts — supabase.auth.getUser())
         → Zod validation (request body/params)
           → Database query (Drizzle)
             → API response (handleError/ok/noContent)
@@ -85,12 +82,10 @@ API Route triggers event
 ### Auth Sync Flow
 
 ```
-User signs up/updates in Clerk
-  → Clerk fires webhook (user.created / user.updated)
-    → POST /api/webhooks/clerk
-      → Verify webhook signature (svix)
-        → Create/update local user record
-          → Local user table stays in sync with Clerk
+User signs up in Supabase Auth
+  → PostgreSQL trigger fires on auth.users INSERT (handle_new_user)
+    → Create local user record (users.id = Auth UUID)
+      → Local user table stays in sync with Supabase Auth
 ```
 
 TODO: Add flows specific to your application
@@ -101,12 +96,9 @@ TODO: Add flows specific to your application
 
 | Service | Purpose | Required | Failure Behaviour |
 |---|---|---|---|
-| **Neon** | Primary database | Yes | App down — all reads/writes fail |
-| **Clerk** | Authentication | Yes | Auth fails — users can't sign in |
-| **Upstash** | Rate limiting | Yes | Rate limiting disabled — requests pass through |
+| **Supabase** | Database, auth, storage | Yes | App down — all reads/writes/auth fail |
 | **Inngest** | Background jobs | No | Jobs queued but not processed — eventual consistency delayed |
 | **Stripe** | Payments | No | Payment features unavailable — core app still works |
-| **R2** | File storage | No | Upload/download features unavailable |
 | **Resend** | Email | No | Emails queued but not sent — no user-facing impact |
 
 ## Key Architecture Decisions
@@ -119,8 +111,8 @@ TODO: Add flows specific to your application
 
 <!-- Example:
 | ORM | Drizzle | Prisma, Kysely | Type-safe, generates clean SQL, push migrations for rapid iteration |
-| Auth | Clerk + JWT | Auth.js, Supabase Auth | Best DX, webhook sync, built-in mobile JWT support |
-| Database | Neon | Supabase, PlanetScale | Serverless Postgres, branching for previews, zero cold start on Vercel |
+| Auth | Supabase Auth | Auth.js, Clerk | Unified web + mobile auth, no separate webhook sync, built-in storage + DB |
+| Database | Supabase PostgreSQL | Neon, PlanetScale | Integrated auth + DB + storage, connection pooling via Supavisor |
 | Hosting | Vercel | AWS, Fly.io | Zero-config Next.js hosting, preview deploys, built-in analytics |
 -->
 
@@ -130,9 +122,9 @@ TODO: Add flows specific to your application
 
 | Environment | Trigger | Database | URL | Purpose |
 |---|---|---|---|---|
-| Development | Local checkout | Neon dev branch | `localhost:3000` | Local development |
-| Preview (per PR) | Open PR against `main` | Neon preview branch (auto-created) | `<project>-<pr>.vercel.app` | PR review, smoke testing, stakeholder demos |
-| Production | Squash-merge to `main` | Neon `main` branch | `example.com` | Live users |
+| Development | Local checkout | Supabase local or dev project | `localhost:3000` | Local development |
+| Preview (per PR) | Open PR against `main` | Supabase dev project (shared across previews) | `<project>-<pr>.vercel.app` | PR review, smoke testing, stakeholder demos |
+| Production | Squash-merge to `main` | Supabase production project | `example.com` | Live users |
 
 > No long-lived `staging` branch — see `docs/guides/feature-workflow.md` for the rationale.
 
@@ -140,11 +132,11 @@ TODO: Add flows specific to your application
 
 <!-- High-level security posture. Detailed per-feature auth is in auth-spec.md. -->
 
-- **Authentication:** Clerk (web sessions) + JWT (mobile tokens)
+- **Authentication:** Supabase Auth (unified web + mobile)
 - **Authorisation:** Role-based (admin, user) with per-resource ownership checks
 - **Transport:** HTTPS everywhere (enforced by Vercel)
 - **CSP:** Content Security Policy headers in middleware
-- **Rate limiting:** Upstash Redis — per-IP and per-user limits
+- **Rate limiting:** In-memory rate limiter — per-IP and per-user limits (Upstash Redis as documented upgrade path)
 - **Input validation:** Zod schemas on every API endpoint
 - **Secrets:** Environment variables — never committed to git
 
