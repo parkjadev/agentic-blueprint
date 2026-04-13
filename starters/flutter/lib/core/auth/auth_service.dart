@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 
-import '../../config/env.dart';
 import '../../config/constants.dart';
+import '../../config/env.dart';
 import '../api/api_exceptions.dart';
 import '../storage/secure_storage.dart';
 

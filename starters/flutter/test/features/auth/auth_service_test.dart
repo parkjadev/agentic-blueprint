@@ -1,9 +1,8 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-
 import 'package:app/core/auth/auth_provider.dart';
 import 'package:app/core/auth/auth_service.dart';
 import 'package:app/core/storage/secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockSecureStorage extends Mock implements SecureStorage {}
 
@@ -97,7 +96,7 @@ void main() {
       when(() => mockAuthService.login(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenAnswer((_) async => 'new-token');
+          ),).thenAnswer((_) async => 'new-token');
 
       final notifier = AuthStateNotifier(
         secureStorage: mockStorage,
@@ -123,7 +122,7 @@ void main() {
       when(() => mockAuthService.login(
             email: any(named: 'email'),
             password: any(named: 'password'),
-          )).thenThrow(Exception('Invalid credentials'));
+          ),).thenThrow(Exception('Invalid credentials'));
 
       final notifier = AuthStateNotifier(
         secureStorage: mockStorage,

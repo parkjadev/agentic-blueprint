@@ -65,24 +65,24 @@ class ApiException implements Exception {
 
 /// 401 — user needs to re-authenticate.
 class UnauthorisedException extends ApiException {
-  const UnauthorisedException({String message = 'Session expired. Please sign in again.'})
-      : super(message: message, statusCode: 401, code: 'UNAUTHENTICATED');
+  const UnauthorisedException({super.message = 'Session expired. Please sign in again.'})
+      : super(statusCode: 401, code: 'UNAUTHENTICATED');
 }
 
 /// 403 — user lacks permission.
 class ForbiddenException extends ApiException {
-  const ForbiddenException({String message = 'You do not have permission to do this.'})
-      : super(message: message, statusCode: 403, code: 'FORBIDDEN');
+  const ForbiddenException({super.message = 'You do not have permission to do this.'})
+      : super(statusCode: 403, code: 'FORBIDDEN');
 }
 
 /// 404 — resource not found.
 class NotFoundException extends ApiException {
-  const NotFoundException({String message = 'Not found.'})
-      : super(message: message, statusCode: 404, code: 'NOT_FOUND');
+  const NotFoundException({super.message = 'Not found.'})
+      : super(statusCode: 404, code: 'NOT_FOUND');
 }
 
 /// 429 — rate limited.
 class RateLimitedException extends ApiException {
-  const RateLimitedException({String message = 'Too many requests. Please wait a moment.'})
-      : super(message: message, statusCode: 429, code: 'RATE_LIMITED');
+  const RateLimitedException({super.message = 'Too many requests. Please wait a moment.'})
+      : super(statusCode: 429, code: 'RATE_LIMITED');
 }
