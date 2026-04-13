@@ -19,12 +19,52 @@ class RegisterScreen extends HookConsumerWidget {
     final passwordController = useTextEditingController();
     final authState = ref.watch(authStateProvider);
     final isLoading = authState is AuthLoading;
+    final confirmationSent = useState(false);
 
     ref.listen<AuthState>(authStateProvider, (previous, next) {
       if (next is AuthError) {
         context.showError(next.message);
       }
     });
+
+    if (confirmationSent.value) {
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Check your email',
+                    style: context.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'We sent a confirmation link to '
+                    '${emailController.text.trim()}. '
+                    'Tap the link to activate your account.',
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      color: context.colours.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  TextButton(
+                    onPressed: () => context.go(Routes.login),
+                    child: const Text('Back to sign in'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -73,15 +113,19 @@ class RegisterScreen extends HookConsumerWidget {
                   FilledButton(
                     onPressed: isLoading
                         ? null
-                        : () {
+                        : () async {
                             if (formKey.currentState?.validate() ?? false) {
-                              ref
+                              final needsConfirmation = await ref
                                   .read(authStateProvider.notifier)
                                   .register(
                                     name: nameController.text.trim(),
                                     email: emailController.text.trim(),
                                     password: passwordController.text,
                                   );
+                              if (!context.mounted) return;
+                              if (needsConfirmation) {
+                                confirmationSent.value = true;
+                              }
                             }
                           },
                     child: isLoading

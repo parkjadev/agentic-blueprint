@@ -9,12 +9,12 @@ This file provides guidance to Claude Code when working with this repository.
 | Framework | Next.js 15 (App Router) | Strict TypeScript, server components by default |
 | Language | TypeScript 5.7+ | `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` |
 | Env Validation | @t3-oss/env-nextjs | Server/client split, build-time validation, `SKIP_ENV_VALIDATION` for CI |
-| Auth | Clerk (web) + JWT (mobile) | Dual-mode — see Auth Architecture below |
-| Database | Neon (serverless Postgres) | Drizzle ORM, push migrations |
-| Rate Limiting | Upstash Redis | Sliding window, per-IP and per-user |
+| Auth | Supabase Auth | Web + mobile via supabase_flutter — see Auth Architecture below |
+| Database | Supabase PostgreSQL | Drizzle ORM, push migrations |
+| Rate Limiting | In-memory sliding window | Per-IP and per-user; upgrade to Upstash Redis for distributed deployments |
 | Background Jobs | Inngest | Event-driven, opt-in |
 | Payments | Stripe | Opt-in — gracefully skips when unconfigured |
-| Storage | Cloudflare R2 | Opt-in — gracefully skips when unconfigured |
+| Storage | Supabase Storage | Opt-in — gracefully skips when unconfigured |
 | Email | Resend | Opt-in — logs instead of sending when unconfigured |
 | Hosting | Vercel | Preview deploys per branch, edge runtime for health check |
 | Styling | Tailwind CSS 3 | `cn()` helper via clsx + tailwind-merge |
@@ -23,13 +23,13 @@ This file provides guidance to Claude Code when working with this repository.
 
 ## Environments & Deployment
 
-We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow): one long-lived branch (`main`), short-lived branches per issue, a Vercel preview deployment (with its own Neon database branch) per PR, and production deploys on merge to `main`. **There is no `staging` branch.** If you need a shared environment for QA or stakeholder review, use a Vercel preview alias — never a long-lived branch (see Hard Rule #3).
+We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow): one long-lived branch (`main`), short-lived branches per issue, a Vercel preview deployment (with its own Supabase preview database) per PR, and production deploys on merge to `main`. **There is no `staging` branch.** If you need a shared environment for QA or stakeholder review, use a Vercel preview alias — never a long-lived branch (see Hard Rule #3).
 
 | Environment | Branch / Source | URL | Database |
 |---|---|---|---|
-| Development | Local checkout | `http://localhost:3000` | Neon dev branch |
-| Preview (per PR) | Open PR against `main` | `<project>-<pr>.vercel.app` | Neon preview branch (auto-created per PR) |
-| Production | `main` | `TODO: your-domain.com` | Neon `main` branch |
+| Development | Local checkout | `http://localhost:3000` | Supabase local / dev project |
+| Preview (per PR) | Open PR against `main` | `<project>-<pr>.vercel.app` | Supabase preview database (per PR) |
+| Production | `main` | `TODO: your-domain.com` | Supabase production project |
 
 **Deploy flow:** issue → branch from `main` (`<type>/<N>-<slug>`) → PR to `main` → CI + Vercel preview → smoke-test the preview → squash-merge → production auto-deploys
 
@@ -84,7 +84,7 @@ We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-
 
 12. **All API responses use the envelope** — `{ success: true, data: T }` or `{ success: false, error: { message, code } }`. Use `ok()`, `created()`, `noContent()`, `handleError()` from `src/lib/api-response.ts`.
 
-13. **Auth via `getAuth()` only** — never call `auth()` directly in route handlers. Always use `getAuth()` from `src/lib/auth/get-auth.ts` which handles both Clerk sessions and mobile JWT.
+13. **Auth via `getAuth()` only** — never call Supabase auth directly in route handlers. Always use `getAuth()` from `src/lib/auth/get-auth.ts` which resolves Supabase Auth sessions into a single internal user.
 
 14. **Validate all inputs with Zod** — every API endpoint validates request body and query params with Zod schemas. Schemas live in `src/lib/validations/`. Never trust user input.
 
@@ -112,18 +112,18 @@ These modules ship in `src/lib/*` — **reach for them before writing new helper
 | Module | Path | Purpose |
 |---|---|---|
 | **Structured logger** | `src/lib/logger.ts` | JSON logger with timestamps/levels. Replaces `console.log` (which is lint-banned). |
-| **Rate limit** | `src/lib/rate-limit.ts` | Upstash sliding-window limiters: `publicRateLimiter`, `writeRateLimiter`, `rateLimiter`, `loginRateLimiter` (5 req / 15 min). Use `checkRateLimit()` from every endpoint. |
+| **Rate limit** | `src/lib/rate-limit.ts` | In-memory sliding-window limiters: `publicRateLimiter`, `writeRateLimiter`, `rateLimiter`, `loginRateLimiter` (5 req / 15 min). Use `checkRateLimit()` from every endpoint. Upgrade to Upstash Redis for distributed deployments. |
 | **Request context** | `src/lib/request-context.ts` | AsyncLocalStorage-backed `getRequestContext()` that returns `{ ip, userAgent, requestId }` from anywhere in the call stack. |
-| **Mobile JWT** | `src/lib/mobile-jwt.ts` | `signMobileJwt()` / `verifyMobileJwt()` (jose) for the mobile auth path. |
+| **Supabase client** | `src/lib/supabase/client.ts` | Server and client Supabase clients for auth and data access. |
 | **API response envelope** | `src/lib/api-response.ts` | `ok()`, `created()`, `noContent()`, `handleError()`, `ApiError`. All API routes go through these — **do not** return raw `NextResponse.json()`. |
-| **Dual-mode auth** | `src/lib/auth/get-auth.ts` | `getAuth()` resolves both Clerk sessions (web) and mobile JWT (Authorization: Bearer) into a single internal user. **Always use this — never call Clerk's `auth()` directly in route handlers.** |
-| **Clerk user sync** | `src/lib/auth/resolve-clerk-user.ts` | Webhook handler that upserts the local `users` row when Clerk fires `user.created/updated/deleted`. |
+| **Auth resolver** | `src/lib/auth/get-auth.ts` | `getAuth()` resolves Supabase Auth sessions into a single internal user. **Always use this — never call Supabase auth directly in route handlers.** |
+| **User sync** | `src/lib/auth/resolve-user.ts` | Database trigger handler that upserts the local `users` row when Supabase Auth fires user lifecycle events. |
 | **Auth routing** | `src/lib/auth-routing.ts` | Public/protected route lists, role-based access helpers. |
 | **Server actions** | `src/lib/actions/index.ts` | `action()` and `authAction()` wrappers — auth + error handling for Server Actions. |
-| **Database** | `src/lib/db/index.ts`, `src/lib/db/schema.ts` | Neon HTTP client + Drizzle schema. |
+| **Database** | `src/lib/db/index.ts`, `src/lib/db/schema.ts` | Supabase PostgreSQL client + Drizzle schema. |
 | **Validations** | `src/lib/validations/index.ts` | Shared Zod schemas (`parsePagination`, UUID, etc.). |
 | **Background jobs** | `src/lib/jobs/client.ts` | Inngest client. Opt-in — gracefully skips if `INNGEST_*` env vars are unset. |
-| **Storage** | `src/lib/storage/index.ts` | Cloudflare R2 helpers. Opt-in. |
+| **Storage** | `src/lib/storage/index.ts` | Supabase Storage helpers. Opt-in. |
 | **Email** | `src/lib/email/send.ts` | Resend wrapper. Opt-in. |
 | **Stripe** | `src/lib/stripe/client.ts` | Stripe client. Opt-in. |
 | **Misc** | `src/lib/utils.ts` | `cn()` Tailwind classname helper (clsx + tailwind-merge). |
@@ -150,35 +150,31 @@ src/test/
 **Test conventions:**
 - Unit tests live next to the code or in `src/test/unit/`
 - Use factories from `src/test/helpers.ts` — never hardcode test data
-- Mock external services (Clerk, Neon, Upstash) — test business logic, not integrations
+- Mock external services (Supabase Auth, Supabase PostgreSQL) — test business logic, not integrations
 - Name test files `*.test.ts` or `*.test.tsx`
 
 ## Auth Architecture
 
-Dual-mode authentication — Clerk for web, JWT for mobile:
+Supabase Auth — unified authentication for web and mobile (via `supabase_flutter`):
 
 ```
 Request arrives
-  ├─ Has Clerk session cookie?
-  │   └─ Yes → resolve via Clerk → get internal user by clerkId
-  ├─ Has Authorization: Bearer header?
-  │   └─ Yes → verify JWT (jose) → get internal user by userId
-  └─ Neither?
+  ├─ Has Supabase session (cookie or Authorization: Bearer)?
+  │   └─ Yes → resolve via Supabase Auth → get internal user by supabaseId
+  └─ No valid session?
       └─ Return 401 via ApiError.unauthorised()
 ```
 
 **Key files:**
-- `src/lib/auth/get-auth.ts` — dual-mode resolver, single entry point
-- `src/lib/auth/resolve-clerk-user.ts` — Clerk webhook → local user upsert
-- `src/lib/mobile-jwt.ts` — `signMobileJwt()` / `verifyMobileJwt()`
+- `src/lib/auth/get-auth.ts` — auth resolver, single entry point
+- `src/lib/auth/resolve-user.ts` — database trigger handler → local user upsert
+- `src/lib/supabase/client.ts` — server and client Supabase clients
 - `src/lib/auth-routing.ts` — public routes, auth routes, role-based access
-- `src/middleware.ts` — Clerk middleware, protects non-public routes
+- `src/middleware.ts` — Supabase Auth middleware, protects non-public routes
 
-**Webhook verification:** `svix` is pre-installed as a dependency. When you implement `src/app/api/webhooks/clerk/route.ts`, use `svix`'s `Webhook` class to verify the signature before processing the payload — never roll your own HMAC check. See [Clerk's svix integration guide](https://clerk.com/docs/integrations/webhooks/sync-data).
+**User sync:** A Supabase database trigger fires on `auth.users` insert/update/delete → invokes `resolve-user.ts` which upserts the local `users` record.
 
 **Roles:** `admin`, `user` (defined in `src/types/index.ts`, stored on user record)
-
-**Webhook sync:** Clerk fires `user.created` / `user.updated` / `user.deleted` → `POST /api/webhooks/clerk` → `resolveClerkUser()` upserts local record.
 
 ## Key Patterns
 
@@ -261,8 +257,8 @@ These files affect every request and should not be modified without careful revi
 
 | File | Why |
 |---|---|
-| `src/middleware.ts` | Controls auth for every route. Wrong config = security hole or broken app. |
-| `src/lib/auth/get-auth.ts` | Dual-mode auth resolver. Breaking this breaks all authenticated endpoints. |
+| `src/middleware.ts` | Supabase Auth middleware for every route. Wrong config = security hole or broken app. |
+| `src/lib/auth/get-auth.ts` | Supabase Auth resolver. Breaking this breaks all authenticated endpoints. |
 | `src/env.ts` | Environment validation. Breaking this prevents the app from starting. |
 | `src/lib/db/schema.ts` | Database schema. Changes require migration planning. |
 | `src/lib/api-response.ts` | Response envelope. Changing shape breaks all API consumers. |
@@ -274,12 +270,12 @@ These files affect every request and should not be modified without careful revi
 ```
 users
 ├── id (uuid, PK)
-├── clerkId (varchar, unique) — synced from Clerk
+├── supabaseId (uuid, unique) — synced from Supabase Auth
 ├── email (varchar)
 ├── name (varchar, nullable)
 ├── role (enum: admin, user)
 ├── status (enum: active, suspended, deleted)
-├── passwordHash (text, nullable) — for mobile auth
+├── avatarUrl (text, nullable) — synced from Supabase Auth
 ├── createdAt (timestamp)
 └── updatedAt (timestamp)
 

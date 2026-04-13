@@ -26,7 +26,7 @@ Save when you learn about the developer's role, expertise, or preferences.
 Save when the developer corrects your approach or confirms something non-obvious worked.
 
 **Good examples:**
-- "Don't mock the database in integration tests — use Neon preview branches"
+- "Don't mock the database in integration tests — use Supabase preview databases"
 - "Single bundled PR is preferred for refactors in this area"
 - "Always run `pnpm check:all` before committing, not just `pnpm test`"
 
@@ -41,7 +41,7 @@ Save when you learn about ongoing work, deadlines, or decisions not in the code.
 **Good examples:**
 - "Merge freeze begins 2026-03-05 for mobile release"
 - "Auth rewrite driven by legal/compliance, not tech debt"
-- "Waiting on Clerk webhook fix before deploying user sync changes"
+- "Waiting on Supabase database trigger fix before deploying user sync changes"
 
 **Don't save:**
 - Things derivable from git log or the code itself

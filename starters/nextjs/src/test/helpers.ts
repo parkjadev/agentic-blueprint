@@ -27,7 +27,6 @@ export function createTestUser(overrides: UserOverrides = {}): AuthUser {
   const id = overrides.id ?? nextId();
   return {
     id,
-    clerkId: overrides.clerkId ?? `clerk_${id}`,
     email: overrides.email ?? `user-${id}@test.example.com`,
     name: overrides.name ?? `Test User ${id}`,
     role: overrides.role ?? 'user',

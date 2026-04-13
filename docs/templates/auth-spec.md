@@ -3,7 +3,7 @@
 **Author:** [Name]
 **Date:** [YYYY-MM-DD]
 **Status:** Draft | In Review | Approved
-**Auth Provider:** Clerk (web) + JWT (mobile)
+**Auth Provider:** Supabase Auth (unified web + mobile)
 
 ---
 
@@ -16,28 +16,28 @@ TODO: Describe auth requirements for this feature
 
 ## Auth Architecture
 
-<!-- The starter uses dual-mode authentication:
-     1. Clerk sessions for web (cookie-based, managed by Clerk middleware)
-     2. Mobile JWT for native apps (Bearer token in Authorization header)
+<!-- The starter uses Supabase Auth for both web and mobile:
+     1. Web: @supabase/ssr reads session cookie, supabase.auth.getUser() resolves user
+     2. Mobile: supabase_flutter sends Bearer token, same getUser() call validates
 
-     Both modes resolve to the same internal user record via get-auth.ts.
+     Both modes resolve to the same Supabase Auth user (users.id IS the Auth UUID).
      This section documents which modes apply to this feature. -->
 
 ### Supported Auth Modes
 
 | Mode | Mechanism | Resolved By |
 |---|---|---|
-| Web (Clerk) | Session cookie | `auth()` from `@clerk/nextjs/server` |
-| Mobile (JWT) | `Authorization: Bearer <token>` | `verifyMobileJwt()` from `src/lib/mobile-jwt.ts` |
+| Web | Session cookie | `@supabase/ssr` reads cookie → `supabase.auth.getUser()` |
+| Mobile | `Authorization: Bearer <token>` | `supabase_flutter` sends token → same `supabase.auth.getUser()` |
 
 ### Auth Resolution Flow
 
 ```
 Request arrives
-  ├─ Has Clerk session cookie?
-  │   └─ Yes → resolve via Clerk → get internal user by clerkId
-  ├─ Has Authorization: Bearer header?
-  │   └─ Yes → verify JWT → get internal user by userId from token
+  ├─ Has Supabase session cookie? (web)
+  │   └─ Yes → @supabase/ssr reads cookie → supabase.auth.getUser()
+  ├─ Has Authorization: Bearer header? (mobile)
+  │   └─ Yes → supabase.auth.getUser() validates token
   └─ Neither?
       └─ Return 401 Unauthenticated
 ```
@@ -45,7 +45,7 @@ Request arrives
 ## Role Matrix
 
 <!-- Define which roles can perform which actions. Roles are stored on the user record
-     and synced from Clerk via webhook. -->
+     and synced via database trigger on auth.users INSERT. -->
 
 | Action | Public | User | Admin | Notes |
 |---|---|---|---|---|
@@ -62,42 +62,43 @@ Request arrives
 ## Session Management
 
 <!-- How are sessions created, maintained, and revoked?
-     Clerk handles web sessions. Document any feature-specific session behaviour. -->
+     Supabase Auth handles sessions for both web and mobile. Document any feature-specific session behaviour. -->
 
-### Web Sessions (Clerk)
+### Web Sessions (Supabase Auth)
 
-- **Creation:** Clerk sign-in/sign-up flow → session cookie set automatically
-- **Duration:** Managed by Clerk (configurable in Clerk dashboard)
-- **Revocation:** Sign out via Clerk, or admin revocation via Clerk dashboard
+- **Creation:** Supabase sign-in/sign-up flow → session cookie set via `@supabase/ssr`
+- **Duration:** Managed by Supabase Auth (configurable in Supabase dashboard)
+- **Refresh:** Supabase session refresh middleware automatically refreshes expired sessions
+- **Revocation:** Sign out via Supabase Auth, or admin revocation via Supabase dashboard
 - **Post-auth routing:** `src/app/auth/post-auth/page.tsx` handles role-based redirects
 
-### Mobile Sessions (JWT)
+### Mobile Sessions (Supabase Auth)
 
-- **Creation:** `POST /api/auth/mobile/login` → returns signed JWT
-- **Duration:** TODO: Define token expiry (e.g., 7 days)
-- **Refresh:** TODO: Define refresh strategy (e.g., refresh token rotation)
-- **Storage:** `flutter_secure_storage` on device
-- **Revocation:** Token expiry or user record deactivation
+- **Creation:** `supabase_flutter` SDK handles sign-in/sign-up natively
+- **Duration:** Managed by Supabase Auth (access token + refresh token)
+- **Refresh:** `supabase_flutter` handles token refresh automatically
+- **Storage:** `supabase_flutter` manages session persistence internally
+- **Revocation:** Sign out via SDK, token expiry, or user record deactivation
 
 ## Webhook Sync
 
-<!-- Clerk webhooks keep the local user table in sync with Clerk.
-     Document which events this feature depends on. -->
+<!-- A PostgreSQL trigger on auth.users INSERT keeps the local user table in sync
+     with Supabase Auth. No external webhook endpoint is needed. -->
 
-| Clerk Event | Action | Handler |
+| Auth Event | Action | Handler |
 |---|---|---|
-| `user.created` | Create local user record | `POST /api/webhooks/clerk` |
-| `user.updated` | Sync email, name, role changes | `POST /api/webhooks/clerk` |
-| `user.deleted` | Soft-delete local user record | `POST /api/webhooks/clerk` |
+| New user signs up | Create local user record | PostgreSQL trigger `handle_new_user` on `auth.users` INSERT |
+| User updates profile | Sync email, name, role changes | Application-level update (or additional trigger if needed) |
+| User deleted | Soft-delete local user record | Application-level or trigger on `auth.users` DELETE |
 
-<!-- Add feature-specific webhook handling if needed. -->
+<!-- users.id IS the Supabase Auth UUID — no separate clerkId column needed. -->
 
-TODO: List additional webhook events or write "Standard webhook handling only"
+TODO: List additional trigger actions or write "Standard trigger handling only"
 
 ## Middleware Configuration
 
 <!-- Which routes are public, which require auth, which require specific roles?
-     This maps to src/middleware.ts configuration. -->
+     This maps to src/middleware.ts configuration (Supabase session refresh middleware). -->
 
 ### Route Protection
 
@@ -107,7 +108,7 @@ TODO: List additional webhook events or write "Standard webhook handling only"
 | `/api/[resource]` GET | TODO | TODO | |
 | `/api/[resource]` POST | Yes | Any | |
 | `/api/[resource]/[id]` | Yes | Owner or Admin | |
-| `/(dashboard)/**` | Yes | Any | Clerk middleware redirect |
+| `/(dashboard)/**` | Yes | Any | Supabase session refresh middleware redirect |
 | `/(marketing)/**` | No | — | Public pages |
 
 ## Security Considerations
@@ -121,7 +122,7 @@ TODO: List additional webhook events or write "Standard webhook handling only"
 - Ownership checks must happen at the database query level, not just in middleware
 - Admin endpoints should be rate-limited more aggressively (10 req/min)
 - File upload endpoints need size limits and content-type validation
-- Sensitive fields (passwordHash) must never appear in API responses
+- Sensitive fields must never appear in API responses
 -->
 
 ## Testing Auth Flows
@@ -130,10 +131,10 @@ TODO: List additional webhook events or write "Standard webhook handling only"
 
 | Environment | Auth Setup |
 |---|---|
-| Development | Clerk dev instance, test users in seed data |
+| Development | Supabase local or dev project, test users in seed data |
 | CI | Mock auth via test helpers (`src/test/helpers.ts`) |
-| Vercel preview (per PR) | Clerk dev instance, preview admin seeder runs as part of the build |
-| Production | Clerk production instance |
+| Vercel preview (per PR) | Supabase dev project, preview admin seeder runs as part of the build |
+| Production | Supabase production project |
 
 ---
 

@@ -10,8 +10,8 @@ This file provides guidance to Claude Code when working with the Flutter mobile 
 | State Management | Riverpod 2.x | flutter_riverpod + hooks_riverpod |
 | Navigation | GoRouter 14.x | Declarative routing with auth guards |
 | HTTP | Dio 5.x | Interceptors for auth, errors, logging |
-| Auth | JWT (Bearer token) | Matches Next.js `signMobileJwt` / `verifyMobileJwt` |
-| Storage | flutter_secure_storage | Encrypted token storage on device |
+| Auth | Supabase Auth (via supabase_flutter) | Unified auth for web + mobile |
+| Storage | Supabase (built-in session persistence) | No manual token management |
 | Serialisation | freezed + json_serializable | Immutable models with code generation |
 | Testing | flutter_test + mocktail | Unit and widget tests |
 | Linting | flutter_lints | Strict: strict-casts, strict-inference, strict-raw-types |
@@ -34,13 +34,12 @@ lib/
 │   │   └── api_interceptors.dart  # Auth token, error mapping, logging
 │   ├── auth/
 │   │   ├── auth_provider.dart     # AuthState notifier, isAuthenticated
-│   │   ├── auth_service.dart      # Login, register, logout, refresh
-│   │   └── auth_guard.dart        # GoRouter redirect guard
+│   │   └── auth_service.dart      # Login, register, logout via Supabase
 │   ├── router/
 │   │   ├── app_router.dart        # GoRouter config with auth redirects
 │   │   └── routes.dart            # Route path constants
 │   └── storage/
-│       └── secure_storage.dart    # JWT token storage wrapper
+│       └── supabase_provider.dart # Riverpod provider for Supabase client
 ├── features/
 │   ├── auth/                      # Login + register screens
 │   ├── home/                      # Home screen
@@ -76,32 +75,32 @@ lib/
 
 ## Auth Flow
 
-The app uses JWT authentication against the Next.js mobile auth endpoints:
+The app uses Supabase Auth directly — no custom JWT endpoints needed:
 
 ```
 Login / Register
-  → POST /api/auth/mobile/login (or /register)
-    → Backend verifies credentials, calls signMobileJwt()
-      → Returns { token, refreshToken }
-        → Store in flutter_secure_storage
-          → AuthState becomes Authenticated(token)
+  → supabase.auth.signInWithPassword() (or signUp())
+    → Supabase returns session (access + refresh tokens)
+      → supabase_flutter persists session automatically
+        → onAuthStateChange fires
+          → AuthState becomes Authenticated(userId)
             → GoRouter redirects to home
 
-Authenticated API calls
-  → AuthInterceptor reads token from secure storage
-    → Attaches Authorization: Bearer <token> header
-      → Backend verifyMobileJwt() validates token
+Authenticated API calls to Next.js
+  → AuthInterceptor reads token from Supabase.instance.client.auth.currentSession
+    → Attaches Authorization: Bearer <accessToken> header
+      → Next.js backend validates via supabase.auth.getUser()
         → Resolves to internal user via get-auth.ts
 
 Token refresh
-  → POST /api/auth/mobile/refresh
-    → Old refresh token → new access + refresh tokens
-      → Update secure storage
+  → Handled automatically by supabase_flutter SDK
+    → No manual refresh logic needed
 
 Logout
-  → Clear tokens from secure storage
-    → AuthState becomes Unauthenticated
-      → GoRouter redirects to login
+  → supabase.auth.signOut()
+    → onAuthStateChange fires
+      → AuthState becomes Unauthenticated
+        → GoRouter redirects to login
 ```
 
 ## Environment Configuration

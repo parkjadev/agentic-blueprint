@@ -1,77 +1,43 @@
-import { auth } from '@clerk/nextjs/server';
-import { headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { users } from '@/lib/db/schema';
-import { verifyMobileJwt } from '@/lib/mobile-jwt';
-import { services } from '@/env';
+import { createClient } from '@/lib/supabase/server';
 import type { AuthUser } from '@/types';
 
 /**
- * Dual-mode authentication resolver.
+ * Unified authentication resolver.
  *
- * 1. Checks for a Clerk session (web) — resolved via cookie
- * 2. Falls back to mobile JWT (Bearer token) — if configured
- * 3. Returns null if neither is present
+ * Works for both web (cookie) and mobile (Bearer token) — Supabase handles
+ * both transparently via @supabase/ssr.
  *
- * This is the single entry point for auth across all API routes.
+ * This is the single entry point for auth across all API routes and server actions.
  */
 export async function getAuth(): Promise<AuthUser | null> {
-  // Try Clerk session first (web)
-  const { userId: clerkId } = await auth();
+  const supabase = await createClient();
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
 
-  if (clerkId) {
-    const user = await db.query.users.findFirst({
-      where: eq(users.clerkId, clerkId),
-    });
-
-    if (!user || user.status !== 'active') {
-      return null;
-    }
-
-    return {
-      id: user.id,
-      clerkId: user.clerkId,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      status: user.status,
-    };
+  if (!authUser) {
+    return null;
   }
 
-  // Try mobile JWT (Bearer token)
-  if (services.mobileJwt) {
-    const headersList = await headers();
-    const authHeader = headersList.get('authorization');
+  // Look up the application profile (roles, status, etc.)
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, authUser.id),
+  });
 
-    if (authHeader?.startsWith('Bearer ')) {
-      const token = authHeader.slice(7);
-
-      try {
-        const payload = await verifyMobileJwt(token);
-        const user = await db.query.users.findFirst({
-          where: eq(users.id, payload.userId),
-        });
-
-        if (!user || user.status !== 'active') {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          clerkId: user.clerkId,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          status: user.status,
-        };
-      } catch {
-        // Invalid token — fall through to return null
-      }
-    }
+  if (!user || user.status !== 'active') {
+    return null;
   }
 
-  return null;
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    status: user.status,
+  };
 }
 
 /**

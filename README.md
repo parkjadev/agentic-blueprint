@@ -63,11 +63,9 @@ cp .env.example .env.local
 
 | Service | What You Need | Sign Up |
 |---|---|---|
-| **Neon** | `DATABASE_URL` | [neon.tech](https://neon.tech) |
-| **Clerk** | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET` | [clerk.com](https://clerk.com) |
-| **Upstash** | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | [upstash.com](https://upstash.com) |
+| **Supabase** | `DATABASE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | [supabase.com](https://supabase.com) |
 
-These three are required. The app will not start without them.
+Supabase is the only required service. It provides PostgreSQL, auth, and storage in one platform.
 
 ### 5. Configure Optional Services
 
@@ -76,10 +74,8 @@ These are opt-in — the app starts and runs without them. Enable as needed:
 | Service | Env Vars | Purpose |
 |---|---|---|
 | **Stripe** | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Payments and subscriptions |
-| **Cloudflare R2** | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` | File storage and uploads |
 | **Inngest** | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` | Background jobs and event processing |
 | **Resend** | `RESEND_API_KEY` | Transactional email |
-| **Mobile JWT** | `MOBILE_JWT_SECRET` | Mobile app authentication |
 
 Optional services use Zod optional schemas in `src/env.ts`. When env vars are missing, the service gracefully skips — no errors, no crashes.
 
@@ -168,13 +164,13 @@ Spec-driven development templates. Every feature starts as a spec before any cod
 
 ### Next.js Starter (`starters/nextjs/`)
 
-Production-ready full-stack starter with strict TypeScript, dual auth, and opt-in services.
+Production-ready full-stack starter with strict TypeScript, Supabase backend, and opt-in services.
 
-**Infrastructure layer** — 16 modules covering logging, rate limiting, request context, dual-mode auth (Clerk + JWT), database (Neon + Drizzle), storage (R2), email (Resend), payments (Stripe), background jobs (Inngest), server actions, API response envelope, and validations.
+**Infrastructure layer** — modules covering logging, rate limiting, request context, Supabase Auth, database (Supabase PostgreSQL + Drizzle), storage (Supabase Storage), email (Resend), payments (Stripe), background jobs (Inngest), server actions, API response envelope, and validations.
 
 **Example API routes** — full CRUD at `/api/example` demonstrating auth, Zod validation, pagination, ownership checks, rate limiting, and soft delete.
 
-**App shell** — root layout with ClerkProvider, auth pages (sign-in, sign-up, post-auth routing), protected dashboard, public marketing page, Clerk middleware.
+**App shell** — root layout, custom auth pages (sign-in, sign-up, post-auth routing), protected dashboard, public marketing page, Supabase session middleware.
 
 **Config** — strict TypeScript, ESLint (no-console, no-any, floating-promises), Vitest, Playwright, Drizzle, Tailwind, security headers, CI pipeline.
 
@@ -184,7 +180,7 @@ Production-ready full-stack starter with strict TypeScript, dual auth, and opt-i
 
 Mobile companion that pairs with the Next.js backend.
 
-**Core** — Dio HTTP client with `ApiResponse<T>` matching the Next.js envelope, JWT auth service, Riverpod state management, GoRouter with auth guards, flutter_secure_storage.
+**Core** — Dio HTTP client with `ApiResponse<T>` matching the Next.js envelope, Supabase Auth (via `supabase_flutter`), Riverpod state management, GoRouter with auth guards.
 
 **Features** — login/register screens, home, profile, example CRUD (list + detail). Full Riverpod + repository + API client pattern throughout.
 
@@ -218,10 +214,8 @@ Drop-in configuration for any project using Claude Code.
 
 | Choice | Rationale |
 |---|---|
-| **Clerk** | Best DX for auth. Webhook sync keeps local user table current. Built-in mobile JWT support. Handles email/password, social, and MFA without custom code. |
-| **Neon** | Serverless Postgres with database branching for previews. Zero cold-start penalty on Vercel. Point-in-time recovery for rollbacks. |
+| **Supabase** | Single platform for PostgreSQL, auth, and storage. Unified auth for web and mobile — no dual-mode hack. Connection pooling via Supavisor. |
 | **Drizzle** | Type-safe ORM that generates clean SQL. Schema-as-code with `db:push` for rapid iteration. No migration files to manage during development. |
-| **Upstash** | Serverless Redis over HTTP — works in edge runtimes and serverless functions. Sliding window rate limiting out of the box. |
 | **Inngest** | Event-driven background jobs without managing queues or workers. Retries, scheduling, and fan-out built in. Opt-in — zero overhead when not used. |
 | **Vercel** | Zero-config Next.js hosting. Preview deploys per PR branch. Built-in analytics and logging. MCP integration for Claude Code. |
 | **Riverpod** | Compile-safe state management for Flutter. Better dependency injection than Provider. Supports async, family, and autoDispose patterns natively. |
@@ -304,14 +298,11 @@ See [docs/guides/mcp-setup.md](docs/guides/mcp-setup.md) for setup instructions,
 
 ### Required (app will not start without these)
 
-- [ ] **Neon** — create a database, copy `DATABASE_URL`
-- [ ] **Clerk** — create an application, copy publishable key + secret key, configure webhook
-- [ ] **Upstash** — create a Redis database, copy REST URL + token
+- [ ] **Supabase** — create a project, copy `DATABASE_URL`, project URL, anon key, and service role key
 
 ### Optional (enable as needed)
 
 - [ ] **Stripe** — create account, copy secret key, configure webhook for payment events
-- [ ] **Cloudflare R2** — create bucket, generate API tokens
 - [ ] **Inngest** — create account, copy event key + signing key
 - [ ] **Resend** — create account, verify domain, copy API key
 - [ ] **Vercel** — connect repo, configure environment variables per branch
@@ -341,7 +332,7 @@ flutter analyze && flutter test
 After configuring real services:
 
 ```bash
-# With live Neon + Clerk + Upstash
+# With live Supabase credentials
 cp .env.example .env.local  # Fill in real values
 pnpm db:push
 pnpm dev

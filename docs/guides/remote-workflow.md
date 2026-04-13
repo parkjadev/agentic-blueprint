@@ -51,7 +51,7 @@ Give Claude a detailed plan before you leave:
 >
 > 1. Add the new schema to src/lib/db/schema.ts
 > 2. Create the API routes at src/app/api/[resource]/
-> 3. Add auth checks following the dual-mode pattern
+> 3. Add auth checks following the Supabase Auth pattern
 > 4. Write unit tests for the new endpoints
 > 5. Run pnpm type-check && pnpm lint && pnpm test:ci
 >
@@ -125,7 +125,7 @@ The task description is everything. Claude will work autonomously — no back-an
 
 > In parkjadev/agentic-blueprint, create a PR that adds a post-deploy health check pattern to docs/guides/release-workflow.md. Add a new section after "Verify Production" that describes hitting /api/health and checking response time. Follow the writing style of the existing guide.
 
-> In <owner>/<repo>, fix the 401 error on GET /api/projects when using mobile JWT. The issue is in src/lib/auth/get-auth.ts — the token verification checks the `sub` claim but mobile tokens use `userId`. See issue #42 for details. Include a regression test.
+> In <owner>/<repo>, fix the 401 error on GET /api/projects when using Supabase Auth. The issue is in src/lib/auth/get-auth.ts — the session verification is not refreshing expired tokens correctly. See issue #42 for details. Include a regression test.
 
 **Bad task descriptions:**
 

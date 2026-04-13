@@ -22,8 +22,8 @@ dependencies:
   # Networking
   dio: ^5.7.0
 
-  # Auth & storage
-  flutter_secure_storage: ^9.2.3
+  # Backend — auth, storage, realtime (Supabase)
+  supabase_flutter: ^2.8.4
 
   # Serialisation
   freezed_annotation: ^2.4.4

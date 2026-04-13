@@ -28,7 +28,7 @@ The fix is structural, not button-choice: **don't run two long-lived branches.**
 ```
 issue #N
   └─ branch: feat/N-short-slug (from main)
-       └─ PR → main  ──▶ Vercel preview deploy + Neon preview DB branch
+       └─ PR → main  ──▶ Vercel preview deploy + Supabase preview DB
             └─ smoke test the preview
                  └─ squash-merge to main ──▶ production auto-deploys
                       └─ delete branch, close issue
@@ -185,7 +185,7 @@ The PR template (see `claude-config/github/pull_request_template.md`) prompts fo
 Two things happen in parallel:
 
 - **GitHub Actions** runs type-check, lint, and unit tests against the PR.
-- **Vercel** builds a preview deployment with its own Neon database branch and posts the URL on the PR.
+- **Vercel** builds a preview deployment with its own Supabase preview database and posts the URL on the PR.
 
 If CI fails:
 
@@ -279,7 +279,7 @@ If the bad change must come out of `main` (e.g. it's blocking other PRs):
 
 If a migration caused data corruption:
 
-1. Use Neon point-in-time recovery to create a branch from before the migration
+1. Use Supabase point-in-time recovery to restore the database to before the migration
 2. Update `DATABASE_URL` in Vercel environment variables
 3. Redeploy
 

@@ -43,7 +43,7 @@ TODO: Describe the problem
 ### Journey 1: New User Onboarding
 **Trigger:** User clicks "Sign Up" from the marketing page
 1. User enters email and password
-2. System creates account via Clerk, sends verification email
+2. System creates account via Supabase Auth, sends verification email
 3. User verifies email, lands on post-auth routing
 4. System checks role, redirects to dashboard
 5. User sees empty state with guided setup prompts

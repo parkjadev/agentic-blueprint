@@ -9,10 +9,6 @@ class AppConstants {
   static const defaultPageSize = 20;
   static const maxPageSize = 100;
 
-  /// Token storage keys
-  static const accessTokenKey = 'access_token';
-  static const refreshTokenKey = 'refresh_token';
-
   /// Timeouts
   static const connectTimeout = Duration(seconds: 10);
   static const receiveTimeout = Duration(seconds: 30);

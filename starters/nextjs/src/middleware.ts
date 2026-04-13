@@ -1,13 +1,41 @@
-import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
-import { publicRoutes } from '@/lib/auth-routing';
+import { type NextRequest, NextResponse } from 'next/server';
+import { updateSession } from '@/lib/supabase/middleware';
+import { publicRoutes, authRoutes, afterSignInUrl } from '@/lib/auth-routing';
 
-const isPublicRoute = createRouteMatcher(publicRoutes);
+function matchesPattern(path: string, patterns: string[]): boolean {
+  return patterns.some((pattern) => new RegExp(`^${pattern}$`).test(path));
+}
 
-export default clerkMiddleware(async (auth, request) => {
-  if (!isPublicRoute(request)) {
-    await auth.protect();
+export async function middleware(request: NextRequest) {
+  const { supabaseResponse, supabase } = await updateSession(request);
+  const path = request.nextUrl.pathname;
+
+  // Public routes — no auth required
+  if (matchesPattern(path, publicRoutes)) {
+    return supabaseResponse;
   }
-});
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Auth routes (sign-in, sign-up) — redirect to dashboard if already signed in
+  if (matchesPattern(path, authRoutes)) {
+    if (user) {
+      return NextResponse.redirect(new URL(afterSignInUrl, request.url));
+    }
+    return supabaseResponse;
+  }
+
+  // Protected routes — redirect to sign-in if not authenticated
+  if (!user) {
+    const signInUrl = new URL('/sign-in', request.url);
+    signInUrl.searchParams.set('redirect_to', path);
+    return NextResponse.redirect(signInUrl);
+  }
+
+  return supabaseResponse;
+}
 
 export const config = {
   matcher: [

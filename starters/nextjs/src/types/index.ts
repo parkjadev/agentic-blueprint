@@ -36,8 +36,7 @@ export type UserStatus = 'active' | 'suspended' | 'deleted';
 
 // Authenticated user context resolved by get-auth.ts
 export type AuthUser = {
-  id: string;
-  clerkId: string;
+  id: string; // Supabase Auth user UUID
   email: string;
   name: string | null;
   role: UserRole;

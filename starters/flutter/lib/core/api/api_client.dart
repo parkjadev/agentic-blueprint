@@ -3,21 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/constants.dart';
 import '../../config/env.dart';
-import '../storage/secure_storage.dart';
 import 'api_exceptions.dart';
 import 'api_interceptors.dart';
 import 'api_response.dart';
 
 /// Riverpod provider for the API client.
 final apiClientProvider = Provider<ApiClient>((ref) {
-  final secureStorage = ref.watch(secureStorageProvider);
-  return ApiClient(secureStorage: secureStorage);
+  return ApiClient();
 });
 
 /// HTTP client for the Next.js API backend.
 /// Uses Dio with auth, error, and logging interceptors.
+/// Auth tokens come from the Supabase session automatically.
 class ApiClient {
-  ApiClient({required SecureStorage secureStorage}) {
+  ApiClient() {
     _dio = Dio(
       BaseOptions(
         baseUrl: EnvConfig.current.apiBaseUrl,
@@ -31,7 +30,7 @@ class ApiClient {
     );
 
     _dio.interceptors.addAll([
-      AuthInterceptor(secureStorage: secureStorage),
+      AuthInterceptor(),
       ErrorInterceptor(),
       LoggingInterceptor(),
     ]);

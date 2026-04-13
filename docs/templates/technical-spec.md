@@ -26,7 +26,7 @@ TODO: Brief description of the feature and its purpose
 
 | Capability | Where it lives | Notes |
 |---|---|---|
-| TODO: e.g. Dual-mode auth | `src/lib/auth/get-auth.ts:1-80` | Already handles Clerk + JWT — no work needed |
+| TODO: e.g. Supabase Auth | `src/lib/auth/get-auth.ts:1-80` | Already handles web + mobile via supabase.auth.getUser() — no work needed |
 | TODO: e.g. Rate limit factory | `src/lib/rate-limit.ts:15-60` | Has 3 limiters, need to add a 4th for this feature |
 
 **Excluded from scope:** TODO: list capabilities that look related but are explicitly *not* being touched in this plan.
@@ -59,7 +59,7 @@ export const projects = pgTable('projects', {
 - [ ] **Pre-launch?** If yes, the next three boxes don't apply — reseed the dev DB freely. The ceremony kicks in once you have users you can't safely lose.
 - [ ] Migration is additive (no column drops, renames, or type changes)
 - [ ] If destructive: split into expand → migrate → contract PRs
-- [ ] Tested on the PR's Neon preview branch before merging to `main`
+- [ ] Tested on the Supabase dev project before merging to `main`
 - [ ] Rollback plan documented
 
 ## API Changes
@@ -69,7 +69,7 @@ export const projects = pgTable('projects', {
 
 ### `POST /api/example`
 
-**Auth:** Required (Clerk session or mobile JWT)
+**Auth:** Required (Supabase Auth session)
 **Role:** Any authenticated user
 
 **Request:**
@@ -137,7 +137,7 @@ TODO: Describe UI changes or write "No UI changes"
 - [ ] TODO: API route handler tests (happy path + error cases)
 
 ### Integration Tests
-- [ ] TODO: Database operations with real Neon preview branch
+- [ ] TODO: Database operations with Supabase dev project
 
 ### E2E Tests
 - [ ] TODO: Full user journey (if applicable)
@@ -172,7 +172,7 @@ TODO: Describe UI changes or write "No UI changes"
 
 ### Production rollout
 
-1. **Preview:** PR opens → Vercel builds preview + Neon preview DB branch → run smoke tests against the preview URL
+1. **Preview:** PR opens → Vercel builds preview → run smoke tests against the preview URL
 2. **Production:** Squash-merge to `main` → Vercel auto-deploys → verify `/api/health` and key endpoints
 3. **Rollback trigger:** Error rate > 1% or P0 bug reported within 24h → Vercel "Promote previous deployment"
 

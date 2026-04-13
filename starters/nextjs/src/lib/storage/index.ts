@@ -1,65 +1,58 @@
-import { env, services } from '@/env';
+import { createAdminClient } from '@/lib/supabase/server';
 
 type UploadResult = {
-  key: string;
+  path: string;
   url: string;
 };
 
 /**
- * Upload a file to Cloudflare R2.
- * Gracefully skips if R2 is not configured.
+ * Upload a file to Supabase Storage.
+ *
+ * Uses the service-role client to bypass RLS. For user-scoped uploads,
+ * configure storage bucket policies in the Supabase dashboard.
  */
 export async function uploadFile(
-  key: string,
-  body: ReadableStream | Buffer | string,
+  bucket: string,
+  path: string,
+  body: Buffer | Uint8Array | Blob,
   contentType: string,
-): Promise<UploadResult | null> {
-  if (!services.r2) {
-    return null;
+): Promise<UploadResult> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase.storage
+    .from(bucket)
+    .upload(path, body, { contentType, upsert: true });
+
+  if (error) {
+    throw new Error(`Storage upload failed: ${error.message}`);
   }
 
-  const url = `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${env.R2_BUCKET_NAME}/${key}`;
-
-  // Convert Buffer to Uint8Array — Node.js fetch types don't accept Buffer
-  // in the body parameter directly (Buffer is missing URLSearchParams methods
-  // that BodyInit requires). Uint8Array is the standard portable type.
-  const fetchBody: BodyInit = Buffer.isBuffer(body)
-    ? new Uint8Array(body)
-    : body;
-
-  const response = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': contentType,
-      Authorization: `Bearer ${env.R2_ACCESS_KEY_ID}:${env.R2_SECRET_ACCESS_KEY}`,
-    },
-    body: fetchBody,
-  });
-
-  if (!response.ok) {
-    throw new Error(`R2 upload failed: ${response.status} ${response.statusText}`);
-  }
+  const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
 
   return {
-    key,
-    url: `https://${env.R2_BUCKET_NAME}.r2.dev/${key}`,
+    path,
+    url: urlData.publicUrl,
   };
 }
 
 /**
- * Delete a file from Cloudflare R2.
+ * Delete a file from Supabase Storage.
  */
-export async function deleteFile(key: string): Promise<void> {
-  if (!services.r2) {
-    return;
+export async function deleteFile(bucket: string, path: string): Promise<void> {
+  const supabase = createAdminClient();
+
+  const { error } = await supabase.storage.from(bucket).remove([path]);
+
+  if (error) {
+    throw new Error(`Storage delete failed: ${error.message}`);
   }
+}
 
-  const url = `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${env.R2_BUCKET_NAME}/${key}`;
-
-  await fetch(url, {
-    method: 'DELETE',
-    headers: {
-      Authorization: `Bearer ${env.R2_ACCESS_KEY_ID}:${env.R2_SECRET_ACCESS_KEY}`,
-    },
-  });
+/**
+ * Get the public URL for a file in Supabase Storage.
+ */
+export function getPublicUrl(bucket: string, path: string): string {
+  const supabase = createAdminClient();
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl;
 }

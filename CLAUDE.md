@@ -14,8 +14,8 @@ The master plan is **Agentic-Blueprint-v2.0.md** — all work must align with it
 agentic-blueprint/
 ├── docs/templates/       # Reusable document templates (PRD, specs, architecture)
 ├── docs/guides/          # Full lifecycle workflow guides mapped to Claude surfaces
-├── starters/nextjs/      # Full-stack Next.js starter (Clerk, Drizzle, Neon, Inngest)
-├── starters/flutter/     # Mobile companion starter (Riverpod, GoRouter, Dio)
+├── starters/nextjs/      # Full-stack Next.js starter (Supabase, Drizzle, Inngest)
+├── starters/flutter/     # Mobile companion starter (Riverpod, GoRouter, Supabase)
 └── claude-config/        # CLAUDE.md template, settings, memory guidelines, hooks
 ```
 
@@ -29,7 +29,7 @@ agentic-blueprint/
 1. **Australian spelling throughout** — favour, colour, organisation, behaviour, licence (noun), etc. Applies to all prose, comments, and string literals in every file in this repo.
 2. **No domain-specific business logic in starters** — starters contain only generic infrastructure patterns. Anything that ties a starter to a specific product, brand, or vertical must be replaced with a generic example and a `TODO:` marker before merging.
 3. **All starters must boot clean** — `starters/nextjs/` must pass `pnpm install && pnpm type-check && pnpm lint && pnpm test:ci` with zero errors. `starters/flutter/` must pass `flutter analyze && flutter test` with zero errors. Never merge code that breaks a starter's clean boot.
-4. **Optional services** — in starters, use optional Zod schemas in `env.ts` so services gracefully skip when env vars are missing. Only Neon + Clerk + Upstash are required; everything else (Stripe, R2, Inngest, Resend) must be opt-in.
+4. **Optional services** — in starters, use optional Zod schemas in `env.ts` so services gracefully skip when env vars are missing. Only Supabase is required; everything else (Stripe, Inngest, Resend) must be opt-in.
 5. **Spec-driven** — every feature starts as a spec document before any code is written.
 6. **Plan-before-code** — use Claude Code's plan → approve → execute pattern. No Auto Mode.
 

@@ -1,23 +1,21 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../storage/secure_storage.dart';
 import 'api_exceptions.dart';
 
-/// Attaches the JWT Bearer token to every request.
+/// Attaches the Supabase Auth access token to every API request.
+/// The token is read directly from the Supabase session — no manual
+/// storage management required.
 class AuthInterceptor extends Interceptor {
-  AuthInterceptor({required this.secureStorage});
-
-  final SecureStorage secureStorage;
-
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await secureStorage.getAccessToken();
-    if (token != null) {
-      options.headers['Authorization'] = 'Bearer $token';
+    final session = Supabase.instance.client.auth.currentSession;
+    if (session != null) {
+      options.headers['Authorization'] = 'Bearer ${session.accessToken}';
     }
     handler.next(options);
   }
