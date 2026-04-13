@@ -1,10 +1,9 @@
-import 'package:dio/dio.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-
 import 'package:app/core/api/api_exceptions.dart';
 import 'package:app/core/api/api_response.dart';
 import 'package:app/core/storage/secure_storage.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockSecureStorage extends Mock implements SecureStorage {}
 
