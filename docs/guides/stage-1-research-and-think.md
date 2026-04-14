@@ -163,6 +163,12 @@ The PRD is now version-controlled and ready for the next stage.
 - All open questions either resolved or explicitly documented in the PRD
 - P0 feature set is tight and justified by research evidence
 
+## Platform notes
+
+- **Claude-native:** Use Claude Desktop Projects for persistent venture context across conversations.
+- **Cursor + Perplexity:** Perplexity Deep Research handles the research. For thinking, use Claude Desktop Chat or iterate in Perplexity follow-up threads (less depth than a dedicated thinking partner).
+- **OutSystems ODC:** Same research and thinking workflow. ODC teams benefit from researching existing OutSystems Forge components and solution patterns before ideating.
+
 ## Anti-patterns
 
 | Anti-pattern | Why it fails | Do this instead |

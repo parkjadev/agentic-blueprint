@@ -224,6 +224,12 @@ works if you close it.
 - [ ] Feedback captured for next iteration (issues filed, backlog updated)
 - [ ] Review workflow defined for each active task
 
+## Platform notes
+
+- **Claude-native:** Scheduled Tasks for automated PR triage, CI monitoring, and dependency audits. Cowork for non-code ops. This is the most complete implementation — no gaps.
+- **Cursor + Perplexity:** No native automation or ops surface. Use GitHub Actions for scheduled maintenance tasks. Non-code ops remain manual or require external tooling. This is the biggest gap in the Cursor ecosystem.
+- **OutSystems ODC:** ODC Timers handle in-app scheduled jobs (data sync, cleanup). For external maintenance (dependency audits, documentation sync), use Claude Scheduled Tasks or GitHub Actions. Cowork handles ops tasks (invoicing, contracts) regardless of build platform.
+
 ## Anti-patterns
 
 | Anti-pattern | Why it fails | Do this instead |

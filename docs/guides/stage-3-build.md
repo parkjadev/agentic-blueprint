@@ -212,6 +212,12 @@ Keep CLAUDE.md up to date as your project evolves. Stale context is worse than n
 
 ---
 
+## Platform notes
+
+- **Claude-native:** Claude Code (Terminal + VS Code extension) with CLAUDE.md for project context.
+- **Cursor + Perplexity:** Cursor Agent with parallel and background agents. `.cursorrules` + Agent Skills provide project context. Strongest option for parallelised feature work.
+- **OutSystems ODC:** Mentor + Enterprise Context Graph inside ODC Studio. The Context Graph provides codebase awareness. Mentor generates screens, logic, and integrations. The Blueprint's contribution is the spec discipline that feeds Mentor better prompts — a spec-driven Mentor prompt produces better output than an unstructured one.
+
 ## Anti-patterns
 
 | Anti-pattern | Why it fails | Do this instead |
