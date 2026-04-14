@@ -31,7 +31,44 @@ fewer rewrites, clearer code review, predictable scope — are substantial.
 
 ## How it works
 
-### 1. Review the PRD
+### 1. Bootstrap repo from the Blueprint template
+
+Use **Use this template → Create a new repository** on GitHub to create a fresh
+repo from the Blueprint template. Clone it locally and open it in your agentic
+coder.
+
+### 2. Run setup scripts
+
+Run the repository setup scripts to configure GitHub labels and branch
+protection:
+
+```
+./setup-labels.sh
+./setup-branch-protection.sh
+```
+
+### 3. File issue #1
+
+Create the first GitHub issue — `chore: initial scaffold` — per the hard rule
+that every piece of work starts with a tracked issue.
+
+### 4. Commit research brief to `docs/research/`
+
+Copy the research brief you saved in Stage 1 into the repo:
+
+```
+> Commit docs/research/[topic].md with message "docs: add [topic] research brief"
+```
+
+### 5. Commit PRD to `docs/prd/`
+
+Copy the PRD you saved in Stage 1 into the repo:
+
+```
+> Commit docs/prd/[feature-name].md with message "docs: add [feature] PRD"
+```
+
+### 6. Review the PRD
 
 Open your agentic coder in the repo and load the PRD:
 
@@ -42,7 +79,7 @@ Confirm the summary matches your intent before proceeding. If anything is
 ambiguous, update the PRD now — it is cheaper to fix a paragraph than to
 refactor code.
 
-### 2. Identify components
+### 7. Identify components
 
 Ask the coder to decompose the PRD into technical components:
 
@@ -60,7 +97,7 @@ decomposition surfaces:
 - **UI** — pages, forms, interactive elements
 - **Integrations** — third-party APIs, webhooks, external services
 
-### 3. Decide spec granularity
+### 8. Decide spec granularity
 
 Not every component needs its own spec file. Use these rules of thumb:
 
@@ -74,7 +111,7 @@ Not every component needs its own spec file. Use these rules of thumb:
 When in doubt, start with a single `technical-spec.md`. You can extract a
 dedicated spec later if a section grows unwieldy.
 
-### 4. Draft specs in `docs/specs/[name]/`
+### 9. Draft specs in `docs/specs/[name]/`
 
 Tell the coder to create the spec files using the templates:
 
@@ -99,7 +136,7 @@ Iterate until each section is precise. Challenge the coder:
 - "How does this work for mobile clients?"
 - "What is the rollback plan if this breaks production?"
 
-### 5. Review specs against checklist
+### 10. Review specs against checklist
 
 Before committing, verify each spec against this checklist:
 
@@ -113,7 +150,7 @@ Before committing, verify each spec against this checklist:
 
 Fix any gaps before proceeding. A spec with holes becomes code with holes.
 
-### 6. Create GitHub issue with acceptance criteria
+### 11. Create GitHub issue with acceptance criteria
 
 With specs committed, create the implementation issue:
 
@@ -124,7 +161,7 @@ With specs committed, create the implementation issue:
 
 This creates a trackable work item that links PRD → specs → implementation.
 
-### 7. Create feature branch
+### 12. Create feature branch
 
 Create a branch from `main` for the implementation work:
 
@@ -146,8 +183,10 @@ is solid: specs are versioned, the issue is trackable, and the branch is clean.
 
 ## Exit criteria
 
+- Research brief committed to `docs/research/[topic].md`
+- PRD committed to `docs/prd/[feature-name].md`
 - Specs committed to `docs/specs/[feature-name]/`
-- All checklist items from step 5 pass
+- All checklist items from step 10 pass
 - GitHub issue created with acceptance criteria and linked specs
 - Feature branch created from `main`
 
