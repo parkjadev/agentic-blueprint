@@ -30,6 +30,68 @@ Automation, it means that tool has no native equivalent — you would need to
 build the capability yourself (e.g. a GitHub Actions cron job that calls an AI
 API). The Blueprint covers those workarounds where relevant.
 
+## Platform implementation profiles
+
+The five stages need five capabilities. Here is how three common toolchains fill them.
+
+### Profile A: Claude-native (code-first)
+
+Best for: Solo founders, small product teams, full-stack web/mobile.
+
+| Stage | Role | Tool |
+|---|---|---|
+| 1. Research & Think | Research tool | Perplexity Deep Research |
+| 1. Research & Think | Thinking partner | Claude Desktop Chat (Projects) |
+| 2. Plan | Spec author + codebase context | Claude Code (Terminal) |
+| 3. Build | Agentic coder | Claude Code (Terminal + VS Code) |
+| 4. Ship | Deployment pipeline | Claude Code + Vercel MCP |
+| 4. Ship | Mobile supervision | Dispatch + Remote Control |
+| 5. Run | Scheduled automation | Claude Scheduled Tasks |
+| 5. Run | Ops surface | Cowork |
+
+CLAUDE.md provides project context across sessions. Specs live in `docs/specs/`. Architecture decisions are committed to the repo. The Claude ecosystem covers all five stages natively.
+
+### Profile B: Cursor + Perplexity (code-first, multi-vendor)
+
+Best for: Teams already invested in Cursor, developers who want parallel agents.
+
+| Stage | Role | Tool |
+|---|---|---|
+| 1. Research & Think | Research tool | Perplexity Deep Research |
+| 1. Research & Think | Thinking partner | Claude Desktop Chat or Perplexity follow-up threads |
+| 2. Plan | Spec author + codebase context | Cursor Agent (with .cursorrules + Agent Skills) |
+| 3. Build | Agentic coder | Cursor Agent (parallel agents, background agents) |
+| 4. Ship | Deployment pipeline | Cursor + GitHub/Vercel integrations |
+| 4. Ship | Mobile supervision | Cursor mobile agent (limited) |
+| 5. Run | Scheduled automation | GitHub Actions (no native equivalent) |
+| 5. Run | Ops surface | None (gap — manual or external tooling) |
+
+`.cursorrules` provides project context. Agent Skills encode domain workflows. Gaps in Stage 5 require external tooling (GitHub Actions for automation, manual processes for ops).
+
+### Profile C: OutSystems ODC (low-code, enterprise)
+
+Best for: Enterprise teams using OutSystems for rapid application delivery.
+
+| Stage | Role | Tool |
+|---|---|---|
+| 1. Research & Think | Research tool | Perplexity Deep Research |
+| 1. Research & Think | Thinking partner | Claude Desktop Chat (Projects) or any LLM with persistent context |
+| 2. Plan | Spec author | Claude Code or manual spec authoring — the templates apply regardless of build tool |
+| 3. Build | Agentic builder | OutSystems Mentor + Enterprise Context Graph |
+| 4. Ship | Deployment pipeline | OutSystems ODC deployment pipeline (built-in Development → QA → Production) |
+| 4. Ship | Mobile supervision | Not applicable — ODC deployments are managed via the portal |
+| 5. Run | Scheduled automation | Claude Scheduled Tasks, GitHub Actions, or ODC Timers for in-app jobs |
+| 5. Run | Ops surface | Cowork (invoices, contracts) or enterprise admin tooling |
+
+OutSystems Enterprise Context Graph provides codebase awareness to Mentor (equivalent to CLAUDE.md + embeddings). Architecture documentation and specs still live in a repo or shared drive — the discipline applies even when the build tool is visual. The Blueprint's spec templates map to ODC concepts: the architecture template captures module structure, service actions, and integration points; the data model spec maps to ODC entities and relationships; the API spec maps to exposed REST/SOAP services.
+
+**How OutSystems ODC maps to the Blueprint:**
+
+- **Mentor** fills the Agentic Coder role in Stage 3. It generates screens, logic flows, and integrations inside ODC Studio. Like Cursor Agent, it is powerful at building but does not enforce spec discipline on its own.
+- **Enterprise Context Graph** is OutSystems' equivalent of the CLAUDE.md pattern — it gives Mentor awareness of the full application landscape (modules, dependencies, data model, integrations). The Blueprint's architecture template captures the same information in a human-readable format that persists beyond any single tool session.
+- **Agentic Systems Engineering** is OutSystems' framing for AI-assisted development across the ODC lifecycle. The Blueprint's five-stage model is compatible with and complementary to this — it adds the research, spec discipline, and post-ship automation layers that OutSystems' agentic tooling does not cover.
+- The **spec templates work directly** with ODC projects. A PRD for an OutSystems app follows the same Problem → Users → Journeys → Features structure. A technical spec documents the module decomposition, service action contracts, and entity relationships. An architecture template captures the ODC environment topology, module dependency graph, and external integration points.
+
 ## Handoff patterns
 
 Tools rarely operate in isolation. Most real work flows through multiple roles.

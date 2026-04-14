@@ -151,6 +151,12 @@ is solid: specs are versioned, the issue is trackable, and the branch is clean.
 - GitHub issue created with acceptance criteria and linked specs
 - Feature branch created from `main`
 
+## Platform notes
+
+- **Claude-native:** Claude Code reads your codebase and writes spec files directly. Use the plan → approve → execute pattern.
+- **Cursor + Perplexity:** Cursor Agent writes specs with codebase context via `.cursorrules`. Agent Skills can encode your spec templates as reusable workflows.
+- **OutSystems ODC:** Specs are authored manually or in Claude Code/Chat, then committed to a shared repo or wiki. The architecture template should capture ODC module structure, entity model, service action contracts, and integration topology. Mentor does not generate specs — the discipline must come from the team.
+
 ## Anti-patterns
 
 | Anti-pattern | Why it fails | Do this instead |

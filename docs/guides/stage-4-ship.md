@@ -194,6 +194,12 @@ These proven patterns work well as fire-and-forget tasks:
 
 ---
 
+## Platform notes
+
+- **Claude-native:** Claude Code + Vercel MCP for deployment. Dispatch and Remote Control for mobile supervision.
+- **Cursor + Perplexity:** Cursor integrates with GitHub and Vercel. Mobile agent available but limited compared to Dispatch/Remote Control.
+- **OutSystems ODC:** ODC has a built-in deployment pipeline (Development → QA → Production). The Blueprint's deployment template captures environment configuration, promotion criteria, and rollback procedures — relevant regardless of whether deployment is CLI-driven or portal-driven.
+
 ## Anti-patterns
 
 | Anti-pattern | Why it fails | Do this instead |

@@ -80,7 +80,7 @@ No starter code required. The templates and guides work with any tech stack.
 | [Stage 3: Build](docs/guides/stage-3-build.md) | Code, test, PR — the discipline layer |
 | [Stage 4: Ship](docs/guides/stage-4-ship.md) | Deploy, verify, rollback, mobile supervision |
 | [Stage 5: Run](docs/guides/stage-5-run.md) | Scheduled automation, ops, maintenance |
-| [Tool Reference](docs/guides/tool-reference.md) | Which tool for which role, decision tree, MCP setup |
+| [Tool Reference](docs/guides/tool-reference.md) | Role mapping, decision tree, platform profiles (Claude, Cursor, OutSystems ODC) |
 
 ---
 
@@ -142,6 +142,20 @@ Drop-in configuration for any project using Claude Code: CLAUDE.md template with
 
 ---
 
+## Platform Compatibility
+
+The Blueprint is tested and documented for three platform profiles:
+
+| Profile | Build Tool | Best For |
+|---|---|---|
+| **Claude-native** | Claude Code | Solo founders, full-stack web/mobile |
+| **Cursor + Perplexity** | Cursor Agent | Teams wanting parallel agents, multi-vendor |
+| **OutSystems ODC** | Mentor + Context Graph | Enterprise low-code delivery |
+
+See [Tool Reference](docs/guides/tool-reference.md) for the full role-to-tool mapping for each profile.
+
+---
+
 ## Philosophy
 
 AI is treated as a senior collaborator who needs context to perform. The quality of AI output is directly proportional to the context you provide — project guides, specs, schemas, and clear instructions.
@@ -151,6 +165,8 @@ AI is treated as a senior collaborator who needs context to perform. The quality
 3. **Spec** before you build — every feature starts as a document, not a code change
 4. **Automate** after you ship — maintenance that doesn't run doesn't happen
 5. **Context compounds** — every minute invested in documentation pays dividends across every future session
+
+The framework applies equally to code-first teams (Next.js, Flutter), AI-native editors (Cursor, Claude Code), and low-code platforms (OutSystems ODC). The stages are universal. The tools are interchangeable.
 
 ---
 

@@ -36,3 +36,4 @@ agentic-blueprint/
 6. **Plan-before-code** — review the plan before any code generation. No Auto Mode.
 7. **Templates are sacred** — the templates in `docs/templates/` are the core IP. Edit for clarity, never remove sections.
 8. **Tool-agnostic framing** — guides recommend tools but never require a specific vendor. The discipline is the product, not the toolchain.
+9. **Platform profiles are descriptive, not prescriptive** — profiles show how tools map to roles. They do not endorse or require any specific vendor. New profiles can be added for any toolchain that covers the five roles.
