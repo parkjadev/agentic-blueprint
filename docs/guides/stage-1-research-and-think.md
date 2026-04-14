@@ -53,16 +53,12 @@ cite sources. Review the output critically — check that citations are real and
 that conclusions follow from the evidence. Flag anything that contradicts your
 assumptions; those contradictions are the most valuable findings.
 
-### 3. Commit research brief to `docs/research/`
+### 3. Save research brief
 
 Structure your findings using the research-brief template. Save the file as
-`docs/research/[topic].md` and commit it to version control. This creates an
-auditable record that the team (or future-you) can reference when someone asks
-"why did we choose X?"
-
-```
-> Commit docs/research/[topic].md with message "docs: add [topic] research brief"
-```
+`[topic].md` locally or in your thinking partner's project context (e.g.,
+Cowork). The repo does not exist yet — it will be bootstrapped in Stage 2,
+where you will commit the research brief to `docs/research/`.
 
 ### 4. Set up project context (persistent chat)
 
@@ -137,19 +133,16 @@ Iterate until language is precise — replace "improve UX" with "reduce onboardi
 steps from 5 to 2". Ensure success metrics are measurable, the out-of-scope
 section is explicit, and open questions are flagged.
 
-### 10. Commit PRD to `docs/prd/`
+### 10. Save PRD
 
-Export the final PRD and save it to your repo:
+Export the final PRD and save it locally:
 
 1. Copy the final PRD markdown from your chat
-2. Save it to `docs/prd/[feature-name].md`
-3. Commit via your agentic coder
+2. Save it as `[feature-name].md` locally or in your thinking partner's project
+   context (e.g., Cowork)
 
-```
-> Commit docs/prd/[feature-name].md with message "docs: add [feature] PRD"
-```
-
-The PRD is now version-controlled and ready for the next stage.
+The repo does not exist yet — it will be bootstrapped in Stage 2, where you
+will commit the PRD to `docs/prd/`.
 
 ## Templates
 
@@ -158,8 +151,7 @@ The PRD is now version-controlled and ready for the next stage.
 
 ## Exit criteria
 
-- Research brief committed to `docs/research/[topic].md`
-- PRD committed to `docs/prd/[feature-name].md`
+- Research brief and PRD are finalised and saved locally. Both will be committed to the repo in Stage 2.
 - All open questions either resolved or explicitly documented in the PRD
 - P0 feature set is tight and justified by research evidence
 
