@@ -77,7 +77,17 @@ fi
 
 header "Rule 7: Templates are sacred"
 if git diff --name-only main...HEAD 2>/dev/null | grep -q '^docs/templates/'; then
-  fail "Rule 7" "branch modifies docs/templates/ — templates are sacred"
+  # Escape hatch (per docs/principles/07-templates-are-sacred.md): template
+  # changes may land on a dedicated `docs/*` or `templates/*` branch.
+  branch_r7=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+  case "$branch_r7" in
+    docs/*|templates/*)
+      pass "docs/templates/ edited on dedicated '$branch_r7' (reviewer approval required at merge)"
+      ;;
+    *)
+      fail "Rule 7" "branch '$branch_r7' modifies docs/templates/ — use a 'docs/*' or 'templates/*' branch for template changes"
+      ;;
+  esac
 else
   pass "docs/templates/ untouched"
 fi

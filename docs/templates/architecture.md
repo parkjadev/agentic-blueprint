@@ -42,7 +42,7 @@ TODO: Customise the diagram for your project
 | Auth | Supabase Auth (unified web + mobile) | `src/lib/auth/` | Supabase Auth, @supabase/ssr |
 | Database | Data persistence, schema, migrations | `src/lib/db/` | Drizzle ORM, Supabase PostgreSQL (Supavisor pooler) |
 | Background jobs | Async processing, scheduled work | `src/lib/jobs/` | Inngest |
-| Rate limiting | Request throttling per IP/user | `src/lib/rate-limit.ts` | In-memory (Upstash Redis as upgrade path) |
+| Rate limiting | Request throttling per IP/user | `src/lib/rate-limit.ts` | In-memory (distributed Redis-compatible store as upgrade path) |
 | Storage | File uploads and media | `src/lib/storage/` | Supabase Storage |
 | Email | Transactional email delivery | `src/lib/email/` | Resend |
 | Payments | Billing, subscriptions, webhooks | `src/lib/stripe/` | Stripe |
@@ -126,7 +126,7 @@ TODO: Add flows specific to your application
 | Preview (per PR) | Open PR against `main` | Supabase dev project (shared across previews) | `<project>-<pr>.vercel.app` | PR review, smoke testing, stakeholder demos |
 | Production | Squash-merge to `main` | Supabase production project | `example.com` | Live users |
 
-> No long-lived `staging` branch — see `docs/guides/feature-workflow.md` for the rationale.
+> No long-lived `staging` branch — see `docs/guides/stage-4-ship.md` for the rationale.
 
 ## Security Architecture
 
@@ -136,7 +136,7 @@ TODO: Add flows specific to your application
 - **Authorisation:** Role-based (admin, user) with per-resource ownership checks
 - **Transport:** HTTPS everywhere (enforced by Vercel)
 - **CSP:** Content Security Policy headers in middleware
-- **Rate limiting:** In-memory rate limiter — per-IP and per-user limits (Upstash Redis as documented upgrade path)
+- **Rate limiting:** In-memory rate limiter — per-IP and per-user limits (distributed Redis-compatible store as documented upgrade path)
 - **Input validation:** Zod schemas on every API endpoint
 - **Secrets:** Environment variables — never committed to git
 

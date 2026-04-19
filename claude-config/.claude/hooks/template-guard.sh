@@ -31,12 +31,20 @@ case "$path" in
 esac
 
 if [[ "$rel" == docs/templates/* ]]; then
+  # Escape hatch (per docs/principles/07-templates-are-sacred.md): template
+  # changes may land on a dedicated `docs/*` or `templates/*` branch. Any
+  # other branch trying to edit docs/templates/ is blocked.
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+  case "$branch" in
+    docs/*|templates/*) exit 0;;
+  esac
+
   cat <<EOF >&2
 Blocked: $rel is in docs/templates/, which is sacred (Hard Rule #7).
 
 Templates define the spec contract. Edit for clarity in a dedicated docs: PR,
-never bundled into a feature change. If you really need to touch a template,
-exit and open a separate \`docs:\` PR with reviewer approval.
+never bundled into a feature change. Move to a branch named \`docs/<slug>\`
+or \`templates/<slug>\` and retry — that branch is the documented escape.
 EOF
   exit 2
 fi

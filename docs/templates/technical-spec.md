@@ -21,8 +21,8 @@ TODO: Brief description of the feature and its purpose
      filling out the rest of this spec, read the relevant src/lib/* modules
      and list what's already built so the implementation phase doesn't
      re-explore. Every line below should be backed by a Read of an actual
-     file — not a memory recall. See the Plan-mode patterns in
-     docs/guides/agentic-workflow.md Phase 5 for the rationale. -->
+     file — not a memory recall. See docs/principles/06-plan-before-code.md
+     for the rationale and docs/guides/stage-2-plan.md for the workflow. -->
 
 | Capability | Where it lives | Notes |
 |---|---|---|

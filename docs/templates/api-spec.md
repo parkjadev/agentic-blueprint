@@ -205,7 +205,8 @@ TODO: Describe the API domain
 ## Rate Limiting
 
 <!-- Define rate limits per endpoint or per group. Uses in-memory rate limiter
-     (upgrade to Upstash Redis for distributed rate limiting if needed). -->
+     (upgrade to a distributed Redis-compatible store for multi-instance
+     rate limiting if needed). -->
 
 | Scope | Limit | Window |
 |---|---|---|
