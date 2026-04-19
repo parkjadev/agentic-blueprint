@@ -60,6 +60,24 @@ Enforced by `.claude/hooks/pre-commit-gate.sh` via the
      checkable — add a check to .claude/skills/hard-rules-check/scripts/
      check-all.sh for each one you add. -->
 
+## Meta-principles
+
+Three architectural principles shape how the harness itself is built.
+Unlike the Hard Rules, these are not machine-checked — they are lenses
+for deciding how new commands, agents, skills, and hooks should behave.
+
+10. **Progressive disclosure.** Commands and agents load only the context
+    they need, on demand. Skills expose a short `SKILL.md` and defer
+    reference material until it's actually asked for.
+11. **Context economy.** Every token spent on framing is a token not spent
+    on the task. Prefer terse primitives, dense tables, and delegated
+    subagents over long inline prose.
+12. **Gates over guidance.** When a rule matters, enforce it with a hook
+    or CI check. Guidance in docs degrades over time; gates don't.
+
+Full rationale for all twelve principles lives in the blueprint's
+[`docs/principles/`](https://github.com/parkjadev/agentic-blueprint/tree/main/docs/principles).
+
 ## Environments
 
 <!-- TODO: list your environments and the branch/URL/database each one maps to. -->

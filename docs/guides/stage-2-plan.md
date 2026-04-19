@@ -43,8 +43,8 @@ Run the repository setup scripts to configure GitHub labels and branch
 protection:
 
 ```
-./setup-labels.sh
-./setup-branch-protection.sh
+./claude-config/scripts/setup-labels.sh
+./claude-config/scripts/setup-branch-protection.sh
 ```
 
 ### 3. File issue #1
@@ -60,20 +60,20 @@ Copy the research brief you saved in Stage 1 into the repo:
 > Commit docs/research/[topic].md with message "docs: add [topic] research brief"
 ```
 
-### 5. Commit PRD to `docs/prd/`
+### 5. Commit PRD to `docs/specs/[feature-name]/PRD.md`
 
 Copy the PRD you saved in Stage 1 into the repo:
 
 ```
-> Commit docs/prd/[feature-name].md with message "docs: add [feature] PRD"
+> Commit docs/specs/[feature-name]/PRD.md with message "docs: add [feature] PRD"
 ```
 
 ### 6. Review the PRD
 
 Open your agentic coder in the repo and load the PRD:
 
-> "Read docs/prd/[feature-name].md and summarise the P0 scope, user journeys,
-> and non-functional requirements."
+> "Read docs/specs/[feature-name]/PRD.md and summarise the P0 scope, user
+> journeys, and non-functional requirements."
 
 Confirm the summary matches your intent before proceeding. If anything is
 ambiguous, update the PRD now — it is cheaper to fix a paragraph than to
@@ -184,8 +184,9 @@ is solid: specs are versioned, the issue is trackable, and the branch is clean.
 ## Exit criteria
 
 - Research brief committed to `docs/research/[topic].md`
-- PRD committed to `docs/prd/[feature-name].md`
-- Specs committed to `docs/specs/[feature-name]/`
+- PRD committed to `docs/specs/[feature-name]/PRD.md`
+- Remaining specs committed to `docs/specs/[feature-name]/`
+- Plan committed to `docs/plans/[feature-name].md`
 - All checklist items from step 10 pass
 - GitHub issue created with acceptance criteria and linked specs
 - Feature branch created from `main`
@@ -209,4 +210,4 @@ is solid: specs are versioned, the issue is trackable, and the branch is clean.
 ---
 
 *Previous stage: [Stage 1 — Research & Think](stage-1-research-and-think.md)*
-*Next stage: Stage 3 — Build (coming soon)*
+*Next stage: [Stage 3 — Build](stage-3-build.md)*
