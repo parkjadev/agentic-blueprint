@@ -6,21 +6,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
-### Changed
-
-- **Supabase as sole backend** — migrated from Neon + Clerk + Upstash + R2 to Supabase (PostgreSQL, Auth, Storage). Required services: 3 → 1. Required env vars: 6 → 4 (#71)
-- **Unified auth** — Supabase Auth replaces Clerk (web) + custom JWT (mobile). Single `getAuth()` path for both platforms via `@supabase/ssr` Bearer token forwarding (#71)
-- **Flutter auth** — `supabase_flutter` SDK replaces custom JWT + `flutter_secure_storage`. Router wired to actual feature screens (#71)
-- **Rate limiting** — in-memory sliding window with inline eviction replaces Upstash Redis (#71)
-- **Storage** — Supabase Storage replaces Cloudflare R2 (#71)
-
 ### Added
 
+- `.claude/` harness — 7 slash commands (`/research`, `/plan`, `/build`, `/ship`, `/run`, `/stage`, `/new-feature`), 5 subagents (`researcher`, `spec-writer`, `spec-reviewer`, `starter-verifier`, `docs-inspector`), 5 skills with progressive-disclosure references (`australian-spelling`, `spec-author`, `hard-rules-check`, `changelog-entry`, `memory-sync`), and 5 hooks (`session-start`, `stage-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-gate`) wired in `.claude/settings.json`.
+- `docs/principles/` — 12 files (9 Hard Rule rationales + 3 meta-principles: progressive disclosure, context economy, gates over guidance) plus a README index.
+- `docs/operations/` — Stage 5 runbook surface, including `incident-response.md` with severity ladder, first-15-minutes flow, roles, comms templates, and postmortem outline.
+- `starters/nextjs/CLAUDE.md` and `.claude/` — per-starter harness (settings, `/check`, `/migrate`).
+- `starters/flutter/.claude/` — per-starter harness (settings, `/check`, `/generate`).
+- `claude-config/.claude/` — mirror of the root harness for the copy-ready bundle.
+- `.github/workflows/hard-rules-check.yml` — CI gate that runs the Hard Rules script on every PR.
 - Custom sign-in/sign-up pages with email confirmation flow and Suspense boundary (#71)
 - OAuth callback handler at `/auth/callback` (#71)
 - DB trigger `handle_new_user()` for automatic profile creation on sign-up (#71)
 - Supabase init error handling in Flutter `main.dart` (#71)
 - `.gitignore` entries for build artefacts (#71)
+
+### Changed
+
+- `CLAUDE.md` rewritten as a primitive map: harness table, lifecycle quick-ref, Hard Rules compressed to one-liner links into `docs/principles/`.
+- `starters/flutter/CLAUDE.md` trimmed 250 → 136 lines — framework Hard Rules delegated to `docs/principles/`, Flutter-specific conventions preserved.
+- `claude-config/CLAUDE.md.template` shrunk 309 → 93 lines — it's now a tight stub downstream projects fill in, not a full manual.
+- `claude-config/README.md` rewritten for the new copy-ready layout that includes the mirrored `.claude/` harness.
+- **Supabase as sole backend** — migrated from Neon + Clerk + Upstash + R2 to Supabase (PostgreSQL, Auth, Storage). Required services: 3 → 1. Required env vars: 6 → 4 (#71)
+- **Unified auth** — Supabase Auth replaces Clerk (web) + custom JWT (mobile). Single `getAuth()` path for both platforms via `@supabase/ssr` Bearer token forwarding (#71)
+- **Flutter auth** — `supabase_flutter` SDK replaces custom JWT + `flutter_secure_storage`. Router wired to actual feature screens (#71)
+- **Rate limiting** — in-memory sliding window with inline eviction replaces Upstash Redis (#71)
+- **Storage** — Supabase Storage replaces Cloudflare R2 (#71)
 
 ### Removed
 
