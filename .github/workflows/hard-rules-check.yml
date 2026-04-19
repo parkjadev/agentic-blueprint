@@ -1,0 +1,36 @@
+name: Hard Rules Check
+
+# Runs the 9 Hard Rules against every PR and push to main.
+# Source of truth: .claude/skills/hard-rules-check/scripts/check-all.sh
+# This is a fast gate — it should complete in seconds, never minutes.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hard-rules:
+    name: Hard Rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Need the full history so Rules 5, 6, 7 can diff against main.
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Run Hard Rules
+        run: bash .claude/skills/hard-rules-check/scripts/check-all.sh

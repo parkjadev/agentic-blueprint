@@ -1,309 +1,93 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with this repository.
+Primitive map for Claude Code (and any other agent) working in this
+repository. Copy this file to `CLAUDE.md` at your repo root, fill in
+the stack table, and customise the Hard Rules as needed.
+
+## What this repo is
+
+<!-- TODO: replace with a one-paragraph description of your product. -->
+
+## Harness map
+
+This project follows the agentic-blueprint five-stage lifecycle
+(**Research & Think → Plan → Build → Ship → Run**). The Claude Code
+harness is in `.claude/` — copy it wholesale from the blueprint's
+`claude-config/.claude/`:
+
+| Primitive | Location | Purpose |
+|---|---|---|
+| Slash commands | `.claude/commands/` | `/research`, `/plan`, `/build`, `/ship`, `/run`, `/stage`, `/new-feature` |
+| Subagents | `.claude/agents/` | `researcher`, `spec-writer`, `spec-reviewer`, `starter-verifier`, `docs-inspector` |
+| Skills | `.claude/skills/` | `australian-spelling`, `spec-author`, `hard-rules-check`, `changelog-entry`, `memory-sync` |
+| Hooks | `.claude/hooks/` | `session-start`, `stage-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-gate` |
+| Settings | `.claude/settings.json` | Permissions + hook wiring |
+
+When in doubt, run `/stage` for a read-only snapshot of where you are.
 
 ## Stack
 
+<!-- TODO: fill in each row. Delete rows that don't apply. -->
+
 | Layer | Technology | Notes |
 |---|---|---|
-| Framework | Next.js 15 (App Router) | Strict TypeScript, server components by default |
-| Language | TypeScript 5.7+ | `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` |
-| Env Validation | @t3-oss/env-nextjs | Server/client split, build-time validation, `SKIP_ENV_VALIDATION` for CI |
-| Auth | Supabase Auth | Web + mobile via supabase_flutter — see Auth Architecture below |
-| Database | Supabase PostgreSQL | Drizzle ORM, push migrations |
-| Rate Limiting | In-memory sliding window | Per-IP and per-user; upgrade to Upstash Redis for distributed deployments |
-| Background Jobs | Inngest | Event-driven, opt-in |
-| Payments | Stripe | Opt-in — gracefully skips when unconfigured |
-| Storage | Supabase Storage | Opt-in — gracefully skips when unconfigured |
-| Email | Resend | Opt-in — logs instead of sending when unconfigured |
-| Hosting | Vercel | Preview deploys per branch, edge runtime for health check |
-| Styling | Tailwind CSS 3 | `cn()` helper via clsx + tailwind-merge |
-| Testing | Vitest (unit), Playwright (E2E) | Strict CI: type-check + lint + test on every PR |
-| Mobile | Flutter (Riverpod, GoRouter, Dio) | TODO: Remove if no mobile companion |
-
-## Environments & Deployment
-
-We use [GitHub Flow](https://docs.github.com/en/get-started/using-github/github-flow): one long-lived branch (`main`), short-lived branches per issue, a Vercel preview deployment (with its own Supabase preview database) per PR, and production deploys on merge to `main`. **There is no `staging` branch.** If you need a shared environment for QA or stakeholder review, use a Vercel preview alias — never a long-lived branch (see Hard Rule #3).
-
-| Environment | Branch / Source | URL | Database |
-|---|---|---|---|
-| Development | Local checkout | `http://localhost:3000` | Supabase local / dev project |
-| Preview (per PR) | Open PR against `main` | `<project>-<pr>.vercel.app` | Supabase preview database (per PR) |
-| Production | `main` | `TODO: your-domain.com` | Supabase production project |
-
-**Deploy flow:** issue → branch from `main` (`<type>/<N>-<slug>`) → PR to `main` → CI + Vercel preview → smoke-test the preview → squash-merge → production auto-deploys
-
-**Vercel region:** `TODO: your-region` (set in `vercel.json`)
-
-> **Merge UI gotcha — every GitHub merge button rewrites commit SHAs.** Squash merge creates one new commit on the target branch; rebase merge creates new commits with new committer signatures; merge-commit creates a merge node. **None of them are true fast-forwards.** Only `git push --ff-only` from CLI is. The single-branch model is what makes this safe — with one long-lived branch you don't care about SHA rewriting because there's no second branch to keep in sync. Reintroduce a second long-lived branch and you immediately re-create the divergence problem regardless of which merge button you click.
+| Framework |  |  |
+| Language |  |  |
+| Auth |  |  |
+| Database |  |  |
+| Background jobs |  |  |
+| Styling |  |  |
+| Testing |  |  |
+| Hosting |  |  |
 
 ## Hard Rules
 
-1. **Australian spelling throughout** — favour, colour, organisation, behaviour, licence (noun). Applies to all prose, comments, and string literals.
+Enforced by `.claude/hooks/pre-commit-gate.sh` via the
+`hard-rules-check` skill. Rationale for each rule is in the blueprint's
+[`docs/principles/`](https://github.com/parkjadev/agentic-blueprint/tree/main/docs/principles).
 
-2. **Issue before branch** — every change starts as a GitHub issue, even one-line fixes. Branch names must encode the issue number: `<type>/<issue-number>-<slug>` where `<type>` is one of `feat`, `fix`, `chore`, `docs`. Example: `feat/42-user-profile`. The commit footer references the issue (`Refs: #42`) and the PR body uses `Closes #42`. No exceptions — including for hotfixes.
+1. **Australian spelling throughout.** Prose, comments, string literals.
+2. **No domain-specific business logic in starters.** Starters stay generic.
+3. **All starters must boot clean.** Every starter passes its own check suite.
+4. **Optional services.** Non-essential env vars are `.optional()` in Zod.
+5. **Spec-driven.** Every feature starts as a spec in `docs/specs/<slug>/`.
+6. **Plan-before-code.** Every feature has a plan in `docs/plans/<slug>.md`.
+7. **Templates are sacred.** `docs/templates/` is never edited in a feature PR.
+8. **Tool-agnostic framing.** Guides recommend; they do not require.
+9. **Platform profiles are descriptive, not prescriptive.**
 
-3. **One long-lived branch (`main`)** — use GitHub Flow. Never create a `staging`, `develop`, or `release/*` long-lived branch. If you need a shared environment for QA, use a Vercel preview alias. Long-lived secondary branches drift on every merge because **every** GitHub merge button rewrites SHAs in some form, and the only true fast-forward is `git push --ff-only` from CLI.
+<!-- TODO: Add project-specific Hard Rules below. Keep them machine-
+     checkable — add a check to .claude/skills/hard-rules-check/scripts/
+     check-all.sh for each one you add. -->
 
-4. **Any merge between two long-lived branches diverges them.** Squash merge creates a new commit on the target branch with a new SHA. Rebase merge creates new commits with new committer signatures. Merge-commit creates a merge node and a new commit object. **None of these are true fast-forwards** — only `git push --ff-only` from CLI is. Therefore: do not run two long-lived branches at all. With a single long-lived branch (`main`) this rule is automatic — squash merge is fine because there is no second branch to keep in sync. Use squash merge as the default merge button (it produces the cleanest linear history) but remember that the *real* protection is the single-branch model, not the merge button choice.
+## Environments
 
-5. **Plan before code** — always use the plan → approve → execute pattern. Never write code without an approved plan. Never skip the plan step.
+<!-- TODO: list your environments and the branch/URL/database each one maps to. -->
 
-   **Plan-mode hygiene:** every plan must (a) confirm "missing/needs verification" claims against the actual files via a `Read`, not from memory; (b) reference critical files by full repo-relative path so the implementation phase doesn't re-grep; (c) reference the issue templates and label vocabulary (`type:*`/`scope:*`) so issues can be filed without re-discovery; (d) include a "What's already in place (excluded from this plan)" section near the top — see `docs/templates/technical-spec.md`. See `docs/guides/agentic-workflow.md` Phase 5 for the worked patterns.
+| Environment | Branch / Source | URL | Database |
+|---|---|---|---|
+| Development |  |  |  |
+| Staging / Preview |  |  |  |
+| Production |  |  |  |
 
-6. **Spec-driven development** — every feature starts as a spec document in `docs/specs/` before any code is written. Specs are committed to the repo.
+## Getting started
 
-7. **No business logic in chores** — a `chore:` PR must contain only the chore. If you're upgrading a dependency and notice an unrelated bug in the file you're touching, **file a separate issue and address it in its own PR**. Do not bundle bug fixes, refactors, or feature work into a chore commit. Reviewers should be able to skim a chore PR in 30 seconds and merge with confidence; unrelated changes destroy that property and make bisection painful.
+```bash
+# 1. Copy the harness
+cp -r <path-to-blueprint>/claude-config/.claude .
 
-   *Concrete example:* You're bumping a logging library version. The diff is a one-line `package.json` change and a regenerated lockfile. While testing the upgrade you notice that one of the call sites swallows a thrown error in a `try { ... } catch {}` block. Do **not** add `catch (err) { logger.error(err) }` to the same PR — file a `fix:` issue, ship the chore, then fix the bug as PR #2. The chore stays auditable and the fix gets a proper test.
+# 2. Copy this template, then fill in the TODO blocks above
+cp <path-to-blueprint>/claude-config/CLAUDE.md.template CLAUDE.md
 
-8. **Verify file existence before recommending it from memory** — a recall that names a specific file path, function, flag, or symbol is a claim about a *past* state of the repo. Before proposing to use, backport, or refer to it, **read the file** (or grep for the symbol) and confirm it still exists with the shape you remember. Renames, deletes, and refactors invalidate memories silently and the only safe thing to do is re-verify at the moment of recommendation.
+# 3. Copy the sacred templates
+cp -r <path-to-blueprint>/docs/templates docs/templates
 
-   *Concrete example:* You remember a `lib/cache.ts` helper called `dedupeByKey(items, fn)` from earlier in the project and you're about to recommend it. **Before** suggesting it: read `src/lib/cache.ts`, confirm `dedupeByKey` is still exported, and confirm its signature still matches the call site you have in mind. If the file moved to `src/lib/utils/dedupe.ts` or the function was renamed to `uniqueBy`, the recommendation is wrong even though the *idea* was right. Recommending stale memories costs more cycles than the recall saves.
-
-9. **Expand-migrate-contract for schema changes** — never ship a destructive schema change (column drop, rename, type change, NOT NULL on existing data) in a single PR. Split it across deploys:
-
-   1. **Expand:** add the new column/table alongside the old one. Deploy. Both old and new code paths work.
-   2. **Migrate:** backfill data into the new shape. Switch reads and writes to the new column. Deploy.
-   3. **Contract:** drop the old column once nothing references it. Deploy.
-
-   *Why:* Vercel rolling deploys run old and new code concurrently for ~30 seconds during a release. A single-PR rename means the old containers query a column that no longer exists and start serving 500s mid-deploy.
-
-   *Concrete example — renaming `users.email` to `users.email_address`:*
-   - **PR 1 (expand):** add `email_address` column nullable, write to both `email` and `email_address`, read from `email`.
-   - **PR 2 (migrate):** backfill `email_address` from `email`, switch reads to `email_address`, drop the dual-write.
-   - **PR 3 (contract):** drop the `email` column.
-
-   For pure additive changes (new column, new table, new index) you can ship all three steps in one PR — the rule only kicks in when something is being removed, renamed, or made stricter.
-
-   **Pre-launch corollary:** while you have no real users and the dev DB is fully reseedable, drop the ceremony — reseed freely, rename columns in one PR, do whatever shape changes the design needs. The rule kicks in the moment you have users you can't safely lose. Don't carry pre-launch complexity into post-launch ops, and don't carry post-launch ceremony back into pre-launch iteration.
-
-10. **No `any` types** — TypeScript strict mode is non-negotiable. Use proper generics, union types, or `unknown` with type guards. ESLint enforces `no-explicit-any`.
-
-11. **No `console.log`** — use the structured logger at `src/lib/logger.ts`. ESLint enforces `no-console`. The logger produces JSON with timestamps and levels.
-
-12. **All API responses use the envelope** — `{ success: true, data: T }` or `{ success: false, error: { message, code } }`. Use `ok()`, `created()`, `noContent()`, `handleError()` from `src/lib/api-response.ts`.
-
-13. **Auth via `getAuth()` only** — never call Supabase auth directly in route handlers. Always use `getAuth()` from `src/lib/auth/get-auth.ts` which resolves Supabase Auth sessions into a single internal user.
-
-14. **Validate all inputs with Zod** — every API endpoint validates request body and query params with Zod schemas. Schemas live in `src/lib/validations/`. Never trust user input.
-
-15. **Rate limit all endpoints** — use `checkRateLimit()` from `src/lib/rate-limit.ts`. Public endpoints get `publicRateLimiter`, write operations get `writeRateLimiter`, authenticated requests get `rateLimiter`.
-
-16. **Soft delete, never hard delete** — set `status = 'deleted'`, never `DELETE FROM`. All queries should filter out deleted records.
-
-## Labels
-
-Apply at least one `type:*` and one `scope:*` label to every issue and PR. The label taxonomy is created on a fresh repo by `claude-config/scripts/setup-labels.sh`.
-
-| Group | Labels | When to use |
-|---|---|---|
-| `type:*` | `type:feature`, `type:fix`, `type:chore`, `type:docs` | What kind of change is this? |
-| `scope:*` | `scope:api`, `scope:dashboard`, `scope:mobile`, `scope:schema`, `scope:auth`, `scope:workflow` | Which area of the codebase? |
-| `vertical:*` | TODO: project-specific (e.g. `vertical:billing`, `vertical:onboarding`) | Optional — only if your product has clearly distinct verticals |
-| Status | `needs-triage`, `blocked`, `urgent` | Triage state — applied as needed |
-
-The `<type>` segment of the branch name (`feat/`, `fix/`, `chore/`, `docs/`) must match the `type:*` label on the issue.
-
-## Reusable Infrastructure
-
-These modules ship in `src/lib/*` — **reach for them before writing new helpers**. If you find yourself rolling a logger, an env-checker, a Drizzle wrapper, or an auth resolver, stop and check this list first.
-
-| Module | Path | Purpose |
-|---|---|---|
-| **Structured logger** | `src/lib/logger.ts` | JSON logger with timestamps/levels. Replaces `console.log` (which is lint-banned). |
-| **Rate limit** | `src/lib/rate-limit.ts` | In-memory sliding-window limiters: `publicRateLimiter`, `writeRateLimiter`, `rateLimiter`, `loginRateLimiter` (5 req / 15 min). Use `checkRateLimit()` from every endpoint. Upgrade to Upstash Redis for distributed deployments. |
-| **Request context** | `src/lib/request-context.ts` | AsyncLocalStorage-backed `getRequestContext()` that returns `{ ip, userAgent, requestId }` from anywhere in the call stack. |
-| **Supabase client** | `src/lib/supabase/client.ts` | Server and client Supabase clients for auth and data access. |
-| **API response envelope** | `src/lib/api-response.ts` | `ok()`, `created()`, `noContent()`, `handleError()`, `ApiError`. All API routes go through these — **do not** return raw `NextResponse.json()`. |
-| **Auth resolver** | `src/lib/auth/get-auth.ts` | `getAuth()` resolves Supabase Auth sessions into a single internal user. **Always use this — never call Supabase auth directly in route handlers.** |
-| **User sync** | `src/lib/auth/resolve-user.ts` | Database trigger handler that upserts the local `users` row when Supabase Auth fires user lifecycle events. |
-| **Auth routing** | `src/lib/auth-routing.ts` | Public/protected route lists, role-based access helpers. |
-| **Server actions** | `src/lib/actions/index.ts` | `action()` and `authAction()` wrappers — auth + error handling for Server Actions. |
-| **Database** | `src/lib/db/index.ts`, `src/lib/db/schema.ts` | Supabase PostgreSQL client + Drizzle schema. |
-| **Validations** | `src/lib/validations/index.ts` | Shared Zod schemas (`parsePagination`, UUID, etc.). |
-| **Background jobs** | `src/lib/jobs/client.ts` | Inngest client. Opt-in — gracefully skips if `INNGEST_*` env vars are unset. |
-| **Storage** | `src/lib/storage/index.ts` | Supabase Storage helpers. Opt-in. |
-| **Email** | `src/lib/email/send.ts` | Resend wrapper. Opt-in. |
-| **Stripe** | `src/lib/stripe/client.ts` | Stripe client. Opt-in. |
-| **Misc** | `src/lib/utils.ts` | `cn()` Tailwind classname helper (clsx + tailwind-merge). |
-
-> **Why this list exists:** the most expensive class of mistake on a long-running project is reinventing infrastructure that already exists. Before opening a new file in `src/lib/`, scan this table. If a module seems close-but-not-quite, extend it instead of duplicating it.
-
-## Testing Structure
-
-```
-src/test/
-├── helpers.ts                    # Seed factories: createTestUser, createTestProject, etc.
-├── unit/
-│   └── api/
-│       └── health.test.ts        # Example unit test
-└── (add more test files here)
+# 4. Verify the Hard Rules gate runs
+bash .claude/skills/hard-rules-check/scripts/check-all.sh
 ```
 
-**Commands:**
-- `pnpm test` — run tests in watch mode
-- `pnpm test:ci` — run tests once (CI)
-- `pnpm check:all` — type-check + lint + test:ci (run before every commit)
-- `pnpm test:e2e` — Playwright E2E tests (requires dev server)
+## Further reading
 
-**Test conventions:**
-- Unit tests live next to the code or in `src/test/unit/`
-- Use factories from `src/test/helpers.ts` — never hardcode test data
-- Mock external services (Supabase Auth, Supabase PostgreSQL) — test business logic, not integrations
-- Name test files `*.test.ts` or `*.test.tsx`
-
-## Auth Architecture
-
-Supabase Auth — unified authentication for web and mobile (via `supabase_flutter`):
-
-```
-Request arrives
-  ├─ Has Supabase session (cookie or Authorization: Bearer)?
-  │   └─ Yes → resolve via Supabase Auth → get internal user by supabaseId
-  └─ No valid session?
-      └─ Return 401 via ApiError.unauthorised()
-```
-
-**Key files:**
-- `src/lib/auth/get-auth.ts` — auth resolver, single entry point
-- `src/lib/auth/resolve-user.ts` — database trigger handler → local user upsert
-- `src/lib/supabase/client.ts` — server and client Supabase clients
-- `src/lib/auth-routing.ts` — public routes, auth routes, role-based access
-- `src/middleware.ts` — Supabase Auth middleware, protects non-public routes
-
-**User sync:** A Supabase database trigger fires on `auth.users` insert/update/delete → invokes `resolve-user.ts` which upserts the local `users` record.
-
-**Roles:** `admin`, `user` (defined in `src/types/index.ts`, stored on user record)
-
-## Key Patterns
-
-### API Route Handler
-
-```typescript
-// src/app/api/example/route.ts
-import { getAuth } from '@/lib/auth/get-auth';
-import { ok, created, handleError, ApiError } from '@/lib/api-response';
-import { checkRateLimit, publicRateLimiter } from '@/lib/rate-limit';
-import { getRequestContext } from '@/lib/request-context';
-import { parsePagination } from '@/lib/validations';
-
-export async function GET(request: NextRequest) {
-  try {
-    const { ip } = await getRequestContext();
-    const { success } = await checkRateLimit(ip, publicRateLimiter);
-    if (!success) throw ApiError.rateLimited();
-
-    const { page, pageSize } = parsePagination(request.nextUrl.searchParams);
-    // ... query database ...
-    return ok({ data: items, pagination: { page, pageSize, total, totalPages } });
-  } catch (error) {
-    return handleError(error);
-  }
-}
-```
-
-### Server Action
-
-```typescript
-import { authAction } from '@/lib/actions';
-
-export async function createProject(formData: FormData) {
-  return authAction(async (userId) => {
-    // userId is guaranteed to be valid
-    const name = formData.get('name') as string;
-    // ... create project ...
-    return project;
-  });
-}
-```
-
-### Drizzle Schema
-
-```typescript
-export const tableName = pgTable('table_name', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  ownerId: uuid('owner_id').notNull().references(() => users.id),
-  name: varchar('name', { length: 255 }).notNull(),
-  status: statusEnum('status').notNull().default('active'),
-  createdAt: timestamp('created_at').notNull().defaultNow(),
-  updatedAt: timestamp('updated_at').notNull().defaultNow(),
-}, (table) => [
-  index('table_name_owner_id_idx').on(table.ownerId),
-]);
-```
-
-### Optional Service Pattern
-
-```typescript
-// src/env.ts — optional Zod schema
-STRIPE_SECRET_KEY: z.string().optional(),
-
-// src/env.ts — service availability helper
-export const services = {
-  stripe: Boolean(env.STRIPE_SECRET_KEY),
-} as const;
-
-// Usage: gracefully skip when unconfigured
-if (!services.stripe) {
-  logger.info('Stripe not configured, skipping');
-  return null;
-}
-```
-
-## Do NOT Touch Without Review
-
-These files affect every request and should not be modified without careful review:
-
-| File | Why |
-|---|---|
-| `src/middleware.ts` | Supabase Auth middleware for every route. Wrong config = security hole or broken app. |
-| `src/lib/auth/get-auth.ts` | Supabase Auth resolver. Breaking this breaks all authenticated endpoints. |
-| `src/env.ts` | Environment validation. Breaking this prevents the app from starting. |
-| `src/lib/db/schema.ts` | Database schema. Changes require migration planning. |
-| `src/lib/api-response.ts` | Response envelope. Changing shape breaks all API consumers. |
-| `drizzle.config.ts` | Database connection config. |
-| `.github/workflows/ci.yml` | CI pipeline. Breaking this means broken PRs go undetected. |
-
-## Data Model
-
-```
-users
-├── id (uuid, PK)
-├── supabaseId (uuid, unique) — synced from Supabase Auth
-├── email (varchar)
-├── name (varchar, nullable)
-├── role (enum: admin, user)
-├── status (enum: active, suspended, deleted)
-├── avatarUrl (text, nullable) — synced from Supabase Auth
-├── createdAt (timestamp)
-└── updatedAt (timestamp)
-
-projects (example owned resource)
-├── id (uuid, PK)
-├── name (varchar)
-├── description (text, nullable)
-├── ownerId (uuid, FK → users.id)
-├── status (enum: active, archived, deleted)
-├── createdAt (timestamp)
-└── updatedAt (timestamp)
-```
-
-**Relationships:**
-- `users` 1 ──── * `projects` (user owns many projects)
-
-**TODO:** Add your domain-specific tables below. Follow the same pattern: UUID primary key, timestamps, status enum for soft delete, foreign keys with explicit references.
-
----
-
-## TODO: Customise This File
-
-After copying this template into your project:
-
-1. Update the **Stack** table — remove services you don't use, add new ones
-2. Fill in the **Environments** URLs and Vercel region
-3. Review the **Hard Rules** — add project-specific rules, remove any that don't apply
-4. Extend **Key Patterns** with your project's specific patterns as they emerge
-5. Update **Do NOT Touch** with your project's critical files
-6. Replace the example **Data Model** with your actual schema
-7. Keep this file current — update it as the project evolves
+- Blueprint README — https://github.com/parkjadev/agentic-blueprint
+- Stage guides — `docs/guides/` in the blueprint
+- Principle rationale — `docs/principles/` in the blueprint
