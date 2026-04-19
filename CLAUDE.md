@@ -1,32 +1,40 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Primitive map for Claude Code (and any other agent) working in this repository.
+Start here, then drill into the harness, templates, or starters as needed.
 
-## What This Repo Is
+## What this repo is
 
-A framework for building products with AI collaborators, covering the full lifecycle from research through operations. Includes document templates, workflow guides, and optional code starters.
+A framework for building products with AI collaborators, covering the full
+lifecycle from research through operations. Ships document templates, workflow
+guides, optional code starters, and a lifecycle-aware Claude Code harness.
 
-The master plan is the five-stage lifecycle: **Research & Think → Plan → Build → Ship → Run**.
+The master plan is the five-stage lifecycle:
+**Research & Think → Plan → Build → Ship → Run**.
 
-## Architecture
+## Harness map (where to look for what)
 
-```
-agentic-blueprint/
-├── docs/templates/       # 10 spec-driven development templates (the IP)
-├── docs/guides/          # 5 stage guides + 1 tool reference
-├── docs/research/        # Research briefs
-├── starters/nextjs/      # Optional: Full-stack Next.js starter (Supabase, Drizzle, Inngest)
-├── starters/flutter/     # Optional: Mobile companion starter (Riverpod, GoRouter, Supabase)
-└── claude-config/        # CLAUDE.md template, settings, memory guidelines, hooks
-```
+| Primitive | Location | Purpose |
+|---|---|---|
+| Slash commands | `.claude/commands/` | Lifecycle entry points: `/research`, `/plan`, `/build`, `/ship`, `/run`, `/stage`, `/new-feature` |
+| Subagents | `.claude/agents/` | Isolated workers: `researcher`, `spec-writer`, `spec-reviewer`, `starter-verifier`, `docs-inspector` |
+| Skills | `.claude/skills/` | Progressive-disclosure helpers: `australian-spelling`, `spec-author`, `hard-rules-check`, `changelog-entry`, `memory-sync` |
+| Hooks | `.claude/hooks/` | `session-start`, `stage-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-gate` |
+| Settings | `.claude/settings.json` | Permission baseline and hook wiring |
+| Sacred templates | `docs/templates/` | The core IP — spec-driven development templates. Never modify in a feature PR |
+| Stage guides | `docs/guides/` | Long-form guides for each lifecycle stage, plus a tool-reference appendix |
+| Research briefs | `docs/research/` | Stage 1 output; lands via `/research <slug>` |
+| Plans | `docs/plans/` | Stage 2 output; one plan file per feature |
+| Specs | `docs/specs/<slug>/` | Stage 2 output; filled-in templates |
+| Starters | `starters/nextjs/`, `starters/flutter/` | Optional reference implementations |
+| Copy-ready bundle | `claude-config/` | What downstream projects copy into their own repos |
 
-- **docs/templates/**: Spec-driven development templates. Each has section headers, explanatory comments, and examples. These are the core IP.
-- **docs/guides/**: Five stage guides covering the full lifecycle, plus a tool reference appendix mapping roles to recommended tools.
-- **docs/research/**: Research briefs produced during Stage 1.
-- **starters/**: Optional reference implementations. The Next.js starter is the primary deliverable; Flutter is the mobile companion.
-- **claude-config/**: Configuration files users copy into their own projects. Includes a CLAUDE.md template, permissions baseline, and hook patterns.
+When in doubt, run `/stage` for a read-only snapshot of where we are.
 
 ## Hard Rules
+
+These are enforced by `.claude/hooks/pre-commit-gate.sh` via the
+`hard-rules-check` skill. All nine must pass before any commit or push.
 
 1. **Australian spelling throughout** — favour, colour, organisation, behaviour, licence (noun), etc. Applies to all prose, comments, and string literals in every file in this repo.
 2. **No domain-specific business logic in starters** — starters contain only generic infrastructure patterns. Anything that ties a starter to a specific product, brand, or vertical must be replaced with a generic example and a `TODO:` marker before merging.
@@ -37,3 +45,16 @@ agentic-blueprint/
 7. **Templates are sacred** — the templates in `docs/templates/` are the core IP. Edit for clarity, never remove sections.
 8. **Tool-agnostic framing** — guides recommend tools but never require a specific vendor. The discipline is the product, not the toolchain.
 9. **Platform profiles are descriptive, not prescriptive** — profiles show how tools map to roles. They do not endorse or require any specific vendor. New profiles can be added for any toolchain that covers the five roles.
+
+> TODO: when `docs/principles/` lands, move the long-form rationale for each
+> rule out of this file and leave only one-liners + links here.
+
+## Quick reference — the five stages
+
+1. **Research & Think** → `/research <slug>` → brief in `docs/research/<slug>-brief.md`
+2. **Plan** → `/plan <slug>` → specs in `docs/specs/<slug>/` + plan in `docs/plans/<slug>.md`
+3. **Build** → `/build` → implementation guided by the plan, gated by Hard Rules
+4. **Ship** → `/ship` → starter-verifier, changelog-entry, PR via GitHub MCP
+5. **Run** → `/run <task>` → post-merge sync, docs-inspector, incident response
+
+For the long-form version, read `docs/guides/` end-to-end.
