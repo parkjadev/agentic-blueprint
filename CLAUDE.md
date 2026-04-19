@@ -33,21 +33,24 @@ When in doubt, run `/stage` for a read-only snapshot of where we are.
 
 ## Hard Rules
 
-These are enforced by `.claude/hooks/pre-commit-gate.sh` via the
-`hard-rules-check` skill. All nine must pass before any commit or push.
+Enforced by `.claude/hooks/pre-commit-gate.sh` via the `hard-rules-check`
+skill. All nine must pass before any commit or push. Rationale and
+remediation guidance live in [`docs/principles/`](./docs/principles/).
 
-1. **Australian spelling throughout** — favour, colour, organisation, behaviour, licence (noun), etc. Applies to all prose, comments, and string literals in every file in this repo.
-2. **No domain-specific business logic in starters** — starters contain only generic infrastructure patterns. Anything that ties a starter to a specific product, brand, or vertical must be replaced with a generic example and a `TODO:` marker before merging.
-3. **All starters must boot clean** — `starters/nextjs/` must pass `pnpm install && pnpm type-check && pnpm lint && pnpm test:ci` with zero errors. `starters/flutter/` must pass `flutter analyze && flutter test` with zero errors. Never merge code that breaks a starter's clean boot.
-4. **Optional services** — in starters, use optional Zod schemas in `env.ts` so services gracefully skip when env vars are missing. Only Supabase is required; everything else (Stripe, Inngest, Resend) must be opt-in.
-5. **Spec-driven** — every feature starts as a spec document before any code is written.
-6. **Plan-before-code** — review the plan before any code generation. No Auto Mode.
-7. **Templates are sacred** — the templates in `docs/templates/` are the core IP. Edit for clarity, never remove sections.
-8. **Tool-agnostic framing** — guides recommend tools but never require a specific vendor. The discipline is the product, not the toolchain.
-9. **Platform profiles are descriptive, not prescriptive** — profiles show how tools map to roles. They do not endorse or require any specific vendor. New profiles can be added for any toolchain that covers the five roles.
+1. [Australian spelling throughout](./docs/principles/01-australian-spelling.md)
+2. [No domain-specific business logic in starters](./docs/principles/02-no-domain-logic-in-starters.md)
+3. [All starters must boot clean](./docs/principles/03-starters-boot-clean.md)
+4. [Optional services (Zod schemas in `env.ts`)](./docs/principles/04-optional-services.md)
+5. [Spec-driven](./docs/principles/05-spec-driven.md)
+6. [Plan-before-code](./docs/principles/06-plan-before-code.md)
+7. [Templates are sacred](./docs/principles/07-templates-are-sacred.md)
+8. [Tool-agnostic framing](./docs/principles/08-tool-agnostic-framing.md)
+9. [Platform profiles are descriptive, not prescriptive](./docs/principles/09-platform-profiles-descriptive.md)
 
-> TODO: when `docs/principles/` lands, move the long-form rationale for each
-> rule out of this file and leave only one-liners + links here.
+Three meta-principles shape the harness itself:
+[progressive disclosure](./docs/principles/10-progressive-disclosure.md),
+[context economy](./docs/principles/11-context-economy.md), and
+[gates over guidance](./docs/principles/12-gates-over-guidance.md).
 
 ## Quick reference — the five stages
 
