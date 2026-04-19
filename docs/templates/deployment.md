@@ -69,7 +69,7 @@ Which credentials, services, and data live where. Anything in the "Production on
 | Email (Resend) | Logs to console | Logs to console / sandbox domain | Sends real email from `{{domain}}` |
 | Object storage (Supabase Storage) | Local or dev bucket | Dev project bucket | Production bucket with lifecycle rules |
 | Background jobs (Inngest) | Inngest dev server | Inngest dev environment | Inngest production environment |
-| Rate limit store | In-memory | In-memory | In-memory (upgrade to Upstash Redis for distributed) |
+| Rate limit store | In-memory | In-memory | In-memory (upgrade to a distributed Redis-compatible store) |
 | Secret rotation | Local `.env.local` | Vercel project env (Preview scope) | Vercel project env (Production scope) |
 
 > **Rule:** never let preview deployments touch production data, production webhooks, or live hardware. Every external integration gets a dev/sandbox tier; preview deploys talk only to that tier.
@@ -144,7 +144,7 @@ SMOKE_TEST_URL=https://{{domain}} pnpm tsx scripts/smoke-test.ts
 # Look for: error rate spike, new exception types, P95 latency > 2× baseline
 ```
 
-A scheduled task in `docs/guides/scheduled-tasks.md` automates the same checks every 15 minutes against production.
+A scheduled task — see `docs/guides/stage-5-run.md` for the Stage 5 automation surface — runs the same checks every 15 minutes against production.
 
 ## Vercel Configuration
 
@@ -235,7 +235,7 @@ Only use this when a migration corrupted data. Schema-only mistakes should be fi
 | {{database}} | Supabase dashboard | Connection saturation, slow queries | Supabase alerts → on-call |
 | {{hardware}} integration | Custom dashboard / logs | Failed device calls > 5% | Investigate (often network, not code) |
 
-A scheduled health-check task lives in `docs/guides/scheduled-tasks.md` and creates a labelled issue on any threshold breach.
+A scheduled health-check task — see `docs/guides/stage-5-run.md` — creates a labelled issue on any threshold breach.
 
 ---
 
