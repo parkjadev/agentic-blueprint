@@ -174,14 +174,19 @@ The framework applies equally to code-first teams (Next.js, Flutter), AI-native 
 
 ```
 agentic-blueprint/
+├── .claude/                    # Claude Code harness — commands, agents, skills, hooks
 ├── docs/
 │   ├── templates/              # 10 spec-driven development templates (the IP)
 │   ├── guides/                 # 5 stage guides + 1 tool reference
-│   └── research/               # Research briefs
+│   ├── principles/             # 9 Hard Rules + 3 meta-principles
+│   ├── operations/             # Stage 5 runbooks (incident response, postmortems)
+│   └── research/               # Research briefs (Stage 1 output)
 ├── starters/
 │   ├── nextjs/                 # Optional: Next.js reference implementation
 │   └── flutter/                # Optional: Flutter reference implementation
-├── claude-config/              # CLAUDE.md template, settings, hooks, scripts
+├── claude-config/              # Copy-ready bundle: CLAUDE.md template, .claude/ mirror, scripts
+├── CLAUDE.md                   # Primitive map for this repo
+├── CHANGELOG.md
 └── README.md
 ```
 

@@ -142,7 +142,7 @@ Export the final PRD and save it locally:
    context (e.g., Cowork)
 
 The repo does not exist yet — it will be bootstrapped in Stage 2, where you
-will commit the PRD to `docs/prd/`.
+will commit the PRD to `docs/specs/<slug>/PRD.md`.
 
 ## Templates
 

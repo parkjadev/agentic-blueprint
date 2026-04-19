@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - `.claude/` harness — 7 slash commands (`/research`, `/plan`, `/build`, `/ship`, `/run`, `/stage`, `/new-feature`), 5 subagents (`researcher`, `spec-writer`, `spec-reviewer`, `starter-verifier`, `docs-inspector`), 5 skills with progressive-disclosure references (`australian-spelling`, `spec-author`, `hard-rules-check`, `changelog-entry`, `memory-sync`), and 5 hooks (`session-start`, `stage-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-gate`) wired in `.claude/settings.json`.
-- `docs/principles/` — 12 files (9 Hard Rule rationales + 3 meta-principles: progressive disclosure, context economy, gates over guidance) plus a README index.
+- `docs/principles/` — 12 principle files (9 Hard Rule rationales + 3 meta-principles: progressive disclosure, context economy, gates over guidance) plus a `README.md` index.
 - `docs/operations/` — Stage 5 runbook surface, including `incident-response.md` with severity ladder, first-15-minutes flow, roles, comms templates, and postmortem outline.
 - `starters/nextjs/CLAUDE.md` and `.claude/` — per-starter harness (settings, `/check`, `/migrate`).
 - `starters/flutter/.claude/` — per-starter harness (settings, `/check`, `/generate`).
