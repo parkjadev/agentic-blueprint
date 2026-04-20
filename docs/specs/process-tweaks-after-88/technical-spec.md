@@ -2,7 +2,7 @@
 
 **Author:** Claude (main agent, retro follow-up)
 **Date:** 2026-04-20
-**Status:** Shipped (#to-be-filled-post-merge)
+**Status:** Shipped (#90)
 **PRD:** Not applicable — this is a harness-hygiene chore with no product-facing user. Scope captured inline below.
 **Issue:** Retro of the release-strategy template session; no GitHub issue.
 
@@ -66,7 +66,7 @@ None.
 
 ## Rollout Plan
 
-### Phase 1: Land the four tweaks <!-- status: pending -->
+### Phase 1: Land the four tweaks <!-- status: shipped (#90) -->
 
 Edits applied directly:
 
