@@ -2,7 +2,7 @@
 
 **Author:** Claude (spec-writer subagent)
 **Date:** 2026-04-19
-**Status:** Built
+**Status:** Shipped (#84)
 **PRD:** `docs/specs/simplify-release-blueprint-giVF4/PRD.md`
 **Issue:** N/A — docs-only branch-scoped work (`claude/simplify-release-blueprint-giVF4`)
 

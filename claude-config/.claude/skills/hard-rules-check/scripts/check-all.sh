@@ -60,6 +60,17 @@ else
 fi
 slug=$(echo "$branch" | sed -E 's#^[a-z]+/[0-9]+-##' | sed -E 's#^[a-z]+/##')
 
+# Determine the base ref to diff against. In CI, `main` may not exist as a
+# local branch (actions/checkout only creates the checked-out ref), so fall
+# back to `origin/main`.
+if git rev-parse --verify main >/dev/null 2>&1; then
+  base_ref="main"
+elif git rev-parse --verify origin/main >/dev/null 2>&1; then
+  base_ref="origin/main"
+else
+  base_ref=""
+fi
+
 header "Rule 5: Spec-driven (feature branches have a spec)"
 # Bootstrap exception: this rule only applies once docs/specs/ exists in the
 # repo (i.e. once at least one feature has been planned). On a meta/rebuild
@@ -68,7 +79,7 @@ if [[ "$branch" == "main" || -z "$branch" ]]; then
   pass "on main — no per-feature spec required"
 elif [[ ! -d docs/specs ]]; then
   pass "docs/specs/ not yet bootstrapped (skipped)"
-elif [[ -d "docs/specs/$slug" ]] || git diff --name-only main...HEAD 2>/dev/null | grep -q '^docs/specs/'; then
+elif [[ -d "docs/specs/$slug" ]] || git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/specs/'; then
   pass "spec present for branch '$branch'"
 else
   fail "Rule 5" "no docs/specs/$slug/ and no spec changes on branch '$branch'"
@@ -79,14 +90,14 @@ if [[ "$branch" == "main" || -z "$branch" ]]; then
   pass "on main — no per-feature plan required"
 elif [[ ! -d docs/plans ]] || [[ -z "$(ls -A docs/plans 2>/dev/null)" ]]; then
   pass "docs/plans/ not yet bootstrapped (skipped)"
-elif [[ -f "docs/plans/$slug.md" ]] || git diff --name-only main...HEAD 2>/dev/null | grep -q '^docs/plans/'; then
+elif [[ -f "docs/plans/$slug.md" ]] || git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/plans/'; then
   pass "plan present for branch '$branch'"
 else
   fail "Rule 6" "no docs/plans/$slug.md on branch '$branch'"
 fi
 
 header "Rule 7: Templates are sacred"
-if git diff --name-only main...HEAD 2>/dev/null | grep -q '^docs/templates/'; then
+if git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/templates/'; then
   # Escape hatch (per docs/principles/07-templates-are-sacred.md): template
   # changes may land on a dedicated `docs/*` or `templates/*` branch.
   branch_r7="$branch"
