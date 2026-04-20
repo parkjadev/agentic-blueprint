@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+
+
+### Added
+
+- New sacred template `docs/templates/release-strategy.md` for downstream projects to document their chosen release profile, branch/environment mapping, preview environments, feature flags, schema migrations, approval gates, and rollback levers (#88).
+
 ## [3.0.0] — 2026-04-20
 
 ### Added
