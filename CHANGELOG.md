@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - Four `/plan` and `/ship` harness tweaks from the #88 retro: split spec-writer per spec, branch-prefix precondition, reorder PR-before-changelog, and require `<!-- status: pending -->` marker on plan files (#90).
+- Rule 5 and Rule 6 in `hard-rules-check` now exempt `chore/*` branches, alongside `main` and `release/*`. Trust-based exemption for memory-sync, dep bumps, and small fixes (#91).
 
 ## [3.0.0] — 2026-04-20
 
