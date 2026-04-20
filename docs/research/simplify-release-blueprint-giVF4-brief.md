@@ -111,13 +111,27 @@ This brief *is* Stage 1 output and lives under `docs/research/`. A separate case
 
 ## Open Questions
 
-- **Feature flags on Sentinel OS**: Does Sentinel OS use feature flags? If so, which provider, and how are flags lifecycle-managed (i.e. who is responsible for retiring stale flags)? The answer affects how concretely the guide can describe the activation-control pattern.
-- **Preview environment provider on Sentinel OS**: Is the per-PR preview infrastructure Vercel-native, or does it run on a different platform? This determines whether the guide can use Sentinel OS as a concrete example alongside the generic description.
-- **Migration strategy on Sentinel OS**: Has expand-migrate-contract been used in practice? Any incidents where a migration caused a production issue under TBD? Real-world migration stories are the most useful content for the risk section.
-- **Scope of profile addition**: Should the release-strategy profiles live inside the existing `docs/guides/tool-reference.md` (lowest friction, consistent location) or in a new `docs/guides/profiles/` subdirectory (cleaner separation, matches the future `profiles/` path referenced in Principles 8 and 9)? The principles documents mention `docs/guides/profiles/` as a future location; this feature could be the first occupant.
-- **Template commission**: Is there appetite to commission a formal `docs/templates/release-strategy.md` template as a Stage 2 output? If yes, it needs its own PR. If no, the guide update alone is sufficient.
-- **Compliance carve-out depth**: How much space should the stage guide give to regulated-industry teams (CAB, mandatory staging environments)? A single note that the simplified model is unsuitable in those contexts may be enough, or there may be appetite for a fuller multi-environment profile.
-- **Flutter starter coverage**: The simplified release model is described only for the Next.js starter. Should the Flutter starter's CI workflow (`starters/flutter/.github/workflows/flutter.yml`) also be updated to reflect per-PR preview patterns where applicable? (Flutter has no native concept of a preview URL, so this may be "Not applicable.")
+- **Feature flags on Sentinel OS** — *Resolved (2026-04-20):* assumed yes; provider unspecified. Guide will describe feature flags as the runtime-activation *role* per Principle 8, not prescribe a provider. Flag lifecycle-management responsibility is out of scope for the guide and belongs in a team's own release-strategy decisions.
+- **Preview environment provider on Sentinel OS** — *Resolved (2026-04-20):* not used as a named example. Guide describes the per-PR preview *role* generically.
+- **Migration strategy on Sentinel OS** — *Deferred:* still genuinely open. If Sentinel OS migration stories exist they should be captured in the Stage 2 spec, but absence does not block the plan — the risks section already cites expand-migrate-contract from public sources.
+- **Scope of profile addition** — *Resolved (2026-04-20):* release-strategy profiles will live in `docs/guides/tool-reference.md` as a sibling `## Release strategy profiles` section, following the existing `Profile A/B/C` convention used for platform implementation profiles. A new `docs/guides/profiles/` subdirectory is not created — premature without a second family of profiles needing it.
+- **Template commission** — *Resolved (2026-04-20):* defer to a separate PR. Principle 7 requires template changes on a dedicated `docs/*` or `templates/*` branch, and bundling a template with guide+profile updates inflates review surface. Queue a follow-up PR referencing this brief once the guide+profile changes settle.
+- **Compliance carve-out depth** — *Resolved (2026-04-20):* a single note in the "Choosing a release strategy" section is sufficient for now. Teams in regulated contexts are pointed to Profile B (Multi-environment / GitFlow); deeper carve-out can follow if real demand surfaces.
+- **Flutter starter coverage** — *Deferred:* treat as Not Applicable for this Stage 2 plan. Flutter has no native preview-URL concept; revisit only if a concrete use case appears.
+
+---
+
+## Decisions Going Into Stage 2
+
+Captured here so the spec-writer inherits a clean input:
+
+1. **Placement** — Option 2 + Option 3 combined. Update `docs/guides/stage-4-ship.md` with a "Choosing a release strategy" section, AND add release-strategy profiles to `docs/guides/tool-reference.md`.
+2. **Profile count** — two profiles: *Simplified (GitHub Flow)* and *Multi-environment (GitFlow)*. Compliance / CAB contexts steer to the latter.
+3. **Profile location** — inside existing `tool-reference.md`, not a new subdirectory.
+4. **Feature flags** — described as a role, not a provider. No vendor endorsement.
+5. **Template** — `docs/templates/release-strategy.md` is deferred to a separate PR on a `templates/*` or `docs/*` branch.
+6. **Starters** — no changes this PR. Next.js starter already implements GitHub Flow; Flutter is N/A.
+7. **Sentinel OS** — not cited as a named example in the guide. Referenced only as the source of the motivating experience.
 
 ---
 
