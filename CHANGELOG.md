@@ -12,6 +12,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - New sacred template `docs/templates/release-strategy.md` for downstream projects to document their chosen release profile, branch/environment mapping, preview environments, feature flags, schema migrations, approval gates, and rollback levers (#88).
 
+### Changed
+
+- Four `/plan` and `/ship` harness tweaks from the #88 retro: split spec-writer per spec, branch-prefix precondition, reorder PR-before-changelog, and require `<!-- status: pending -->` marker on plan files (#90).
+
 ## [3.0.0] — 2026-04-20
 
 ### Added
