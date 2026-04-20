@@ -48,9 +48,19 @@ else
   pass "starters/nextjs not present or env.ts not yet scaffolded (skipped)"
 fi
 
-header "Rule 5: Spec-driven (feature branches have a spec)"
-branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+# Detect current branch. On GitHub Actions PR events, HEAD is detached so
+# `git rev-parse --abbrev-ref HEAD` returns 'HEAD'; prefer the env vars
+# GitHub sets (GITHUB_HEAD_REF for PR events, GITHUB_REF_NAME for push).
+if [[ -n "${GITHUB_HEAD_REF:-}" ]]; then
+  branch="$GITHUB_HEAD_REF"
+elif [[ -n "${GITHUB_REF_NAME:-}" ]]; then
+  branch="$GITHUB_REF_NAME"
+else
+  branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+fi
 slug=$(echo "$branch" | sed -E 's#^[a-z]+/[0-9]+-##' | sed -E 's#^[a-z]+/##')
+
+header "Rule 5: Spec-driven (feature branches have a spec)"
 # Bootstrap exception: this rule only applies once docs/specs/ exists in the
 # repo (i.e. once at least one feature has been planned). On a meta/rebuild
 # branch that creates the harness itself, there is nothing to spec yet.
@@ -79,7 +89,7 @@ header "Rule 7: Templates are sacred"
 if git diff --name-only main...HEAD 2>/dev/null | grep -q '^docs/templates/'; then
   # Escape hatch (per docs/principles/07-templates-are-sacred.md): template
   # changes may land on a dedicated `docs/*` or `templates/*` branch.
-  branch_r7=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+  branch_r7="$branch"
   case "$branch_r7" in
     docs/*|templates/*)
       pass "docs/templates/ edited on dedicated '$branch_r7' (reviewer approval required at merge)"
