@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Added
 
 - New sacred template `docs/templates/release-strategy.md` for downstream projects to document their chosen release profile, branch/environment mapping, preview environments, feature flags, schema migrations, approval gates, and rollback levers (#88).
+- Added a worked example of the release-strategy template at `docs/examples/release-strategy.md`, demonstrating Profile A (Simplified / GitHub Flow) for a fictional small-team SaaS (#93).
 
 ### Changed
 

@@ -58,7 +58,7 @@ Staging–production environment drift is the primary operational risk of this m
 
 See [Profile B: Multi-environment (GitFlow)](tool-reference.md#profile-b-multi-environment-gitflow) in the Tool Reference for the full infrastructure role map.
 
-Capture the chosen model's decisions in a per-project release-strategy document using [`docs/templates/release-strategy.md`](../templates/release-strategy.md).
+Capture the chosen model's decisions in a per-project release-strategy document using [`docs/templates/release-strategy.md`](../templates/release-strategy.md). See [`docs/examples/release-strategy.md`](../examples/release-strategy.md) for a worked example of a filled-in release strategy.
 
 ---
 
