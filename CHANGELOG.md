@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [3.0.0] — 2026-04-20
+
 ### Added
 
 - `.claude/` harness — 7 slash commands (`/research`, `/plan`, `/build`, `/ship`, `/run`, `/stage`, `/new-feature`), 5 subagents (`researcher`, `spec-writer`, `spec-reviewer`, `starter-verifier`, `docs-inspector`), 5 skills with progressive-disclosure references (`australian-spelling`, `spec-author`, `hard-rules-check`, `changelog-entry`, `memory-sync`), and 5 hooks (`session-start`, `stage-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-gate`) wired in `.claude/settings.json`.
@@ -40,6 +42,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `flutter_secure_storage` package (#71)
 - `mobile-jwt.ts`, `resolve-clerk-user.ts`, `clerk.d.ts`, `auth_guard.dart`, `secure_storage.dart` (#71)
 - Clerk catch-all auth pages (`[[...sign-in]]`, `[[...sign-up]]`) (#71)
+
+### Fixed
+
+- Hard Rules CI check now handles detached-HEAD checkouts (actions/checkout@v4 PR events) and missing local main ref (#85).
 
 ## [2.1.0] — 2026-04-13
 
