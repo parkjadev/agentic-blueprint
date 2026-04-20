@@ -2,7 +2,7 @@
 
 **Author:** Claude (main agent, drafting after spec-writer timeouts)
 **Date:** 2026-04-20
-**Status:** Draft
+**Status:** Shipped (#93)
 **PRD:** [`docs/specs/add-release-strategy-example-QPmAW/PRD.md`](./PRD.md)
 **Issue:** Follow-up from [parkjadev/agentic-blueprint#88](https://github.com/parkjadev/agentic-blueprint/pull/88) (tracked in that PR's §Follow-ups)
 
@@ -78,7 +78,7 @@ No application UI. The artefact is a markdown file rendered in GitHub and readab
 
 Single-file change with two small cross-link edits. No phasing, no feature flags, no staged rollout.
 
-### Phase 1: Rename branch to satisfy template-guard <!-- status: pending -->
+### Phase 1: Rename branch to satisfy template-guard <!-- status: shipped (#93) -->
 
 - Current branch: `claude/add-release-strategy-example-QPmAW`.
 - `template-guard` hook at `.claude/hooks/template-guard.sh:33-50` blocks writes under `docs/templates/*` from any branch not prefixed `docs/*` or `templates/*`. This PR edits `docs/templates/README.md` for the catalogue cross-link, so the current branch name would block the build.
@@ -87,7 +87,7 @@ Single-file change with two small cross-link edits. No phasing, no feature flags
 - Delete the obsolete remote: `git push origin --delete claude/add-release-strategy-example-QPmAW` (only if already pushed; otherwise skip).
 - Verify: `git rev-parse --abbrev-ref HEAD` returns the new name; a dry-run `git add docs/templates/README.md` on the renamed branch does not trip the hook.
 
-### Phase 2: Draft the example and register it in the catalogue <!-- status: pending -->
+### Phase 2: Draft the example and register it in the catalogue <!-- status: shipped (#93) -->
 
 - Create `docs/examples/release-strategy.md` with the nine sections from the blank template at `docs/templates/release-strategy.md`, in the same order and at the same heading level:
   1. Chosen Release Profile — declares "Profile A: Simplified / GitHub Flow" with a one-paragraph rationale naming the nearest blueprint profile and explaining fit for Lumen (solo founder, pre-revenue, low deployment volume, no regulated data).
@@ -104,7 +104,7 @@ Single-file change with two small cross-link edits. No phasing, no feature flags
 - Metadata block: Author "Lumen founder (example)", Date "2026-04-20", Status "Approved" — modelling a completed document.
 - Footer distinguishes the example from a sacred template — use `*Worked example — see [docs/templates/release-strategy.md](../templates/release-strategy.md) for the blank template.*` rather than the standard `*Template from [agentic-blueprint]...*` footer. This prevents readers from mistaking the file as something to be copied verbatim.
 
-### Phase 3: Cross-link from the template catalogue and Stage-4 guide <!-- status: pending -->
+### Phase 3: Cross-link from the template catalogue and Stage-4 guide <!-- status: shipped (#93) -->
 
 - Add a single line to `docs/templates/README.md` next to the existing `release-strategy.md` entry: "See `docs/examples/release-strategy.md` for a worked example." Exact wording and placement finalised at build time to match the catalogue's existing row structure.
 - Add a single sentence to `docs/guides/stage-4-ship.md` alongside the existing reference to the blank template: "See `docs/examples/release-strategy.md` for a worked example of a filled-in release strategy." Close to the blank-template pointer; no section restructure.
