@@ -75,10 +75,16 @@ header "Rule 5: Spec-driven (feature branches have a spec)"
 # Bootstrap exception: this rule only applies once docs/specs/ exists in the
 # repo (i.e. once at least one feature has been planned). On a meta/rebuild
 # branch that creates the harness itself, there is nothing to spec yet.
+# chore/* is exempt on trust: truly trivial chores (memory-sync, dep bumps,
+# small fixes) don't benefit from a spec. Don't hide feature work behind a
+# chore/ prefix — that's a Rule-5-in-spirit violation even if the script
+# doesn't catch it.
 if [[ "$branch" == "main" || -z "$branch" ]]; then
   pass "on main — no per-feature spec required"
 elif [[ "$branch" == release/* ]]; then
   pass "release branch '$branch' — no per-feature spec required"
+elif [[ "$branch" == chore/* ]]; then
+  pass "chore branch '$branch' — no per-feature spec required"
 elif [[ ! -d docs/specs ]]; then
   pass "docs/specs/ not yet bootstrapped (skipped)"
 elif [[ -d "docs/specs/$slug" ]] || git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/specs/'; then
@@ -92,6 +98,8 @@ if [[ "$branch" == "main" || -z "$branch" ]]; then
   pass "on main — no per-feature plan required"
 elif [[ "$branch" == release/* ]]; then
   pass "release branch '$branch' — no per-feature plan required"
+elif [[ "$branch" == chore/* ]]; then
+  pass "chore branch '$branch' — no per-feature plan required"
 elif [[ ! -d docs/plans ]] || [[ -z "$(ls -A docs/plans 2>/dev/null)" ]]; then
   pass "docs/plans/ not yet bootstrapped (skipped)"
 elif [[ -f "docs/plans/$slug.md" ]] || git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/plans/'; then

@@ -36,11 +36,15 @@ Address any failure at the root — don't silence warnings with `@ts-ignore` or 
 
 **Fix:** stop coding, run `/plan <slug>`, produce the spec. Resume `/build` once the spec exists.
 
+**Exemptions** (script-level): `main`, `release/*`, `chore/*`. The `chore/*` exemption is trust-based — use it for memory-sync, dep bumps, and small fixes. Do not hide feature work behind a `chore/` prefix.
+
 ## Rule 6 — Plan-before-code
 
 **Spirit:** Auto Mode produces speed, not quality. Every non-trivial change gets a plan file so the reviewer (human or agent) can assess intent before diff.
 
 **Fix:** create `docs/plans/<slug>.md`. Reference the specs. Describe the implementation sequence. Then resume.
+
+**Exemptions** (script-level): `main`, `release/*`, `chore/*`. Same trust caveat as Rule 5.
 
 ## Rule 7 — Templates are sacred
 
