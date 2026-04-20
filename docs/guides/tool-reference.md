@@ -92,6 +92,40 @@ OutSystems Enterprise Context Graph provides codebase awareness to Mentor (equiv
 - **Agentic Systems Engineering** is OutSystems' framing for AI-assisted development across the ODC lifecycle. The Blueprint's five-stage model is compatible with and complementary to this — it adds the research, spec discipline, and post-ship automation layers that OutSystems' agentic tooling does not cover.
 - The **spec templates work directly** with ODC projects. A PRD for an OutSystems app follows the same Problem → Users → Journeys → Features structure. A technical spec documents the module decomposition, service action contracts, and entity relationships. An architecture template captures the ODC environment topology, module dependency graph, and external integration points.
 
+## Release strategy profiles
+
+These profiles describe two branching and environment models, following the same descriptive convention as the platform implementation profiles above. Neither is presented as a default — the choice follows from the preconditions described in [Choosing a release strategy](stage-4-ship.md#choosing-a-release-strategy) in the Stage 4 guide.
+
+### Profile A: Simplified (GitHub Flow)
+
+Best for: solo founders, small product teams, high-deployment-frequency SaaS, any context where regulatory or contractual obligations do not require pre-production human sign-off.
+
+| Infrastructure role | Description | Example tools (not exhaustive) |
+|---|---|---|
+| Version control | Single long-lived branch (`main`); ephemeral PR branches deleted after merge | GitHub, GitLab, Bitbucket |
+| Per-PR preview environment | Isolated environment built automatically on PR open; mirrors production configuration | Any platform with native preview support or CI-driven ephemeral environments |
+| CI gate | Automated test suite that must pass before merge; blocks merge on failure | GitHub Actions, GitLab CI, CircleCI, any CI platform |
+| Runtime activation control | Mechanism to deploy code dark and activate it for users selectively, decoupling deployment from release | Feature flag services, self-hosted or managed |
+
+Expand-migrate-contract is mandatory under this model. Destructive schema changes (column drop, rename, type change) must be split across three PRs — expand (add the new shape), migrate (backfill or dual-write), contract (remove the old shape) — never bundled with the application code that depends on the new schema. Skipping the split creates a race condition during rolling deploys where old replicas read a column that no longer exists.
+
+For operational detail and preconditions, see [Choosing a release strategy](stage-4-ship.md#choosing-a-release-strategy) in the Stage 4 guide.
+
+### Profile B: Multi-environment (GitFlow)
+
+Best for: regulated industries (banking, healthcare, government), enterprise teams with CAB obligations, any context where contractual or regulatory requirements mandate pre-production human sign-off.
+
+| Infrastructure role | Description | Notes |
+|---|---|---|
+| Version control | Three long-lived branches: `main` (production-equivalent), `develop` (integration), release branches cut from `develop` | Hotfixes branch from `main` and merge back to both `main` and `develop` |
+| Shared staging environment | Long-lived environment matching production configuration, used for QA and stakeholder sign-off before promotion to `main` | Staging–production drift is the primary operational risk; parity must be maintained actively |
+| Approval gate | Human sign-off step (CAB, QA lead, or equivalent) required before merging the release branch to `main` | Gate mechanism varies by organisation; examples include a protected-branch review rule, a change-management ticket, or an external approval workflow |
+| CI gate | Automated test suite that must pass on every branch; does not replace the human approval gate | Same tooling options as Profile A |
+
+Deployment frequency under this model is lower by design. The trade-off is deliberate: the approval gate provides an audit trail and a regulatory compliance path at the cost of longer lead time.
+
+For operational detail and preconditions, see [Choosing a release strategy](stage-4-ship.md#choosing-a-release-strategy) in the Stage 4 guide.
+
 ## Handoff patterns
 
 Tools rarely operate in isolation. Most real work flows through multiple roles.

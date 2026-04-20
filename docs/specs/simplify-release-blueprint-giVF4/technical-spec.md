@@ -98,7 +98,7 @@ Not applicable — no application code is introduced.
 
 This PR contains only documentation changes. There is no runtime deployment or feature-flag activation sequence. The rollout phases track the two files being updated, in dependency order.
 
-### Phase 1: Update `docs/guides/stage-4-ship.md` <!-- status: pending -->
+### Phase 1: Update `docs/guides/stage-4-ship.md` <!-- status: complete -->
 
 Add the "Choosing a release strategy" section as specified in the "File changes" section below. This must land before Phase 2 because the profiles will back-link to this section's anchor; the anchor must exist before the back-link is reviewed.
 
@@ -108,7 +108,7 @@ Add the "Choosing a release strategy" section as specified in the "File changes"
 - Include cross-links to both profiles in `tool-reference.md`
 - Expand-migrate-contract callout present
 
-### Phase 2: Update `docs/guides/tool-reference.md` <!-- status: pending -->
+### Phase 2: Update `docs/guides/tool-reference.md` <!-- status: complete -->
 
 Add the `## Release strategy profiles` section with two profiles.
 

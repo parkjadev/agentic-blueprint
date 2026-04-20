@@ -23,6 +23,45 @@ This stage also covers versioned releases for projects that need tagged snapshot
 
 ---
 
+## Choosing a release strategy
+
+The blueprint supports two named release models. Choosing explicitly — before writing pipeline configuration — prevents mismatched infrastructure, where a team attempts continuous deployment without the preconditions it needs, or carries a multi-environment apparatus it never actually requires. Neither model is a blueprint default; the choice follows from the preconditions below.
+
+### Profile A: Simplified (GitHub Flow)
+
+Trunk-based: one long-lived branch (`main`), ephemeral PR branches, merge to `main` equals production deploy.
+
+**Preconditions**
+
+1. **Automated test coverage** at a minimum smoke-test level, enforced as a CI merge gate.
+2. **Per-PR preview environments** that mirror production closely enough to surface integration issues before merge.
+3. **Runtime activation control** — a mechanism to deploy code dark and activate it for users selectively. Feature flags fill this role.
+4. **Schema-change discipline** — destructive migrations (column drop, rename, type change) follow the expand-migrate-contract pattern across multiple PRs, never bundled with the application code that depends on the new schema.
+
+**Best for:** solo founders, small product teams, high-deployment-frequency SaaS, any context where regulatory or contractual obligations do not require pre-production human sign-off.
+
+See [Profile A: Simplified (GitHub Flow)](tool-reference.md#profile-a-simplified-github-flow) in the Tool Reference for the full infrastructure role map.
+
+### Profile B: Multi-environment (GitFlow)
+
+Long-lived `main`, `develop`, and release branches; a shared staging environment; a human approval gate before production.
+
+**Preconditions**
+
+1. **Shared staging environment** that closely mirrors production and is used for QA and stakeholder sign-off before promotion to `main`.
+2. **Approval workflow** — a Change Advisory Board (CAB), QA lead sign-off, or equivalent, required before merging release branch to `main`.
+3. **Branch protection rules** on `main` that enforce the approval gate.
+
+Staging–production environment drift is the primary operational risk of this model and must be managed actively. A staging environment that has diverged from production gives false confidence rather than real coverage.
+
+**Best for:** regulated industries (banking, healthcare, government), enterprise teams with CAB obligations, any context where contractual or regulatory requirements mandate pre-production human sign-off.
+
+See [Profile B: Multi-environment (GitFlow)](tool-reference.md#profile-b-multi-environment-gitflow) in the Tool Reference for the full infrastructure role map.
+
+A per-project template for capturing the chosen model's decisions — `docs/templates/release-strategy.md` — is forthcoming in a separate PR.
+
+---
+
 ## How it works — Continuous deployment
 
 The default: merge to `main` equals production deploy. No manual promotion, no release manager, no ceremony.

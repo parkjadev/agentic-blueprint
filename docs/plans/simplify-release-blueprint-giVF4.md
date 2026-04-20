@@ -2,7 +2,7 @@
 
 **Slug:** `simplify-release-blueprint-giVF4`
 **Branch:** `claude/simplify-release-blueprint-giVF4`
-**Status:** Ready for `/build`
+**Status:** Built — ready for `/ship`
 **Date:** 2026-04-20
 
 ---
