@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - DB trigger `handle_new_user()` for automatic profile creation on sign-up (#71)
 - Supabase init error handling in Flutter `main.dart` (#71)
 - `.gitignore` entries for build artefacts (#71)
+- Added 'Choosing a release strategy' section to Stage 4 guide; added release-strategy profiles to Tool Reference documenting preconditions for simplified and multi-environment models (#pending).
 
 ### Changed
 

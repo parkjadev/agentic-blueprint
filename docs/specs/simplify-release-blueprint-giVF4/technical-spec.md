@@ -2,9 +2,9 @@
 
 **Author:** Claude (spec-writer subagent)
 **Date:** 2026-04-19
-**Status:** Draft
+**Status:** Built
 **PRD:** `docs/specs/simplify-release-blueprint-giVF4/PRD.md`
-**Issue:** TBD — file against this spec at Stage 3 entry
+**Issue:** N/A — docs-only branch-scoped work (`claude/simplify-release-blueprint-giVF4`)
 
 ---
 
