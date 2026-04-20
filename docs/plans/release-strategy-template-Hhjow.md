@@ -3,7 +3,7 @@
 **Slug:** `release-strategy-template-Hhjow`
 **Branch:** `docs/release-strategy-template-Hhjow` (renamed from `claude/release-strategy-template-Hhjow` during Stage 2 to satisfy the `template-guard` escape-hatch)
 **Issue:** [parkjadev/agentic-blueprint#86](https://github.com/parkjadev/agentic-blueprint/issues/86)
-**Status:** Approved — ready for /build
+**Status:** Approved — ready for /build <!-- status: pending -->
 
 ---
 
