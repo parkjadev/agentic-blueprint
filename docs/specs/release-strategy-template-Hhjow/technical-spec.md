@@ -2,7 +2,7 @@
 
 **Author:** Claude (main agent, drafting after spec-writer timeouts)
 **Date:** 2026-04-20
-**Status:** Draft
+**Status:** Shipped (#88)
 **PRD:** [`docs/specs/release-strategy-template-Hhjow/PRD.md`](./PRD.md)
 **Issue:** [parkjadev/agentic-blueprint#86](https://github.com/parkjadev/agentic-blueprint/issues/86)
 

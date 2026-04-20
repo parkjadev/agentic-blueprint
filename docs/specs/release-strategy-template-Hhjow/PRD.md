@@ -2,7 +2,7 @@
 
 **Author:** Claude (spec-writer subagent)
 **Date:** 2026-04-20
-**Status:** Draft
+**Status:** Shipped (#88)
 
 ---
 
