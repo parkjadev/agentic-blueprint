@@ -77,6 +77,8 @@ header "Rule 5: Spec-driven (feature branches have a spec)"
 # branch that creates the harness itself, there is nothing to spec yet.
 if [[ "$branch" == "main" || -z "$branch" ]]; then
   pass "on main — no per-feature spec required"
+elif [[ "$branch" == release/* ]]; then
+  pass "release branch '$branch' — no per-feature spec required"
 elif [[ ! -d docs/specs ]]; then
   pass "docs/specs/ not yet bootstrapped (skipped)"
 elif [[ -d "docs/specs/$slug" ]] || git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/specs/'; then
@@ -88,6 +90,8 @@ fi
 header "Rule 6: Plan-before-code (plan file present)"
 if [[ "$branch" == "main" || -z "$branch" ]]; then
   pass "on main — no per-feature plan required"
+elif [[ "$branch" == release/* ]]; then
+  pass "release branch '$branch' — no per-feature plan required"
 elif [[ ! -d docs/plans ]] || [[ -z "$(ls -A docs/plans 2>/dev/null)" ]]; then
   pass "docs/plans/ not yet bootstrapped (skipped)"
 elif [[ -f "docs/plans/$slug.md" ]] || git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/plans/'; then
