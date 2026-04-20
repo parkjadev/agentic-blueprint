@@ -12,6 +12,6 @@ Reusable markdown templates for spec-driven development. Used across all five st
 - `auth-spec.md` — Auth flow spec (Stage 2)
 - `architecture.md` — System architecture doc (Stage 2)
 - `deployment.md` — Deployment & infrastructure doc (Stage 4)
-- `release-strategy.md` — Release-strategy doc (branching, flags, migrations, rollback) (Stage 4)
+- `release-strategy.md` — Release-strategy doc (branching, flags, migrations, rollback) (Stage 4). See [`docs/examples/release-strategy.md`](../examples/release-strategy.md) for a worked example.
 - `api-reference.md` — Full API catalogue (Stage 2/4)
 - `CHANGELOG.md` — Versioned changelog format (Stage 4)
