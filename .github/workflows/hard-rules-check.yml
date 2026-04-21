@@ -1,6 +1,13 @@
 name: Hard Rules Check
 
-# Runs the 9 Hard Rules against every PR and push to main.
+# Runs the v4 5 Hard Rules (+ 3 meta-principles documented separately)
+# against every PR and push to main. Honours tagged-exception commit prefixes:
+#   [release] skips Rule 4 (templates)
+#   [infra]   skips Rule 3 (Spec-before-Ship)
+#   [docs]    skips Rule 3
+#   [bulk]    skips the >50-file runaway guard (enforced by pre-commit-gate.sh;
+#             CI scan does not re-check commit size)
+#
 # Source of truth: .claude/skills/hard-rules-check/scripts/check-all.sh
 # This is a fast gate — it should complete in seconds, never minutes.
 
@@ -24,7 +31,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          # Need the full history so Rules 5, 6, 7 can diff against main.
+          # Need full history so Rules 3 + 4 can diff against main and scan
+          # the commit-subject range for tagged-exception prefixes.
           fetch-depth: 0
 
       - name: Setup Python

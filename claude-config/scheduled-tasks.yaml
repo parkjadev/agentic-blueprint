@@ -1,0 +1,61 @@
+# Agentic Blueprint v4 — Signal-beat scheduled tasks.
+#
+# Adopters copy this file via `/beat install`; `/signal init` reconciles it
+# with Claude Scheduled Tasks (or GitHub Actions cron for adopters without
+# Claude Scheduled Tasks).
+#
+# Budget fields are enforced by the scheduled-task runner:
+#   max_tokens_per_run  — abort if a single run exceeds this token count
+#   max_runs_per_day    — abort the Nth+1 run; count resets at UTC midnight
+#   timeout_ms          — hard wall-clock cap on a single run
+#
+# Secrets are referenced by NAME only. Wire values via the platform secret
+# store (Vercel env vars, GitHub Actions secrets, etc.). Never commit values.
+
+version: 1
+
+tasks:
+  - name: pr-triage
+    description: Daily scan of open PRs — comment on stale ones, flag unreviewed.
+    cron: "0 7 * * 1-5"       # 07:00 UTC Mon–Fri
+    max_tokens_per_run: 50000
+    max_runs_per_day: 2
+    timeout_ms: 300000
+    output_path: docs/signal/pr-triage.md
+    secrets: [GITHUB_TOKEN, ANTHROPIC_API_KEY]
+
+  - name: ci-failure-monitor
+    description: Check main CI every 2 hours during business hours; file an issue on sustained failure.
+    cron: "0 9,11,13,15,17 * * 1-5"
+    max_tokens_per_run: 20000
+    max_runs_per_day: 10
+    timeout_ms: 120000
+    output_path: docs/signal/ci-health.md
+    secrets: [GITHUB_TOKEN, ANTHROPIC_API_KEY]
+
+  - name: dependency-audit
+    description: Weekly dependency + advisory scan. Appends findings to docs/signal/dependencies.md.
+    cron: "0 6 * * 1"         # 06:00 UTC Monday
+    max_tokens_per_run: 30000
+    max_runs_per_day: 1
+    timeout_ms: 600000
+    output_path: docs/signal/dependencies.md
+    secrets: [GITHUB_TOKEN, ANTHROPIC_API_KEY]
+
+  - name: post-merge-doc-sync
+    description: Daily /signal sync on main. Updates plan-status markers, validates CHANGELOG cross-references, archives stale briefs.
+    cron: "0 8 * * 1-5"       # 08:00 UTC Mon–Fri
+    max_tokens_per_run: 20000
+    max_runs_per_day: 3
+    timeout_ms: 180000
+    output_path: docs/signal/sync.log
+    secrets: [GITHUB_TOKEN, ANTHROPIC_API_KEY]
+
+  - name: weekly-audit
+    description: /signal audit — re-reads open specs, flags drift, writes findings to docs/signal/learnings.md and a transient audit report.
+    cron: "0 7 * * 5"         # 07:00 UTC Friday
+    max_tokens_per_run: 80000
+    max_runs_per_day: 1
+    timeout_ms: 900000
+    output_path: docs/signal/weekly-audit.md
+    secrets: [GITHUB_TOKEN, ANTHROPIC_API_KEY]
