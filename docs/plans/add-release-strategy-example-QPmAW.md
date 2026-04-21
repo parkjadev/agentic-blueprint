@@ -3,7 +3,7 @@
 **Slug:** `add-release-strategy-example-QPmAW`
 **Branch:** `docs/add-release-strategy-example-QPmAW` (to be renamed from `claude/add-release-strategy-example-QPmAW` before /build — see Step 1)
 **Issue:** Follow-up from [parkjadev/agentic-blueprint#88](https://github.com/parkjadev/agentic-blueprint/pull/88) — §Follow-ups committed to a P1 worked-example PR; no new GitHub issue opened yet.
-**Status:** Approved — ready for /build <!-- status: pending -->
+**Status:** Shipped (#93) <!-- status: shipped (#93) -->
 
 ---
 
