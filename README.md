@@ -1,51 +1,49 @@
 # Agentic Blueprint
 
-A framework for building products with AI — covering the stages that agentic coding tools skip.
+A framework for building products with AI — covering the parts that agentic coding tools skip.
 
-> Cursor and Replit solve coding. This Blueprint solves everything around it: the research before you build, the discipline while you build, and the automation after you ship.
+> Coding tools solve the middle. This Blueprint solves the bookends: framing what good looks like before you build, and closing the loop after you ship.
 
 ---
 
-## The Five Stages
+## The Three Beats
 
 ```
-Research & Think → Plan → Build → Ship → Run
-       ↑                                    │
-       └────────── feedback loop ───────────┘
+Spec → Ship → Signal
+ ↑                │
+ └── feedback ────┘
 ```
 
-Every product follows five stages. Most agentic tools only cover one of them.
+Every product follows three beats. Most agentic tools only help with the middle one.
 
-| Stage | What | Why tools alone can't do it |
+| Beat | What | Why tools alone can't do it |
 |---|---|---|
-| **1. Research & Think** | Understand the problem, write the PRD | No thinking surface, no persistent context |
-| **2. Plan** | Specs, architecture, issues, branches | No spec discipline, no templates |
-| **3. Build** | Code, test, PR | Every tool covers this |
-| **4. Ship** | Deploy, verify, clean up | Limited deployment flexibility |
-| **5. Run** | Automated maintenance, ops | No scheduled automation, no ops layer |
+| **Spec** | Frame the problem, define done, produce the spec artefacts | No thinking surface; no spec discipline; no scope-aware templates |
+| **Ship** | Build + test + deploy + release as one PR-driven loop | Every agentic tool helps here — the Blueprint adds gates + idempotence |
+| **Signal** | Run + monitor + learn + scheduled automation; feeds Spec | No scheduled automation, no peer-review substitute, no durable learnings log |
 
-The framework is tool-agnostic. The starters and tool recommendations are opinionated — use what works for your team.
+v4 collapses the previous five-stage model (Research & Think → Plan → Build → Ship → Run) because Claude Code now handles Plan → Build → Ship in one continuous motion. The framework is still tool-agnostic — the beats describe the work, not the tool.
 
 ---
 
 ## Quickstart
 
-### Option A: Use the starter (opinionated stack)
+### Option A — New project from a starter
 
-1. Click **"Use this template"** on GitHub
-2. Copy the starter into your repo root:
+1. Click **"Use this template"** on GitHub.
+2. Copy the Next.js starter (or Flutter — same flow):
    ```bash
    cp -r starters/nextjs/* .
    cp starters/nextjs/.env.example .
-   cp starters/nextjs/.eslintrc.json .
    cp -r starters/nextjs/.github .
    ```
 3. Configure Supabase (the only required service):
    ```bash
    cp .env.example .env.local
-   # Fill in: DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
+   # Fill in: DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL,
+   # NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
    ```
-4. Set up Claude Code + GitHub:
+4. Install the Blueprint harness:
    ```bash
    cp claude-config/CLAUDE.md.template CLAUDE.md
    mkdir -p .claude
@@ -60,113 +58,99 @@ The framework is tool-agnostic. The starters and tool recommendations are opinio
    curl http://localhost:3000/api/health
    ```
 
-### Option B: Bring your own stack (framework only)
+### Option B — Adopt into an existing codebase
+
+The Blueprint ports into an existing repo without touching source code:
+
+```bash
+# From inside your repo, using Claude Code:
+/beat install
+```
+
+`/beat install` detects your layout, dry-runs, then copies the `.claude/` bundle, merges your existing `CLAUDE.md` via a fenced block (your content stays intact), installs the GitHub Actions hard-rules wrapper, and writes `claude-config/VERSION` so future `/beat update` runs can reason about drift.
+
+### Option C — Framework only (bring your own stack)
 
 1. Copy `docs/templates/` into your repo
-2. Copy `claude-config/CLAUDE.md.template` and customise for your project
-3. Read the five stage guides in `docs/guides/`
-4. Follow the loop: Research & Think → Plan → Build → Ship → Run
+2. Copy `claude-config/CLAUDE.md.template` and customise
+3. Read the three beat guides in `docs/guides/`
+4. Follow the loop: Spec → Ship → Signal
 
-No starter code required. The templates and guides work with any tech stack.
+No starter code required.
 
 ---
 
 ## Guides
 
-| Guide | What It Covers |
+| Guide | What it covers |
 |---|---|
-| [Stage 1: Research & Think](docs/guides/stage-1-research-and-think.md) | Market research, problem exploration, PRD |
-| [Stage 2: Plan](docs/guides/stage-2-plan.md) | Specs, architecture, issues, branches |
-| [Stage 3: Build](docs/guides/stage-3-build.md) | Code, test, PR — the discipline layer |
-| [Stage 4: Ship](docs/guides/stage-4-ship.md) | Deploy, verify, rollback, mobile supervision |
-| [Stage 5: Run](docs/guides/stage-5-run.md) | Scheduled automation, ops, maintenance |
-| [Tool Reference](docs/guides/tool-reference.md) | Role mapping, decision tree, platform profiles (Claude, Cursor, OutSystems ODC) |
+| [Spec](docs/guides/beat-spec.md) | Sub-verbs (idea / epic / feature / fix / chore), spec-researcher, spec-author, parent-linkage cascade |
+| [Ship](docs/guides/beat-ship.md) | Idempotent PR loop, GitHub Flow default, starter-verify, preview smoke-test, verify |
+| [Signal](docs/guides/beat-signal.md) | Scheduled-task manifest, `/signal audit` peer-review substitute, feedback into Spec |
+| [Tool Reference](docs/guides/tool-reference.md) | Role mapping and the 2-profile × 3-beat matrix (Claude-native + OutSystems ODC) |
 
 ---
 
 ## Templates
 
-Spec-driven development templates. Every feature starts as a spec before any code is written.
+Spec-driven development templates. Every feature starts as a spec before any code is written. v4 ships **9 active templates** (down from 12 in v3) — api-spec, data-model-spec, and auth-spec were absorbed into `technical-spec.md`; deployment + release-strategy were merged into `delivery.md`.
 
-| Template | Structure |
-|---|---|
-| [Research Brief](docs/templates/research-brief.md) | Questions, findings, market landscape, implications |
-| [PRD](docs/templates/PRD.md) | Problem → Users → Journeys → Feature matrix → NFRs → Metrics |
-| [Technical Spec](docs/templates/technical-spec.md) | Overview → Data model → API → Auth → Jobs → Testing → Rollout |
-| [API Spec](docs/templates/api-spec.md) | Per-endpoint: method, path, auth, role, request/response schemas |
-| [Data Model Spec](docs/templates/data-model-spec.md) | Drizzle schema, relationships, indexes, constraints, migration plan |
-| [Auth Spec](docs/templates/auth-spec.md) | Flows, role matrix, session management, user sync |
-| [Architecture](docs/templates/architecture.md) | System diagram, component map, data flow, integrations |
-| [Deployment](docs/templates/deployment.md) | Environments, branch strategy, CI/CD, env vars, rollback |
-| [API Reference](docs/templates/api-reference.md) | Full endpoint catalogue with response envelope and error codes |
-| [Changelog](docs/templates/CHANGELOG.md) | Keepachangelog format with examples |
+| Template | Beat | Structure |
+|---|---|---|
+| [Research Brief](docs/templates/research-brief.md) | Spec | Questions, findings, market landscape, implications |
+| [PRD](docs/templates/PRD.md) | Spec | `scope: product \| epic \| feature` — Problem → Users → Journeys → Feature matrix (product only) → Metrics |
+| [Technical Spec](docs/templates/technical-spec.md) | Spec | `scope: epic \| feature \| fix` — Overview → Data model → API → Auth → Testing → Rollout |
+| [Architecture](docs/templates/architecture.md) | Spec | System diagram, component map, data flow, integrations |
+| [API Reference](docs/templates/api-reference.md) | Ship | Full endpoint catalogue with response envelope and error codes |
+| [Delivery](docs/templates/delivery.md) | Ship | Release profile → environments → branch strategy → CI/CD → flags → rollback |
+| [Incident Runbook](docs/templates/incident-runbook.md) | Signal | Trigger → severity → mitigation → rollback ladder → post-mortem → learnings |
+| [Changelog](docs/templates/CHANGELOG.md) | Signal | keepachangelog format with examples |
+| [README](docs/templates/README.md) | Project-level | Per-project README template |
+
+Retired templates are preserved in `docs/templates/_archive/` with redirect stubs for provenance.
 
 ---
 
-## Starters (Optional)
+## Starters (optional)
 
-The starters are opinionated reference implementations. Use them if the stack fits; ignore them if you're bringing your own.
+Opinionated reference implementations. Use them if the stack fits; ignore them if you're bringing your own.
 
 ### Next.js Starter (`starters/nextjs/`)
 
-Full-stack starter with Supabase (PostgreSQL, Auth, Storage), Drizzle ORM, and opt-in services (Stripe, Inngest, Resend). Includes example CRUD API, auth pages, rate limiting, and CI pipeline.
+Full-stack starter with Supabase (PostgreSQL, Auth, Storage), Drizzle ORM, and opt-in services (Stripe, Inngest, Resend). Includes example CRUD API, auth pages, rate limiting, and CI pipeline. Starter-local conventions (like the optional-services Zod pattern) live in `starters/nextjs/CLAUDE.md`.
 
 ### Flutter Starter (`starters/flutter/`)
 
 Mobile companion with Supabase Auth (via `supabase_flutter`), Riverpod state management, GoRouter navigation, and Dio HTTP client matching the Next.js API envelope.
 
-### Stack Decisions
-
-These apply to the starters. If you're using your own stack, skip this section.
-
-| Choice | Rationale |
-|---|---|
-| **Supabase** | Single platform for PostgreSQL, auth, and storage. Unified auth for web and mobile. |
-| **Drizzle** | Type-safe ORM with schema-as-code and `db:push` for rapid iteration. |
-| **Inngest** | Event-driven background jobs without managing queues. Opt-in. |
-| **Vercel** | Zero-config Next.js hosting with preview deploys per PR. |
-| **Riverpod** | Compile-safe Flutter state management with async and dependency injection. |
-| **GoRouter** | Declarative Flutter routing with typed parameters and auth redirects. |
-
-### Optional Services
-
-| Service | Env Vars | Purpose |
-|---|---|---|
-| **Stripe** | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | Payments |
-| **Inngest** | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` | Background jobs |
-| **Resend** | `RESEND_API_KEY` | Transactional email |
-
 ### Claude Config (`claude-config/`)
 
-Drop-in configuration for any project using Claude Code: CLAUDE.md template with Hard Rules, permission settings, memory guidelines, hook patterns, issue/PR templates, and bootstrap scripts.
+Copy-ready bundle for any project using Claude Code: `CLAUDE.md` template, permission settings, memory guidelines, hook patterns, issue/PR templates, bootstrap scripts, and `VERSION` pin.
 
 ---
 
-## Platform Compatibility
+## Platform Profiles
 
-The Blueprint is tested and documented for three platform profiles:
+The Blueprint is documented for two platform profiles:
 
 | Profile | Build Tool | Best For |
 |---|---|---|
-| **Claude-native** | Claude Code | Solo founders, full-stack web/mobile |
-| **Cursor + Perplexity** | Cursor Agent | Teams wanting parallel agents, multi-vendor |
-| **OutSystems ODC** | Mentor + Context Graph | Enterprise low-code delivery |
+| **Claude-native** | Claude Code | Solo founders and small teams, pro-code SaaS + mobile |
+| **OutSystems ODC** | Mentor + Enterprise Context Graph | Enterprise teams on OutSystems Developer Cloud |
 
-See [Tool Reference](docs/guides/tool-reference.md) for the full role-to-tool mapping for each profile.
+Spec and Signal artefacts are identical across profiles; only Ship mechanics diverge. See [Tool Reference](docs/guides/tool-reference.md) for the full beat × profile matrix.
 
 ---
 
 ## Philosophy
 
-AI is treated as a senior collaborator who needs context to perform. The quality of AI output is directly proportional to the context you provide — project guides, specs, schemas, and clear instructions.
+AI is treated as a senior collaborator who needs context to perform. Output quality is directly proportional to the context provided — project guides, specs, schemas, clear instructions.
 
-1. **Research** before you ideate — don't build solutions to problems that don't exist
-2. **Think** before you code — a thinking partner with persistent context beats a prompt box
-3. **Spec** before you build — every feature starts as a document, not a code change
-4. **Automate** after you ship — maintenance that doesn't run doesn't happen
-5. **Context compounds** — every minute invested in documentation pays dividends across every future session
-
-The framework applies equally to code-first teams (Next.js, Flutter), AI-native editors (Cursor, Claude Code), and low-code platforms (OutSystems ODC). The stages are universal. The tools are interchangeable.
+1. **Spec** before you build — every feature starts as a document.
+2. **Gates** beat guidance — if a rule matters, wire a hook; if you can't, drop the rule or scope it differently.
+3. **Flexibility has named escapes** — tagged commit prefixes (`[release]`, `[infra]`, `[docs]`, `[bulk]`) replace `--no-verify`.
+4. **Context compounds** — `docs/signal/learnings.md` accumulates durable insights across cycles; every future `/spec idea` reads it.
+5. **One operator, one framework** — v4 is sized for a solo developer running multiple products. Adopt-in-place via `/beat install` keeps it portable.
 
 ---
 
@@ -176,15 +160,17 @@ The framework applies equally to code-first teams (Next.js, Flutter), AI-native 
 agentic-blueprint/
 ├── .claude/                    # Claude Code harness — commands, agents, skills, hooks
 ├── docs/
-│   ├── templates/              # 10 spec-driven development templates (the IP)
-│   ├── guides/                 # 5 stage guides + 1 tool reference
-│   ├── principles/             # 9 Hard Rules + 3 meta-principles
-│   ├── operations/             # Stage 5 runbooks (incident response, postmortems)
-│   └── research/               # Research briefs (Stage 1 output)
+│   ├── templates/              # 9 spec-driven templates (the IP) + _archive/
+│   ├── guides/                 # 3 beat guides + 1 tool reference
+│   ├── principles/             # 5 Hard Rules + 3 meta-principles
+│   ├── operations/             # Signal-beat runbooks (incident response, post-mortems)
+│   ├── research/               # Research briefs (Spec-beat output)
+│   ├── specs/                  # Filled-in specs (Spec-beat output)
+│   └── signal/                 # Accumulating logs: learnings, agent-log, dependencies, spend
 ├── starters/
 │   ├── nextjs/                 # Optional: Next.js reference implementation
 │   └── flutter/                # Optional: Flutter reference implementation
-├── claude-config/              # Copy-ready bundle: CLAUDE.md template, .claude/ mirror, scripts
+├── claude-config/              # Copy-ready bundle for /beat install
 ├── CLAUDE.md                   # Primitive map for this repo
 ├── CHANGELOG.md
 └── README.md
@@ -195,6 +181,9 @@ agentic-blueprint/
 ## Verification
 
 ```bash
+# Hard Rules (all 5 pass on a clean clone)
+bash .claude/skills/hard-rules-check/scripts/check-all.sh
+
 # Next.js starter — must pass clean
 cd starters/nextjs
 pnpm install && pnpm type-check && pnpm lint && pnpm test:ci
