@@ -1,3 +1,9 @@
+> **Archived in v4.** This template was retired when `technical-spec.md` absorbed schema design.
+> New home: `docs/templates/technical-spec.md` § Data Model Changes
+> Historical content preserved below.
+
+---
+
 # Data Model Spec — [Feature / Domain Name]
 
 **Author:** [Name]

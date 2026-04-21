@@ -1,3 +1,9 @@
+> **Archived in v4.** Release-strategy and deployment merged into one unified template.
+> New home: `docs/templates/delivery.md` (release profile, flags, migrations, rollback ladder)
+> Historical content preserved below.
+
+---
+
 # Release Strategy — [Project Name]
 
 **Author:** [Name]

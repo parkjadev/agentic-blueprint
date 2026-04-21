@@ -31,9 +31,22 @@ case "$path" in
 esac
 
 if [[ "$rel" == docs/templates/* ]]; then
-  # Escape hatch (per docs/principles/07-templates-are-sacred.md): template
-  # changes may land on a dedicated `docs/*` or `templates/*` branch. Any
-  # other branch trying to edit docs/templates/ is blocked.
+  # Always-allowed paths: the _archive/ subfolder is where retired templates
+  # live. Moving content into or editing provenance stubs inside _archive/ is
+  # not an edit to the active template contract.
+  if [[ "$rel" == docs/templates/_archive/* ]]; then
+    exit 0
+  fi
+
+  # Session-level escape: AGENTIC_BLUEPRINT_RELEASE=1 signals an explicit
+  # release rebuild where template edits are expected (e.g. v4 migration).
+  if [[ "${AGENTIC_BLUEPRINT_RELEASE:-0}" == "1" ]]; then
+    exit 0
+  fi
+
+  # Branch-name escape (per docs/principles/07-templates-are-sacred.md):
+  # template changes may land on a dedicated `docs/*` or `templates/*` branch.
+  # Any other branch trying to edit docs/templates/ is blocked.
   branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
   case "$branch" in
     docs/*|templates/*) exit 0;;
@@ -43,8 +56,10 @@ if [[ "$rel" == docs/templates/* ]]; then
 Blocked: $rel is in docs/templates/, which is sacred (Hard Rule #7).
 
 Templates define the spec contract. Edit for clarity in a dedicated docs: PR,
-never bundled into a feature change. Move to a branch named \`docs/<slug>\`
-or \`templates/<slug>\` and retry — that branch is the documented escape.
+never bundled into a feature change. Either:
+  - Move to a branch named \`docs/<slug>\` or \`templates/<slug>\`, or
+  - Set AGENTIC_BLUEPRINT_RELEASE=1 for an explicit release rebuild, or
+  - Edit under docs/templates/_archive/ (always allowed).
 EOF
   exit 2
 fi

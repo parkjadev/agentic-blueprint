@@ -1,3 +1,9 @@
+> **Archived in v4.** Deployment and release-strategy merged into one unified template.
+> New home: `docs/templates/delivery.md` (environments, branch strategy, CI/CD, rollback)
+> Historical content preserved below.
+
+---
+
 # Deployment — [Project Name]
 
 **Author:** [Name]

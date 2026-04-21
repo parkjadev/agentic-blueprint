@@ -1,3 +1,9 @@
+> **Archived in v4.** This template was retired when `technical-spec.md` absorbed per-endpoint design.
+> New home: `docs/templates/technical-spec.md` § API Changes
+> Historical content preserved below.
+
+---
+
 # API Spec — [Feature / Domain Name]
 
 **Author:** [Name]

@@ -1,3 +1,9 @@
+> **Archived in v4.** This template was retired when `technical-spec.md` absorbed feature-level auth.
+> New home: `docs/templates/technical-spec.md` § Auth & Authorisation
+> Historical content preserved below.
+
+---
+
 # Auth Spec — [Feature / Flow Name]
 
 **Author:** [Name]
