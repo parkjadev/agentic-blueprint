@@ -2,348 +2,119 @@
 
 > Which tool for which role — a decision framework, not a vendor pitch.
 
+v4 ships two platform profiles: **Claude-native** (pro-code SaaS + mobile) and **OutSystems ODC** (low-code enterprise delivery). Spec and Signal artefacts are identical across both profiles; only Ship mechanics diverge. That's where the sellable IP concentrates — the discipline travels; the deployment tooling doesn't.
+
 ## The role model
 
-Instead of mapping to specific products, this guide maps to **roles** that any
-tool can fill. Choose the best available tool for each role based on your stack.
+Seven roles. Any tool can fill any role; profiles pick specific tools for each.
 
-| Role | What it does | Claude | Cursor | Replit | Other |
-|---|---|---|---|---|---|
-| Research Tool | Deep research, market analysis, source synthesis | Claude web search | — | — | Perplexity, ChatGPT, Gemini |
-| Thinking Partner | Brainstorm, PRD, strategy, critical assessment | Desktop Chat (Projects) | — | — | Any LLM with persistent context |
-| Agentic Coder | Read codebase, write code, run tests, commit | Code CLI + VS Code | Agent + Background Agents | Agent | GitHub Copilot, Windsurf |
-| Deployment Pipeline | CI/CD, preview deploys, monitoring | Code + Vercel MCP | GitHub/Vercel integrations | Built-in hosting | Any CI/CD pipeline |
-| Scheduled Automation | Recurring tasks, monitoring, triage | Scheduled Tasks | — | — | GitHub Actions cron + AI API |
-| Ops Surface | Non-code file processing, document generation | Cowork | — | — | Custom scripts, manual |
-| Mobile Supervision | Remote monitoring, async delegation | Remote Control + Dispatch | Mobile agent | — | — |
+| Role | What it does |
+|---|---|
+| Research tool | Deep research, market analysis, source synthesis |
+| Thinking partner | Brainstorm, PRD, strategy, critical assessment |
+| Agentic coder / builder | Read, write, run tests, commit |
+| Deployment pipeline | CI/CD, preview deploys, rollback |
+| Scheduled automation | Recurring tasks, monitoring, triage |
+| Ops surface | Non-code file processing, document generation, runbooks |
+| Mobile supervision | Remote monitoring, async delegation |
 
-### Reading the table
+Gaps in a profile are meaningful. If a profile has no native equivalent for a role, the adopter fills the gap with external tooling (typically GitHub Actions cron + an AI API, or manual process).
 
-The "Claude" column lists the specific surface within the Claude ecosystem. The
-"Other" column is not exhaustive — it lists common alternatives to illustrate
-that the role can be filled by multiple tools. The Blueprint's guides are
-written with Claude surfaces as the primary example, but the *patterns* apply
-regardless of which tool fills each role.
+## Beat × profile matrix
 
-Gaps in the table are meaningful. If a tool has no entry for Scheduled
-Automation, it means that tool has no native equivalent — you would need to
-build the capability yourself (e.g. a GitHub Actions cron job that calls an AI
-API). The Blueprint covers those workarounds where relevant.
+This is the load-bearing table. Spec and Signal rows are identical across profiles; Ship diverges.
 
-## Platform implementation profiles
-
-The five stages need five capabilities. Here is how three common toolchains fill them.
-
-### Profile A: Claude-native (code-first)
-
-Best for: Solo founders, small product teams, full-stack web/mobile.
-
-| Stage | Role | Tool |
+| Beat | Claude-native | OutSystems ODC |
 |---|---|---|
-| 1. Research & Think | Research tool | Perplexity Deep Research |
-| 1. Research & Think | Thinking partner | Claude Desktop Chat (Projects) |
-| 2. Plan | Spec author + codebase context | Claude Code (Terminal) |
-| 3. Build | Agentic coder | Claude Code (Terminal + VS Code) |
-| 4. Ship | Deployment pipeline | Claude Code + Vercel MCP |
-| 4. Ship | Mobile supervision | Dispatch + Remote Control |
-| 5. Run | Scheduled automation | Claude Scheduled Tasks |
-| 5. Run | Ops surface | Cowork |
+| **Spec** | Claude Desktop for ideation + `/spec` for artefact generation. `spec-researcher` subagent for deep research. `spec-author` subagent for PRD + technical-spec | Same templates (`docs/templates/`) and `/spec` flow. ODC Lifecycle captures scope decisions. Specs live in git even when implementation is in ODC Studio |
+| **Ship** | `/ship` — Claude Code PR loop, GitHub Flow, Vercel auto-deploy, CI gates, `starter-verify` skill, Dispatch + Remote Control for mobile supervision during long builds | ODC Service Studio + Mentor build the app; ODC pipelines handle Dev → Test → Prod promotion. Specs stay in git; the deploy step is replaced by ODC's promotion flow. `/ship` still orchestrates the pre-build gate and CHANGELOG update |
+| **Signal** | `/signal init` → Claude Scheduled Tasks for automation; `/signal sync` for post-merge close-out; `/signal audit` for weekly self-review; Cowork for ops-heavy non-code workflows; incident runbooks in `docs/operations/` | ODC LifeTime dashboards + Architecture Dashboard fill the monitoring role. External scheduled jobs (Claude Scheduled Tasks or GitHub Actions) cover anything ODC doesn't. Same `incident-runbook.md` template, same `docs/signal/learnings.md` accumulator |
 
-CLAUDE.md provides project context across sessions. Specs live in `docs/specs/`. Architecture decisions are committed to the repo. The Claude ecosystem covers all five stages natively.
+## Profile A — Claude-native
 
-### Profile B: Cursor + Perplexity (code-first, multi-vendor)
+**Best for:** solo founders, small product teams, pro-code SaaS + mobile.
 
-Best for: Teams already invested in Cursor, developers who want parallel agents.
+| Role | Tool |
+|---|---|
+| Research tool | Claude web search; Perplexity Deep Research for broader passes |
+| Thinking partner | Claude Desktop Chat (Projects) |
+| Agentic coder | Claude Code (Terminal + VS Code) |
+| Deployment pipeline | Claude Code + Vercel MCP |
+| Scheduled automation | Claude Scheduled Tasks (`/signal init`) |
+| Ops surface | Cowork |
+| Mobile supervision | Dispatch + Remote Control |
 
-| Stage | Role | Tool |
-|---|---|---|
-| 1. Research & Think | Research tool | Perplexity Deep Research |
-| 1. Research & Think | Thinking partner | Claude Desktop Chat or Perplexity follow-up threads |
-| 2. Plan | Spec author + codebase context | Cursor Agent (with .cursorrules + Agent Skills) |
-| 3. Build | Agentic coder | Cursor Agent (parallel agents, background agents) |
-| 4. Ship | Deployment pipeline | Cursor + GitHub/Vercel integrations |
-| 4. Ship | Mobile supervision | Cursor mobile agent (limited) |
-| 5. Run | Scheduled automation | GitHub Actions (no native equivalent) |
-| 5. Run | Ops surface | None (gap — manual or external tooling) |
+`CLAUDE.md` provides project context across sessions. Specs live in `docs/specs/<slug>.md` (flat v4 layout). Architecture decisions are committed to the repo. The Claude ecosystem covers all three beats natively.
 
-`.cursorrules` provides project context. Agent Skills encode domain workflows. Gaps in Stage 5 require external tooling (GitHub Actions for automation, manual processes for ops).
-
-### Profile C: OutSystems ODC (low-code, enterprise)
-
-Best for: Enterprise teams using OutSystems for rapid application delivery.
-
-| Stage | Role | Tool |
-|---|---|---|
-| 1. Research & Think | Research tool | Perplexity Deep Research |
-| 1. Research & Think | Thinking partner | Claude Desktop Chat (Projects) or any LLM with persistent context |
-| 2. Plan | Spec author | Claude Code or manual spec authoring — the templates apply regardless of build tool |
-| 3. Build | Agentic builder | OutSystems Mentor + Enterprise Context Graph |
-| 4. Ship | Deployment pipeline | OutSystems ODC deployment pipeline (built-in Development → QA → Production) |
-| 4. Ship | Mobile supervision | Not applicable — ODC deployments are managed via the portal |
-| 5. Run | Scheduled automation | Claude Scheduled Tasks, GitHub Actions, or ODC Timers for in-app jobs |
-| 5. Run | Ops surface | Cowork (invoices, contracts) or enterprise admin tooling |
-
-OutSystems Enterprise Context Graph provides codebase awareness to Mentor (equivalent to CLAUDE.md + embeddings). Architecture documentation and specs still live in a repo or shared drive — the discipline applies even when the build tool is visual. The Blueprint's spec templates map to ODC concepts: the architecture template captures module structure, service actions, and integration points; the data model spec maps to ODC entities and relationships; the API spec maps to exposed REST/SOAP services.
-
-**How OutSystems ODC maps to the Blueprint:**
-
-- **Mentor** fills the Agentic Coder role in Stage 3. It generates screens, logic flows, and integrations inside ODC Studio. Like Cursor Agent, it is powerful at building but does not enforce spec discipline on its own.
-- **Enterprise Context Graph** is OutSystems' equivalent of the CLAUDE.md pattern — it gives Mentor awareness of the full application landscape (modules, dependencies, data model, integrations). The Blueprint's architecture template captures the same information in a human-readable format that persists beyond any single tool session.
-- **Agentic Systems Engineering** is OutSystems' framing for AI-assisted development across the ODC lifecycle. The Blueprint's five-stage model is compatible with and complementary to this — it adds the research, spec discipline, and post-ship automation layers that OutSystems' agentic tooling does not cover.
-- The **spec templates work directly** with ODC projects. A PRD for an OutSystems app follows the same Problem → Users → Journeys → Features structure. A technical spec documents the module decomposition, service action contracts, and entity relationships. An architecture template captures the ODC environment topology, module dependency graph, and external integration points.
-
-## Release strategy profiles
-
-These profiles describe two branching and environment models, following the same descriptive convention as the platform implementation profiles above. Neither is presented as a default — the choice follows from the preconditions described in [Choosing a release strategy](stage-4-ship.md#choosing-a-release-strategy) in the Stage 4 guide.
-
-### Profile A: Simplified (GitHub Flow)
-
-Best for: solo founders, small product teams, high-deployment-frequency SaaS, any context where regulatory or contractual obligations do not require pre-production human sign-off.
-
-| Infrastructure role | Description | Example tools (not exhaustive) |
-|---|---|---|
-| Version control | Single long-lived branch (`main`); ephemeral PR branches deleted after merge | GitHub, GitLab, Bitbucket |
-| Per-PR preview environment | Isolated environment built automatically on PR open; mirrors production configuration | Any platform with native preview support or CI-driven ephemeral environments |
-| CI gate | Automated test suite that must pass before merge; blocks merge on failure | GitHub Actions, GitLab CI, CircleCI, any CI platform |
-| Runtime activation control | Mechanism to deploy code dark and activate it for users selectively, decoupling deployment from release | Feature flag services, self-hosted or managed |
-
-Expand-migrate-contract is mandatory under this model. Destructive schema changes (column drop, rename, type change) must be split across three PRs — expand (add the new shape), migrate (backfill or dual-write), contract (remove the old shape) — never bundled with the application code that depends on the new schema. Skipping the split creates a race condition during rolling deploys where old replicas read a column that no longer exists.
-
-For operational detail and preconditions, see [Choosing a release strategy](stage-4-ship.md#choosing-a-release-strategy) in the Stage 4 guide.
-
-### Profile B: Multi-environment (GitFlow)
-
-Best for: regulated industries (banking, healthcare, government), enterprise teams with CAB obligations, any context where contractual or regulatory requirements mandate pre-production human sign-off.
-
-| Infrastructure role | Description | Notes |
-|---|---|---|
-| Version control | Three long-lived branches: `main` (production-equivalent), `develop` (integration), release branches cut from `develop` | Hotfixes branch from `main` and merge back to both `main` and `develop` |
-| Shared staging environment | Long-lived environment matching production configuration, used for QA and stakeholder sign-off before promotion to `main` | Staging–production drift is the primary operational risk; parity must be maintained actively |
-| Approval gate | Human sign-off step (CAB, QA lead, or equivalent) required before merging the release branch to `main` | Gate mechanism varies by organisation; examples include a protected-branch review rule, a change-management ticket, or an external approval workflow |
-| CI gate | Automated test suite that must pass on every branch; does not replace the human approval gate | Same tooling options as Profile A |
-
-Deployment frequency under this model is lower by design. The trade-off is deliberate: the approval gate provides an audit trail and a regulatory compliance path at the cost of longer lead time.
-
-For operational detail and preconditions, see [Choosing a release strategy](stage-4-ship.md#choosing-a-release-strategy) in the Stage 4 guide.
-
-## Handoff patterns
-
-Tools rarely operate in isolation. Most real work flows through multiple roles.
-These are the proven handoff patterns.
-
-### Thinking Partner to Agentic Coder
-
-The most common handoff. Think through the problem in the thinking partner —
-explore trade-offs, draft the approach. Once the approach is clear, summarise
-the key decisions and hand off to the agentic coder with that context. The
-coder writes specs, creates issues, and builds features.
-
-**Why this works:** The thinking tool is unconstrained by tooling — you explore
-freely without accidentally triggering file writes or commands. The coder is
-constrained by design — it plans, you approve, it executes.
-
-### Agentic Coder to Scheduled Automation
-
-Develop and test a workflow interactively in the coder. Once it is reliable,
-extract the prompt and schedule it to run on a cron. The scheduled task produces
-artefacts (PRs, comments, issues) that you review during your normal workflow.
-
-**Example:** You manually review PRs for a week using the coder. Once you trust
-the review quality, schedule it as a daily task.
-
-### Thinking Partner to Ops Surface
-
-Use the thinking partner to frame the research strategy — what matters, what
-does not, how to organise findings. Then drop raw materials into the ops folder
-and tell the ops surface to compile using the structure you developed.
-
-### Agentic Coder to Mobile Supervision
-
-Start a long-running task in the coder on your desktop with a clear plan. Step
-away. Use mobile supervision to monitor progress, approve actions, and steer
-direction. Return to completed or near-complete work.
-
-## Decision tree
-
-Use this when you are not sure which tool to reach for.
+### Canonical flow
 
 ```
-What are you doing?
-│
-├─ Researching or thinking through a problem?
-│  └─ Research Tool + Thinking Partner
-│     Tip: Use persistent project context to accumulate decisions
-│
-├─ Writing specs or code?
-│  ├─ Heavy multi-file work, running commands?
-│  │  └─ Agentic Coder (CLI / primary agent)
-│  ├─ Small targeted edit, reviewing a diff?
-│  │  └─ Agentic Coder (editor extension)
-│  └─ No local clone, working from browser?
-│     └─ Agentic Coder (web / cloud IDE)
-│
-├─ Deploying or checking deployment status?
-│  └─ Deployment Pipeline
-│     Tip: Smoke-test preview URLs before merging
-│
-├─ Is it a recurring task that should run unattended?
-│  └─ Scheduled Automation
-│     Tip: Start with daily PR review — highest ROI
-│
-├─ Processing non-code files (invoices, contracts, research)?
-│  └─ Ops Surface
-│     Tip: Set up SKILL.md for consistent processing rules
-│
-├─ Away from your desk but need to check on work?
-│  ├─ Session already running? → Monitor and approve remotely
-│  └─ Need to start new work? → Delegate async task
-│
-└─ Not sure?
-   └─ Default to Agentic Coder — it can do the most
+/spec feature checkout-flow
+  → spec-researcher writes research brief
+  → spec-author drafts PRD + technical-spec (two-pass with self-review)
+  → branch feat/42-checkout-flow created, issue #42 filed
+/ship
+  → implementation → CI green → PR → preview smoke-test → squash-merge → production deploy
+  → signal-sync appends CHANGELOG [Unreleased] entry
+/signal sync
+  → plan-status markers updated, cross-reference audit green
 ```
 
-## MCP integrations
+## Profile B — OutSystems ODC
 
-Model Context Protocol extends your agentic coder with external tool access.
-Instead of switching between terminal and web dashboards, the agent queries
-deployment status, reads logs, and manages services directly.
+**Best for:** enterprise teams using OutSystems Developer Cloud for rapid application delivery. Ships with the same Spec and Signal discipline as Profile A; only Ship mechanics differ.
 
-### Vercel MCP
+| Role | Tool |
+|---|---|
+| Research tool | Claude web search; Perplexity Deep Research |
+| Thinking partner | Claude Desktop Chat (Projects) or any persistent-context LLM |
+| Agentic builder | OutSystems Mentor + Enterprise Context Graph (inside ODC Studio) |
+| Deployment pipeline | ODC LifeTime promotion (Dev → Test → Prod) |
+| Scheduled automation | Claude Scheduled Tasks or GitHub Actions cron (external) + ODC Timers (in-app) |
+| Ops surface | ODC LifeTime dashboards + Architecture Dashboard; Cowork for non-code ops |
+| Mobile supervision | Not applicable — ODC portal is the supervision surface |
 
-Provides deployment inspection, build and runtime logs, preview URLs, and
-production monitoring.
+Specs live in git (or a shared drive mirror), even when the implementation surface is ODC Studio. `docs/templates/architecture.md` maps cleanly to ODC module structure, entity model, service actions, and integration topology. Mentor's orchestrated agents consume the PRD + technical-spec directly as prompts.
 
-**Configuration** (`.claude/settings.local.json`):
+### Canonical flow
 
-```json
-{
-  "mcpServers": {
-    "vercel": {
-      "command": "npx",
-      "args": ["-y", "vercel-mcp-server"],
-      "env": {
-        "VERCEL_TOKEN": "your-vercel-token"
-      }
-    }
-  }
-}
+```
+/spec feature checkout-flow
+  → same spec artefacts as Profile A
+  → branch feat/42-checkout-flow created in git; implementation happens in ODC Studio
+ODC Mentor + Service Studio build the app
+  → Developer refines in ODC Studio with the PRD + technical-spec as Mentor prompts
+  → ODC LifeTime promotes Dev → Test → Prod (no squash-merge; git branch captures design artefacts only)
+/signal sync
+  → plan-status + CHANGELOG updated; audit trail in git even though runtime is in ODC
 ```
 
-**Common usage:**
-- Check deployment status after merge: `Check the latest production deployment. Is it healthy?`
-- Read build logs on failure: `The preview deployment for PR #42 failed. Show me the build logs.`
-- Post-deploy verification: `Check production runtime logs for the last 30 minutes. Any errors?`
+## Cross-profile handoff patterns
 
-### GitHub (gh CLI)
+Even within a single profile, tools hand off to each other at beat boundaries:
 
-Already authenticated via `gh auth login` — no MCP server needed. Covers
-issues, PRs, CI status, releases, and repository management.
+- **Thinking Partner → Agentic Coder**: deliberate Spec → Ship handoff. The PRD + technical-spec are the contract.
+- **Agentic Coder → Scheduled Automation**: Ship → Signal handoff. The CHANGELOG entry + the updated plan status are the baton.
+- **Thinking Partner → Ops Surface**: when an incident runbook reveals a recurring pattern, reframe it as a product question for the next Spec cycle.
 
-**Common usage:**
-- Create issues: `gh issue create --title "..." --label "type:feature,scope:api"`
-- Check CI: `gh run list --limit 5`
-- Create releases: `gh release create v1.0.0 --notes "..."`
-- Review PRs: `gh pr view 42 --comments`
+## MCP integrations worth naming
 
-### Custom MCP servers
+- **Vercel MCP** — deployment inspection and log tail during `/ship` preview smoke-test.
+- **GitHub CLI (`gh`)** — no MCP needed; the CLI covers issue, PR, and label operations well enough.
+- **Anthropic Admin API** — for `/signal status` API-spend reporting when `ANTHROPIC_ADMIN_KEY` is configured.
 
-Build a custom MCP server when you need your agent to interact with a service
-that lacks an existing integration — internal APIs, third-party services
-(Slack, Linear), database inspection, or project-specific utilities.
+Additional profile-specific MCP integrations can be added as the ecosystem grows. An OutSystems-published MCP server exposing ODC deployment state would be the cleanest Profile B extension; it doesn't yet exist publicly as of 2026.
 
-**Minimal TypeScript skeleton:**
+## Doc-sweep checklist (post-ship)
 
-```typescript
-import { McpServer } from '@anthropic-ai/mcp';
+After the Ship beat, verify these surfaces stay in sync — `/signal sync` automates most:
 
-const server = new McpServer({
-  name: 'my-project-mcp',
-  version: '1.0.0',
-});
+- `README.md` — top-level description still accurate
+- `CHANGELOG.md` — `[Unreleased]` entry present for user-visible changes
+- `CLAUDE.md` — primitive map still matches the harness
+- Architecture diagrams (if any) — still reflect data flow
+- Repo description + topics on GitHub — for discoverability
 
-server.tool('check-service-status', {
-  description: 'Check the status of an external service',
-  parameters: {
-    type: 'object',
-    properties: {
-      service: { type: 'string', description: 'Service name' },
-    },
-    required: ['service'],
-  },
-  handler: async ({ service }) => {
-    // TODO: Implement actual status check
-    const response = await fetch(`https://api.example.com/status/${service}`);
-    const data = await response.json();
-    return { status: data.status, lastChecked: new Date().toISOString() };
-  },
-});
+---
 
-server.start();
-```
-
-**Tips:** One server per integration (not one mega-server). Handle errors
-gracefully — the agent needs useful messages to self-correct. Use environment
-variables for secrets, never hardcode them.
-
-## Plan-mode patterns
-
-These patterns separate cheap plans from expensive ones. Apply them whenever
-your agentic coder produces an implementation plan before writing code.
-
-### Pre-flight existence checks
-
-Every line in a plan that claims "X is missing" or "needs Y" must be confirmed
-by actually reading the file first. Plans built from memory and assumption are
-wrong roughly half the time — items downgrade once you inspect the current
-state. The fix is cheap: read the files before planning.
-
-### Reference files by full path
-
-Every file the plan touches gets named by its repo-relative path
-(`src/lib/auth/get-auth.ts`), not by description ("the auth helper"). The
-implementation phase should not have to re-search to find what the plan was
-referring to.
-
-### Include "What's already in place"
-
-Every approved plan should include a section near the top listing what already
-exists and is excluded from the plan. This prevents the agent from re-exploring
-code the plan author already read and stops it from re-suggesting work that is
-already done.
-
-### Reference issue templates and label vocabulary
-
-When the plan calls for filing implementation issues, it should already know the
-type/scope label for each one. A plan that says "file `feat/profile` issue with
-`type:feature, scope:dashboard`" is ready to execute; "file an issue for the
-profile feature" is not.
-
-## Doc-sweep checklist
-
-Run this after every user-visible change — new features, renamed endpoints,
-stack swaps, deprecated modules. These items drift silently if not checked.
-
-- [ ] **README** — does the headline still describe what the project does? Does the quickstart still work?
-- [ ] **CHANGELOG.md** — is the change under `[Unreleased]` with the issue number?
-- [ ] **GitHub repo description** — `gh repo view --json description --jq .description`. Still accurate?
-- [ ] **GitHub repo topics** — `gh repo view --json repositoryTopics --jq '.repositoryTopics[].name'`. Still reflect the stack?
-- [ ] **GitHub About URL** — `gh repo view --json homepageUrl --jq .homepageUrl`. Points at a live deployment?
-- [ ] **Architecture diagram** — if docs reference components that moved, update them
-- [ ] **CLAUDE.md / project config** — did you change a hard rule, file path, or pattern that the config documents?
-
-> Update GitHub-side metadata via the CLI (`gh repo edit --description "..." --add-topic foo --homepage https://...`), not the web UI. The web UI is the easiest place to forget.
-
-## Anti-patterns
-
-| Anti-pattern | Why it fails | Do this instead |
-|---|---|---|
-| Code in the thinking tool | No codebase context, cannot test or commit | Think in the thinking partner, build in the agentic coder |
-| Ideate in the terminal | The agent wants to take action, creates friction when you are just exploring | Brainstorm in the thinking partner, switch to the coder when ready |
-| Skip the plan step | The agent makes architectural decisions you disagree with, costly to undo | Always review the plan before any code is written |
-| Skip specs entirely | Ambiguity compounds — you spend more time correcting than writing | Write specs, even brief ones, before coding |
-| Schedule untested prompts | Poor output quality discovered days later | Test every prompt interactively in a live session before scheduling |
-| Do routine work manually | Inconsistent execution, easy to skip when busy | Automate with scheduled tasks — they run whether you remember or not |
-| One giant PR | Hard to review, risky to deploy, blocks everything | One feature per branch, one branch per PR |
-| Use the editor extension as primary surface | Works for small edits but hits limitations on multi-file features | Use the CLI agent as primary; editor extension for targeted edits and diffs |
-| Trust AI judgement calls without review | Extraction is reliable, risk assessment is not | Review every output that involves a judgement call |
-| Never update project config | The agent loses context on future sessions, repeats mistakes | Keep CLAUDE.md and SKILL.md current as the project evolves |
+*Related: [principles](../principles/) · [templates](../templates/) · [guides index](./README.md)*

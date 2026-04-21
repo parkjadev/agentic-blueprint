@@ -1,35 +1,27 @@
 # Stage Guides
 
-Long-form guides for the five-stage lifecycle: **Research & Think → Plan → Build → Ship → Run**.
+Long-form guides for the v4 three-beat lifecycle: **Spec → Ship → Signal**.
 
-Read them end-to-end for the narrative, or jump to the stage you need. Each
-guide includes why the stage exists, how it works, exit criteria, platform
-notes (Claude-native / Cursor + Perplexity / OutSystems ODC), and
-anti-patterns.
+Read them end to end for the narrative, or jump to the beat you need. Each guide includes why the beat exists, how it works, exit criteria, platform notes (Claude-native / OutSystems ODC), and anti-patterns.
 
 ## Guides
 
-| Stage | Guide | What It Covers |
+| Beat | Guide | What it covers |
 |---|---|---|
-| 1 | [Research & Think](stage-1-research-and-think.md) | Market research, problem exploration, PRD |
-| 2 | [Plan](stage-2-plan.md) | Specs, architecture, issues, branches |
-| 3 | [Build](stage-3-build.md) | Code, test, PR — the discipline layer |
-| 4 | [Ship](stage-4-ship.md) | Deploy, verify, rollback, mobile supervision |
-| 5 | [Run](stage-5-run.md) | Scheduled automation, ops, maintenance |
+| 1 | [Spec](beat-spec.md) | Research + plan collapsed. Sub-verbs: `idea`, `epic`, `feature`, `fix`, `chore`. Produces research brief + PRD + technical-spec + branch + issue |
+| 2 | [Ship](beat-ship.md) | Build + test + deploy + release as one idempotent PR-driven loop. CI gates, starter-verify, preview smoke-test, squash-merge, post-deploy verification |
+| 3 | [Signal](beat-signal.md) | Run + monitor + learn + scheduled automation. Sub-verbs: `init`, `sync`, `audit`, `status`. Feeds back into the next Spec via `docs/signal/learnings.md` |
 
 Plus a cross-cutting reference:
 
-- [Tool Reference](tool-reference.md) — role mapping and decision tree across Claude, Cursor + Perplexity, and OutSystems ODC platform profiles.
+- [Tool Reference](tool-reference.md) — role mapping and beat × profile matrix across Claude-native and OutSystems ODC.
 
 ## Related surfaces
 
-- [Principles](../principles/) — the 9 Hard Rules and 3 meta-principles that underpin every stage.
-- [Templates](../templates/) — the sacred spec templates you fill in during Stage 2.
-- [Operations](../operations/) — Stage 5 runbooks (incident response, postmortems).
+- [Principles](../principles/) — the 5 Hard Rules (1–5) + 3 meta-principles (6–8) that underpin every beat.
+- [Templates](../templates/) — the sacred spec templates filled during `/spec`.
+- [Operations](../operations/) — Signal-beat runbooks (incident response, post-mortems).
 
-## Archive
+## v3 → v4 migration note
 
-Older, pre-v3 workflow guides (organised around surfaces rather than
-lifecycle stages) are preserved for historical reference in
-[`_archive/`](./_archive/). They are superseded by the five stage guides
-above — do not link to them from new docs.
+Earlier versions of the blueprint described a five-stage lifecycle (Research & Think → Plan → Build → Ship → Run). v4 collapses this to three beats because Claude Code now handles Plan → Build → Ship in one continuous motion. The v3 stage guides have been retired; `beat-spec.md` absorbs the Research + Plan content, `beat-ship.md` absorbs Build + Ship, and `beat-signal.md` absorbs Run. Historical guides live in the earlier commit history if needed.
