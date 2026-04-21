@@ -37,15 +37,21 @@ case "$cmd" in
   *"git commit"*)
     staged_files=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
     if [[ -n "$staged_files" && "$staged_files" -gt 50 ]]; then
-      # Try to read the commit message from the command line (-m "...").
-      # If the user didn't pass -m inline, we can't check ahead of time; the
-      # check falls through and the post-commit Rule-4 audit catches it.
+      # Try to read the commit message from the command line.
+      # Supports both `-m "..."`/`-m '...'` inline and `-F <file>` file form.
       msg=$(printf '%s' "$cmd" | python3 -c '
-import re, sys
+import re, sys, pathlib
 cmd = sys.stdin.read()
 m = re.search(r"-m\s+(?:\"([^\"]*)\"|\x27([^\x27]*)\x27)", cmd)
 if m:
     print(m.group(1) or m.group(2) or "")
+    sys.exit(0)
+f = re.search(r"-F\s+(\S+)", cmd)
+if f:
+    try:
+        print(pathlib.Path(f.group(1)).read_text().splitlines()[0])
+    except Exception:
+        pass
 ' 2>/dev/null || echo "")
       if [[ "$msg" != \[bulk\]* ]]; then
         cat <<EOF >&2
