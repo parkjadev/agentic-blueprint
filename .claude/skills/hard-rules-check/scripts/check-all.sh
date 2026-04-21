@@ -110,33 +110,50 @@ fi
 
 header "Rule 7: Templates are sacred"
 # Compute template changes excluding _archive/ (retirement moves, not
-# content edits — always allowed). Also honour two release-mode escapes:
-# AGENTIC_BLUEPRINT_RELEASE=1 (session env var) and a HEAD commit message
-# that starts with [release] (per-commit audit trail).
+# content edits — always allowed). Honour three release-mode escapes:
+#   1. AGENTIC_BLUEPRINT_RELEASE=1 session env var.
+#   2. Each commit that touches a non-archive template path must have a
+#      [release]-prefixed subject (per-commit audit trail).
+#   3. Dedicated `docs/*` or `templates/*` branch (legacy v3 path).
 template_changes=$(git diff --name-only "$base_ref"...HEAD 2>/dev/null \
   | grep '^docs/templates/' \
   | grep -v '^docs/templates/_archive/' || true)
-head_subject=$(git log -1 --format=%s 2>/dev/null || echo "")
 
 if [[ -n "$template_changes" ]]; then
-  # Escape hatches (per docs/principles/07-templates-are-sacred.md):
-  #  - dedicated docs/* or templates/* branch (original v3 path)
-  #  - AGENTIC_BLUEPRINT_RELEASE=1 for an explicit release rebuild
-  #  - HEAD commit message starts with [release] (v4 tagged-exception)
   branch_r7="$branch"
   if [[ "${AGENTIC_BLUEPRINT_RELEASE:-0}" == "1" ]]; then
     pass "docs/templates/ edited with AGENTIC_BLUEPRINT_RELEASE=1 (release-mode escape)"
-  elif [[ "$head_subject" == \[release\]* ]]; then
-    pass "docs/templates/ edited on [release] commit — '$head_subject'"
   else
-    case "$branch_r7" in
-      docs/*|templates/*)
-        pass "docs/templates/ edited on dedicated '$branch_r7' (reviewer approval required at merge)"
-        ;;
-      *)
-        fail "Rule 7" "branch '$branch_r7' modifies docs/templates/ — use a 'docs/*' or 'templates/*' branch, AGENTIC_BLUEPRINT_RELEASE=1, or a [release]-prefixed commit message"
-        ;;
-    esac
+    # Per-commit check: every commit in range that touches a non-archive
+    # template path must carry a [release] subject.
+    bad_commit=""
+    while read -r sha; do
+      [[ -z "$sha" ]] && continue
+      # Files this commit touches under docs/templates/ excluding _archive
+      touches_active=$(git show --name-only --format= "$sha" 2>/dev/null \
+        | grep '^docs/templates/' \
+        | grep -v '^docs/templates/_archive/' || true)
+      if [[ -n "$touches_active" ]]; then
+        subject=$(git log -1 --format=%s "$sha" 2>/dev/null || echo "")
+        if [[ "$subject" != \[release\]* ]]; then
+          bad_commit="$sha — $subject"
+          break
+        fi
+      fi
+    done < <(git log --format=%H "$base_ref"..HEAD -- 'docs/templates/' 2>/dev/null)
+
+    if [[ -z "$bad_commit" ]]; then
+      pass "docs/templates/ edited with [release]-tagged commit(s)"
+    else
+      case "$branch_r7" in
+        docs/*|templates/*)
+          pass "docs/templates/ edited on dedicated '$branch_r7' (reviewer approval required at merge)"
+          ;;
+        *)
+          fail "Rule 7" "branch '$branch_r7' has untagged template-touching commit: $bad_commit — use a [release]-prefixed subject, AGENTIC_BLUEPRINT_RELEASE=1, or a 'docs/*'/'templates/*' branch"
+          ;;
+      esac
+    fi
   fi
 else
   pass "docs/templates/ untouched (or only _archive/ moves)"
