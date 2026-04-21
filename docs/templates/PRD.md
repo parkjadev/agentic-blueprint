@@ -3,6 +3,10 @@
 **Author:** [Name]
 **Date:** [YYYY-MM-DD]
 **Status:** Draft | In Review | Approved
+**Scope:** product | epic | feature
+**Parent:** [slug of parent idea or epic; omit if this is a product-scope PRD]
+
+> **Scope-aware sections.** Render the *Vision*, *Success Metrics*, *Non-Goals*, and *Feature Matrix* sections only when `Scope: product`. Render *Child features* only for `product` or `epic`. Render *Acceptance Criteria* for all scopes.
 
 ---
 

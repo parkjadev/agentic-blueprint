@@ -1,7 +1,26 @@
 #!/usr/bin/env bash
-# Hard Rules compliance check.
+# Hard Rules compliance check (v4 — 8 rules).
 # Exits 0 if all rules pass, non-zero with a short failure summary otherwise.
 # Each check runs independently; all are evaluated so we report every failure.
+#
+# v4 ruleset:
+#   1. Australian spelling                   (content gate)
+#   2. Starters generic and boot clean       (merged v3 #2 + #3)
+#   3. Spec-before-Ship                      (merged v3 #5 + #6)
+#   4. Templates versioned, not edited       (v3 #7 with [release]/env escapes)
+#   5. Descriptive profiles, not prescriptive (merged v3 #8 + #9)
+#   6–8. Meta-principles (progressive disclosure, context economy, gates over
+#        guidance) — not hook-gated; read by skill authors.
+#
+# Dropped in v4: v3 #4 (Zod optional services) — moved to starters/nextjs/CLAUDE.md
+# as a starter-local convention.
+#
+# Tagged-exception commit-subject prefixes (v4):
+#   [release]  skips Rule 4 (templates)       — per-commit or full range
+#   [infra]    skips Rule 3 (Spec-before-Ship) on the tagged commit
+#   [docs]     skips Rule 3 on the tagged commit
+#   [bulk]     skips the >50-file runaway guard (wired in PR 3's pre-commit-gate)
+# Rules 1, 2, 5 are never skippable.
 
 set -uo pipefail
 
@@ -13,44 +32,8 @@ pass()    { printf "  ✓ %s\n" "$1"; }
 fail()    { printf "  ✗ %s — %s\n" "$1" "$2"; fails=$((fails+1)); }
 header()  { printf "\n== %s ==\n" "$1"; }
 
-header "Rule 1: Australian spelling"
-if bash .claude/skills/australian-spelling/scripts/check.sh docs CLAUDE.md README.md >/dev/null 2>&1; then
-  pass "no US-English variants in docs/ or root markdown"
-else
-  fail "Rule 1" "US-English variants present — run the australian-spelling script for detail"
-fi
-
-header "Rule 2: No domain-specific business logic in starters"
-# Heuristic: look for brand strings in lowercase that shouldn't appear in a generic starter.
-if grep -rniE '\b(acme|blueprint-inc|customer-x|mycompany)\b' starters/ >/dev/null 2>&1; then
-  fail "Rule 2" "domain/brand strings found in starters/"
-else
-  pass "no domain/brand strings in starters/"
-fi
-
-header "Rule 3: Starters boot clean"
-if [[ -f claude-config/scripts/smoke-test.sh || -f claude-config/scripts/bootstrap-smoke-test.sh ]]; then
-  pass "smoke-test script present (run it via /ship — not invoked here for speed)"
-elif [[ ! -d claude-config/scripts ]]; then
-  pass "claude-config/scripts not yet bootstrapped (skipped)"
-else
-  fail "Rule 3" "claude-config/scripts/{smoke-test,bootstrap-smoke-test}.sh missing"
-fi
-
-header "Rule 4: Optional services (Zod schemas in env.ts)"
-if [[ -f starters/nextjs/src/env.ts ]]; then
-  if grep -qE 'optional\(\)' starters/nextjs/src/env.ts 2>/dev/null; then
-    pass "optional Zod fields present in starters/nextjs/src/env.ts"
-  else
-    fail "Rule 4" "no .optional() fields in env.ts — Stripe/Inngest/Resend/etc. must gracefully skip"
-  fi
-else
-  pass "starters/nextjs not present or env.ts not yet scaffolded (skipped)"
-fi
-
 # Detect current branch. On GitHub Actions PR events, HEAD is detached so
-# `git rev-parse --abbrev-ref HEAD` returns 'HEAD'; prefer the env vars
-# GitHub sets (GITHUB_HEAD_REF for PR events, GITHUB_REF_NAME for push).
+# `git rev-parse --abbrev-ref HEAD` returns 'HEAD'; prefer env vars.
 if [[ -n "${GITHUB_HEAD_REF:-}" ]]; then
   branch="$GITHUB_HEAD_REF"
 elif [[ -n "${GITHUB_REF_NAME:-}" ]]; then
@@ -60,9 +43,7 @@ else
 fi
 slug=$(echo "$branch" | sed -E 's#^[a-z]+/[0-9]+-##' | sed -E 's#^[a-z]+/##')
 
-# Determine the base ref to diff against. In CI, `main` may not exist as a
-# local branch (actions/checkout only creates the checked-out ref), so fall
-# back to `origin/main`.
+# Determine the base ref to diff against.
 if git rev-parse --verify main >/dev/null 2>&1; then
   base_ref="main"
 elif git rev-parse --verify origin/main >/dev/null 2>&1; then
@@ -71,82 +52,131 @@ else
   base_ref=""
 fi
 
-header "Rule 5: Spec-driven (feature branches have a spec)"
-# Bootstrap exception: this rule only applies once docs/specs/ exists in the
-# repo (i.e. once at least one feature has been planned). On a meta/rebuild
-# branch that creates the harness itself, there is nothing to spec yet.
-# chore/* is exempt on trust: truly trivial chores (memory-sync, dep bumps,
-# small fixes) don't benefit from a spec. Don't hide feature work behind a
-# chore/ prefix — that's a Rule-5-in-spirit violation even if the script
-# doesn't catch it.
+# Collect every commit subject in base_ref..HEAD once (for tagged-exception
+# scans). If no base_ref, default to empty.
+if [[ -n "$base_ref" ]]; then
+  commit_subjects=$(git log --format=%s "$base_ref"..HEAD 2>/dev/null || echo "")
+else
+  commit_subjects=""
+fi
+
+# Helper: does any commit in range carry the given bracketed prefix?
+range_has_prefix() {
+  local prefix="$1"
+  echo "$commit_subjects" | grep -qE "^\[${prefix}\]" 2>/dev/null
+}
+
+header "Rule 1: Australian spelling"
+if bash .claude/skills/australian-spelling/scripts/check.sh docs CLAUDE.md README.md >/dev/null 2>&1; then
+  pass "no US-English variants in docs/ or root markdown"
+else
+  fail "Rule 1" "US-English variants present — run the australian-spelling script for detail"
+fi
+
+header "Rule 2: Starters generic and boot clean"
+rule2_fail=0
+# 2a: brand/domain strings
+if grep -rniE '\b(acme|blueprint-inc|customer-x|mycompany)\b' starters/ >/dev/null 2>&1; then
+  fail "Rule 2" "domain/brand strings found in starters/"
+  rule2_fail=1
+fi
+# 2b: smoke-test script present
+if [[ -f claude-config/scripts/smoke-test.sh || -f claude-config/scripts/bootstrap-smoke-test.sh ]]; then
+  :
+elif [[ ! -d claude-config/scripts ]]; then
+  :
+else
+  fail "Rule 2" "claude-config/scripts/{smoke-test,bootstrap-smoke-test}.sh missing"
+  rule2_fail=1
+fi
+if [[ $rule2_fail -eq 0 ]]; then
+  pass "starters/ generic; smoke-test script present (run via /ship — not invoked here for speed)"
+fi
+
+header "Rule 3: Spec-before-Ship"
+# Tagged-exception: [infra] or [docs] commit anywhere in range skips Rule 3.
+# chore/* branches remain exempt on trust for small cleanups.
 if [[ "$branch" == "main" || -z "$branch" ]]; then
   pass "on main — no per-feature spec required"
 elif [[ "$branch" == release/* ]]; then
   pass "release branch '$branch' — no per-feature spec required"
 elif [[ "$branch" == chore/* ]]; then
   pass "chore branch '$branch' — no per-feature spec required"
+elif range_has_prefix "infra"; then
+  pass "[infra]-tagged commit in range — Rule 3 skipped (harness/CI/deps change)"
+elif range_has_prefix "docs"; then
+  pass "[docs]-tagged commit in range — Rule 3 skipped (documentation change)"
 elif [[ ! -d docs/specs ]]; then
   pass "docs/specs/ not yet bootstrapped (skipped)"
-elif [[ -d "docs/specs/$slug" ]] || git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/specs/'; then
+elif [[ -d "docs/specs/$slug" ]] || [[ -f "docs/specs/$slug.md" ]] || git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/specs/'; then
   pass "spec present for branch '$branch'"
 else
-  fail "Rule 5" "no docs/specs/$slug/ and no spec changes on branch '$branch'"
+  fail "Rule 3" "no docs/specs/$slug (folder or .md file) and no spec changes on branch '$branch' — use [infra]/[docs] prefix for harness changes, or create a spec"
 fi
 
-header "Rule 6: Plan-before-code (plan file present)"
-if [[ "$branch" == "main" || -z "$branch" ]]; then
-  pass "on main — no per-feature plan required"
-elif [[ "$branch" == release/* ]]; then
-  pass "release branch '$branch' — no per-feature plan required"
-elif [[ "$branch" == chore/* ]]; then
-  pass "chore branch '$branch' — no per-feature plan required"
-elif [[ ! -d docs/plans ]] || [[ -z "$(ls -A docs/plans 2>/dev/null)" ]]; then
-  pass "docs/plans/ not yet bootstrapped (skipped)"
-elif [[ -f "docs/plans/$slug.md" ]] || git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/plans/'; then
-  pass "plan present for branch '$branch'"
-else
-  fail "Rule 6" "no docs/plans/$slug.md on branch '$branch'"
-fi
+header "Rule 4: Templates versioned, not edited in flight"
+template_changes=$(git diff --name-only "$base_ref"...HEAD 2>/dev/null \
+  | grep '^docs/templates/' \
+  | grep -v '^docs/templates/_archive/' || true)
 
-header "Rule 7: Templates are sacred"
-if git diff --name-only "$base_ref"...HEAD 2>/dev/null | grep -q '^docs/templates/'; then
-  # Escape hatch (per docs/principles/07-templates-are-sacred.md): template
-  # changes may land on a dedicated `docs/*` or `templates/*` branch.
-  branch_r7="$branch"
-  case "$branch_r7" in
-    docs/*|templates/*)
-      pass "docs/templates/ edited on dedicated '$branch_r7' (reviewer approval required at merge)"
-      ;;
-    *)
-      fail "Rule 7" "branch '$branch_r7' modifies docs/templates/ — use a 'docs/*' or 'templates/*' branch for template changes"
-      ;;
-  esac
-else
-  pass "docs/templates/ untouched"
-fi
-
-header "Rule 8: Tool-agnostic framing in guides"
-# Flag explicit "you must use X" patterns.
-if grep -rniE 'you must use|required to use|only works with' docs/guides/ >/dev/null 2>&1; then
-  fail "Rule 8" "prescriptive language in docs/guides/ — guides must stay tool-agnostic"
-else
-  pass "no prescriptive language in docs/guides/"
-fi
-
-header "Rule 9: Platform profiles descriptive"
-if [[ -d docs/guides ]]; then
-  if grep -rniE 'recommended vendor|the only correct choice' docs/guides/ >/dev/null 2>&1; then
-    fail "Rule 9" "prescriptive language in platform profiles"
+if [[ -n "$template_changes" ]]; then
+  branch_r4="$branch"
+  if [[ "${AGENTIC_BLUEPRINT_RELEASE:-0}" == "1" ]]; then
+    pass "docs/templates/ edited with AGENTIC_BLUEPRINT_RELEASE=1 (release-mode escape)"
   else
-    pass "platform profiles read descriptively"
+    # Per-commit check: every commit in range that touches a non-archive
+    # template path must carry a [release] subject.
+    bad_commit=""
+    while read -r sha; do
+      [[ -z "$sha" ]] && continue
+      touches_active=$(git show --name-only --format= "$sha" 2>/dev/null \
+        | grep '^docs/templates/' \
+        | grep -v '^docs/templates/_archive/' || true)
+      if [[ -n "$touches_active" ]]; then
+        subject=$(git log -1 --format=%s "$sha" 2>/dev/null || echo "")
+        if [[ "$subject" != \[release\]* ]]; then
+          bad_commit="$sha — $subject"
+          break
+        fi
+      fi
+    done < <(git log --format=%H "$base_ref"..HEAD -- 'docs/templates/' 2>/dev/null)
+
+    if [[ -z "$bad_commit" ]]; then
+      pass "docs/templates/ edited with [release]-tagged commit(s)"
+    else
+      case "$branch_r4" in
+        docs/*|templates/*)
+          pass "docs/templates/ edited on dedicated '$branch_r4' (reviewer approval required at merge)"
+          ;;
+        *)
+          fail "Rule 4" "branch '$branch_r4' has untagged template-touching commit: $bad_commit — use a [release]-prefixed subject, AGENTIC_BLUEPRINT_RELEASE=1, or a 'docs/*'/'templates/*' branch"
+          ;;
+      esac
+    fi
   fi
 else
-  pass "docs/guides/ absent (skipped)"
+  pass "docs/templates/ untouched (or only _archive/ moves)"
+fi
+
+header "Rule 5: Descriptive profiles, not prescriptive"
+rule5_fail=0
+if [[ -d docs/guides ]]; then
+  if grep -rniE 'you must use|required to use|only works with' docs/guides/ >/dev/null 2>&1; then
+    fail "Rule 5" "prescriptive language in docs/guides/ — guides must stay tool-agnostic"
+    rule5_fail=1
+  fi
+  if grep -rniE 'recommended vendor|the only correct choice' docs/guides/ >/dev/null 2>&1; then
+    fail "Rule 5" "endorsement language in platform profiles — describe, don't prescribe"
+    rule5_fail=1
+  fi
+fi
+if [[ $rule5_fail -eq 0 ]]; then
+  pass "docs/guides/ reads descriptively (no prescriptive or endorsement phrasing)"
 fi
 
 echo
 if [[ $fails -eq 0 ]]; then
-  echo "All 9 Hard Rules pass."
+  echo "All 5 Hard Rules (1–5) pass. Meta-principles 6–8 are not hook-gated."
   exit 0
 else
   echo "$fails rule(s) failed."

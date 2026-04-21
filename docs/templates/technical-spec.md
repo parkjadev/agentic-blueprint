@@ -3,8 +3,12 @@
 **Author:** [Name]
 **Date:** [YYYY-MM-DD]
 **Status:** Draft | In Review | Approved
+**Scope:** epic | feature | fix
+**Parent:** [slug of parent PRD; omit if this is a standalone feature]
 **PRD:** [Link to PRD]
 **Issue:** [Link to GitHub issue]
+
+> **Scope-aware sections.** `scope: fix` renders only *Problem*, *Root Cause*, *Fix*, and *Regression Test* sections — skip the rest. `scope: epic` renders all sections at system level with feature-level decomposition. `scope: feature` is the default full template.
 
 ---
 

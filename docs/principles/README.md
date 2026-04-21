@@ -1,34 +1,41 @@
 # docs/principles/
 
-The principles that underlie the blueprint. Each file captures one principle
-— the what, the why, what compliance looks like in practice, and the common
-failure mode.
+The principles that underlie the v4 Agentic Blueprint. Each file captures one principle — the what, the why, what compliance looks like in practice, and the common failure mode.
 
-## Hard Rules (enforced by `.claude/hooks/pre-commit-gate.sh`)
+**v4 streamline:** 12 principles → 8. Rules merged where they answered the same question (old #2+#3 → new #2; old #5+#6 → new #3; old #8+#9 → new #5). The Next-specific Zod rule was retired to `starters/nextjs/CLAUDE.md` as a starter-local convention.
 
-1. [`01-australian-spelling.md`](./01-australian-spelling.md) — Australian English in all prose, comments, and string literals.
-2. [`02-no-domain-logic-in-starters.md`](./02-no-domain-logic-in-starters.md) — starters hold only generic patterns.
-3. [`03-starters-boot-clean.md`](./03-starters-boot-clean.md) — every starter passes its own check suite.
-4. [`04-optional-services.md`](./04-optional-services.md) — optional Zod env schemas so services skip gracefully.
-5. [`05-spec-driven.md`](./05-spec-driven.md) — every feature starts as a spec.
-6. [`06-plan-before-code.md`](./06-plan-before-code.md) — review the plan before code generation.
-7. [`07-templates-are-sacred.md`](./07-templates-are-sacred.md) — `docs/templates/` stays pristine.
-8. [`08-tool-agnostic-framing.md`](./08-tool-agnostic-framing.md) — guides recommend, they do not require.
-9. [`09-platform-profiles-descriptive.md`](./09-platform-profiles-descriptive.md) — profiles describe toolchains, they don't endorse them.
+## Hard Rules (enforced by `.claude/hooks/pre-commit-gate.sh` + `.claude/skills/hard-rules-check/scripts/check-all.sh`)
+
+1. [`01-australian-spelling.md`](./01-australian-spelling.md) — Australian English in all prose, comments, string literals.
+2. [`02-starters-generic-boot-clean.md`](./02-starters-generic-boot-clean.md) — starters hold only generic patterns AND pass their own check suite.
+3. [`03-spec-before-ship.md`](./03-spec-before-ship.md) — every feature/fix starts as a spec before any code.
+4. [`04-templates-versioned.md`](./04-templates-versioned.md) — `docs/templates/` edits only during release rebuilds (env var / `[release]` commit / dedicated branch).
+5. [`05-descriptive-profiles.md`](./05-descriptive-profiles.md) — guides and platform profiles describe, never prescribe.
 
 ## Meta-principles (design of the harness)
 
-10. [`10-progressive-disclosure.md`](./10-progressive-disclosure.md) — skills load context on demand, not upfront.
-11. [`11-context-economy.md`](./11-context-economy.md) — subagents protect the main conversation from noise.
-12. [`12-gates-over-guidance.md`](./12-gates-over-guidance.md) — Hard Rules are hook-gated, not vibe-checked.
+6. [`06-progressive-disclosure.md`](./06-progressive-disclosure.md) — skills load context on demand, not upfront.
+7. [`07-context-economy.md`](./07-context-economy.md) — subagents protect the main conversation from noise.
+8. [`08-gates-over-guidance.md`](./08-gates-over-guidance.md) — if a rule matters, wire a gate.
+
+## Tagged-exception prefixes (flexibility layer)
+
+The pre-commit gate reads the commit message first. These prefixes selectively skip specific rules:
+
+| Prefix | Skips | Use case |
+|---|---|---|
+| `[release]` | Rule 4 (templates) | Explicit template rebuilds |
+| `[infra]` | Rule 3 (Spec-before-Ship) | CI, hooks, dependency bumps, harness-level work |
+| `[docs]` | Rule 3 (Spec-before-Ship) | Doc-only commits |
+| `[bulk]` | >50-file count guard | Genuine bulk updates (PR 3 will wire this guard) |
+
+Rules 1, 2, 5–8 are never skippable. Every skip is recorded in the audit trail.
 
 ## How to read these
 
-Principles are the "why". For "how to fix a violation right now", the
-runtime references live next to the enforcement machinery:
+Principles are the "why". For "how to fix a violation right now", the runtime references live next to the enforcement machinery:
 
 - `.claude/skills/hard-rules-check/references/rules-detail.md` — quick remediation playbook
 - `.claude/skills/hard-rules-check/scripts/check-all.sh` — the actual gate
 
-Keep principle docs tight. If a principle starts to read like a runbook,
-lift the runbook into `docs/operations/` and link back.
+Keep principle docs tight. If a principle starts to read like a runbook, lift the runbook into `docs/operations/` and link back.

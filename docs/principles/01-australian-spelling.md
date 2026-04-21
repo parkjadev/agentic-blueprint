@@ -1,47 +1,26 @@
 # 1. Australian spelling throughout
 
-> Hard Rule. Enforced by `.claude/hooks/pre-commit-gate.sh` → `hard-rules-check` → `australian-spelling`.
+> Hard Rule. Enforced by `.claude/hooks/pre-write-spelling.sh` (inline block on write) and `.claude/skills/hard-rules-check/scripts/check-all.sh` (pre-commit / CI gate).
 
 ## The rule
 
-All prose, comments, and string literals use Australian English spelling.
-Third-party code identifiers (CSS `color:`, SPDX `License:`, library APIs)
-keep their original form.
+All prose, markdown, comments, and string literals authored for this repo use Australian English. `favour` / `colour` / `organisation` / `behaviour`; `licence` / `license` per noun/verb rule; `-ise` / `-yse` endings. US variants like `favor`, `color`, `organization`, `organize`, `analyze` are flagged.
 
 ## Why
 
-- **Consistent voice.** A repo that mixes `analyze` and `analyse` reads like
-  it was written by three uncoordinated people — because it usually was.
-- **Searchability.** Grepping for "organisation" and finding half the
-  matches is a recurring, silent productivity tax.
-- **Signal of care.** If we don't get spelling right, reviewers lose faith
-  that we got the harder things right.
+Consistency reads as care. A doc that flips between US and AU spelling tells the reader nobody proof-read it. The rule also avoids the rolling PR churn that happens when an AU maintainer keeps correcting US-spelled contributions.
 
 ## In practice
 
-- Favour `-ise`/`-yse` over `-ize`/`-yze` (organise, analyse).
-- `-our` over `-or` (colour, behaviour, favour).
-- `-re` over `-er` for measurement (centre, metre).
-- Noun `licence` vs. verb `license`.
-- Double the consonant before `-ed`/`-ing` when the final syllable takes
-  stress or ends in a single vowel + single consonant (travelled, cancelled).
-
-The full wordlist lives at
-`.claude/skills/australian-spelling/references/wordlist.md`. The check
-script skips fenced code blocks and inline backtick spans — prose is
-policed, code identifiers are not.
+- The `pre-write-spelling` hook runs on every `Write`/`Edit` and blocks US variants inline.
+- `australian-spelling` skill runs `scripts/check.sh <files>` against `references/wordlist.md` for manual sweeps.
+- Code identifiers (variable names, API routes) are exempt only where a third-party library forces US spelling (`color`, `organization` in CSS/JSON schemas). Document the exception in a comment.
 
 ## When it fails
 
-- Running `bash .claude/skills/australian-spelling/scripts/check.sh <path>`
-  prints offending `file:line:content` matches.
-- The pre-commit hook blocks the commit with the rule-check summary.
-- Fix: apply the swap from the wordlist. If the flag is a false positive
-  (e.g. an API field name that must match a third-party schema), wrap the
-  identifier in backticks so the checker skips it.
+The hook prints the offending word and suggests the AU variant. Fix before the commit — there is no `[skip-spelling]` escape. This rule is cheap to honour and there's no production reason to ship US spelling.
 
 ## Related
 
-- Wordlist — `.claude/skills/australian-spelling/references/wordlist.md`
-- Checker — `.claude/skills/australian-spelling/scripts/check.sh`
-- Skill entry-point — `.claude/skills/australian-spelling/SKILL.md`
+- `australian-spelling` skill and wordlist.
+- `pre-write-spelling.sh` hook.

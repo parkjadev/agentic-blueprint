@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PreToolUse hook (matcher: Bash) — gate `git commit` and `git push` calls
-# behind the Hard Rules check. Non-commit Bash invocations pass through.
+# behind the v4 Hard Rules check and the runaway-commit guard.
+# Non-commit Bash invocations pass through.
 
 set -uo pipefail
 
@@ -26,23 +27,74 @@ case "$cmd" in
 esac
 
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$REPO_ROOT"
+
+# -----------------------------------------------------------------------------
+# Runaway-commit guard: staged diff of >50 files requires [bulk] prefix.
+# Agents that go off-rails and rewrite half the repo get stopped here.
+# -----------------------------------------------------------------------------
+case "$cmd" in
+  *"git commit"*)
+    staged_files=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
+    if [[ -n "$staged_files" && "$staged_files" -gt 50 ]]; then
+      # Try to read the commit message from the command line.
+      # Supports both `-m "..."`/`-m '...'` inline and `-F <file>` file form.
+      msg=$(printf '%s' "$cmd" | python3 -c '
+import re, sys, pathlib
+cmd = sys.stdin.read()
+m = re.search(r"-m\s+(?:\"([^\"]*)\"|\x27([^\x27]*)\x27)", cmd)
+if m:
+    print(m.group(1) or m.group(2) or "")
+    sys.exit(0)
+f = re.search(r"-F\s+(\S+)", cmd)
+if f:
+    try:
+        print(pathlib.Path(f.group(1)).read_text().splitlines()[0])
+    except Exception:
+        pass
+' 2>/dev/null || echo "")
+      if [[ "$msg" != \[bulk\]* ]]; then
+        cat <<EOF >&2
+Blocked: this commit stages $staged_files files (>50).
+
+Large commits obscure review and are a common signature of an agent that
+has gone off-rails. If this is a genuine bulk change (mass rename, sweep),
+re-run with a \`[bulk]\` prefix on the commit subject:
+
+  git commit -m "[bulk] <description>"
+
+The \`[bulk]\` prefix is recorded in the git log audit trail.
+EOF
+        exit 2
+      fi
+    fi
+    ;;
+esac
+
+# -----------------------------------------------------------------------------
+# Hard Rules gate (delegates to check-all.sh which honours tagged exceptions).
+# -----------------------------------------------------------------------------
 SCRIPT="$REPO_ROOT/.claude/skills/hard-rules-check/scripts/check-all.sh"
 
 if [[ ! -x "$SCRIPT" && ! -f "$SCRIPT" ]]; then
-  # No check script available — let the commit through with a warning.
   echo "warn: hard-rules-check script missing; commit proceeding without gate" >&2
   exit 0
 fi
 
-# Run the rules check; on failure block the commit/push.
 if ! bash "$SCRIPT" >/tmp/hard-rules.out 2>&1; then
   cat <<EOF >&2
 Blocked: Hard Rules check failed.
 
 $(tail -n 40 /tmp/hard-rules.out)
 
-Fix the violations above and try again. To bypass legitimately (rare),
-discuss with the user first — never use --no-verify silently.
+Tagged-exception prefixes available on the commit message:
+  [release]  skips Rule 4 (templates versioned)
+  [infra]    skips Rule 3 (Spec-before-Ship) — CI/hooks/deps work
+  [docs]     skips Rule 3 — doc-only commits
+  [bulk]     skips the >50-file runaway guard
+
+Rules 1, 2, 5 are never skippable. Fix the violations above or use a
+named prefix if the exception is legitimate.
 EOF
   exit 2
 fi
