@@ -1,7 +1,7 @@
 # CLAUDE.md — Next.js starter
 
 Starter-specific guidance. The framework-wide principles (Hard Rules
-1–9) live in the parent repo; read those first:
+1–5 + meta-principles 6–8) live in the parent repo; read those first:
 
 - Parent primitive map — [`/CLAUDE.md`](../../CLAUDE.md)
 - Hard Rules — [`/docs/principles/`](../../docs/principles/)
@@ -28,7 +28,7 @@ This file captures what's specific to **this starter**.
 ```
 starters/nextjs/
 ├── src/
-│   ├── env.ts                # Zod-validated env (Hard Rule 4)
+│   ├── env.ts                # Zod-validated env (starter-local optional-services convention)
 │   ├── middleware.ts         # Supabase session refresh + auth gate
 │   ├── app/
 │   │   ├── (auth)/           # Login, register, password reset
@@ -62,11 +62,11 @@ starters/nextjs/
 1. **Every API route returns `ApiResponse<T>`.** Success: `{ success: true, data }`. Failure: `{ success: false, error: { code, message } }`. Defined in `src/lib/api-response.ts`. Never return raw payloads.
 2. **Auth resolution goes through `get-auth.ts`.** Never call `supabase.auth.getUser()` directly in a route — always go through the helper so the internal `users` row is resolved and cached for the request.
 3. **Request validation is Zod-first.** Schemas live in `src/lib/validations/`; the route handler parses, the handler body receives a typed object.
-4. **Optional services check their env var at call time.** Before calling Stripe / Inngest / Resend, test `if (!env.STRIPE_SECRET_KEY) return { success: false, error: … }`. Don't let a missing key take down the route.
+4. **Optional services check their env var at call time.** Before calling Stripe / Inngest / Resend, test `if (!env.STRIPE_SECRET_KEY) return { success: false, error: … }`. Don't let a missing key take down the route. `src/env.ts` wraps non-essential vars in `.optional()` via Zod so services skip gracefully when unconfigured. *(This is a starter-local convention — absorbed from the v3 Hard Rule #4, which was retired in v4 because it didn't generalise beyond Next.js.)*
 5. **Rate limits are per-user.** `rate-limit.ts` uses the authenticated `users.id`; unauthenticated routes use the IP. Default: 60 req/min.
-6. **Australian spelling** in all prose, comments, error messages, and UI copy. Enforced by the repo-wide rule check.
+6. **Australian spelling** in all prose, comments, error messages, and UI copy. Enforced by the repo-wide rule check (Hard Rule 1).
 
-## Clean-boot contract (Hard Rule 3)
+## Clean-boot contract (Hard Rule 2)
 
 The starter must pass all four commands with zero errors, from a clean
 `pnpm install`:
@@ -88,7 +88,7 @@ merging anything else.
 | `src/lib/api-response.ts` | Defines the API contract. Changing this breaks every route. |
 | `src/lib/auth/get-auth.ts` | Auth resolution. Breaking this breaks the entire app. |
 | `src/middleware.ts` | Supabase session refresh + auth gate. Wrong logic here silently logs everyone out. |
-| `src/env.ts` | Env validation. Rule 4 requires optional Zod fields for non-essential services. |
+| `src/env.ts` | Env validation. Starter-local convention: wrap non-essential services in `.optional()` so they skip gracefully. |
 | `drizzle.config.ts` + `supabase/migrations/` | Migration ordering matters; never reorder committed migrations. |
 
 ## Common tasks
