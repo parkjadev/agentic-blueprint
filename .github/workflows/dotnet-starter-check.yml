@@ -1,0 +1,60 @@
+name: .NET Starter Check
+
+# Runs the clean-boot contract for `starters/dotnet-azure/` on every PR and
+# every push to main. Triggered path-scoped so unrelated changes don't pay
+# the .NET SDK install cost.
+#
+# The three checks mirror the starter's CLAUDE.md and .claude/commands/check.md:
+#
+#   dotnet build
+#   dotnet test
+#   dotnet format --verify-no-changes
+#
+# Integration-tagged tests (Testcontainers + Postgres) arrive in Phase 3 and
+# will need a Docker service; they are excluded here via --filter.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'starters/dotnet-azure/**'
+      - '.github/workflows/dotnet-starter-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'starters/dotnet-azure/**'
+      - '.github/workflows/dotnet-starter-check.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dotnet:
+    name: Build, Test, Format
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: starters/dotnet-azure
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: starters/dotnet-azure/global.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore --configuration Release
+
+      - name: Test (excluding Integration)
+        run: dotnet test --no-build --configuration Release --filter "Category!=Integration" --verbosity minimal
+
+      - name: Format check
+        run: dotnet format --verify-no-changes

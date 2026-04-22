@@ -24,20 +24,30 @@ bash .claude/skills/starter-verify/scripts/verify.sh nextjs
 # Flutter only
 bash .claude/skills/starter-verify/scripts/verify.sh flutter
 
-# Both
+# .NET + Azure only
+bash .claude/skills/starter-verify/scripts/verify.sh dotnet
+
+# All three
 bash .claude/skills/starter-verify/scripts/verify.sh all
 ```
 
 The script:
-1. Delegates to `claude-config/scripts/smoke-test.sh <target>` (the canonical smoke-test).
-2. Captures the exit code.
-3. On failure, prints only the first 10 lines of error output — never the full multi-minute log.
+1. For `nextjs` and `flutter`, delegates to `claude-config/scripts/bootstrap-smoke-test.sh <target>` (the canonical scaffold-then-check smoke-test).
+2. For `dotnet`, runs `dotnet build && dotnet test && dotnet format --verify-no-changes` in-tree against `starters/dotnet-azure/`. The dotnet target is skipped (not failed) if the .NET SDK is missing — same pattern as Flutter when its CLI is absent.
+3. Captures the exit code.
+4. On failure, prints only the first 10 lines of error output — never the full multi-minute log.
 
 ## Output
 
 **Pass:**
 ```
 PASS — nextjs (pnpm type-check, lint, test:ci) ✓
+PASS — dotnet (dotnet build, test, format --verify-no-changes) ✓
+```
+
+**Skip (SDK missing):**
+```
+SKIP — dotnet — .NET SDK not installed (install .NET 9 to enable)
 ```
 
 **Fail:**
@@ -51,4 +61,4 @@ FAIL — nextjs — pnpm type-check exited with 1
 
 - Fix failures from within the skill — the caller (/ship, or you) decides next steps.
 - Paste full logs.
-- Run `pnpm install` or `flutter pub get` directly; the smoke-test script handles dependency install as part of its flow.
+- Run `pnpm install`, `flutter pub get`, or `dotnet restore` directly; the smoke-test script handles dependency install as part of its flow, and `dotnet build` restores as part of its flow.
