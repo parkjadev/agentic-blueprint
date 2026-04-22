@@ -323,7 +323,7 @@ The marker becomes `<!-- status: shipped (#PR) -->`, keeping the spec in sync wi
 - Register the .NET clean-boot commands (`dotnet build`, `dotnet test`, `dotnet format --verify-no-changes`) with the `starter-verify` skill configuration.
 - Acceptance: `dotnet build` exits zero, `dotnet test` exits zero (zero tests is acceptable at this stage), `dotnet format --verify-no-changes` exits zero.
 
-### Phase 2: Bicep modules and deploy workflow <!-- status: pending -->
+### Phase 2: Bicep modules and deploy workflow <!-- status: shipped (#106) -->
 
 - Create `starters/dotnet-azure/infra/` with `main.bicep` orchestrator.
 - Write the child Bicep modules: `network.bicep`, `identity.bicep`, `data.bicep` (PostgreSQL Flexible Server), `data-azuresql.bicep` (Azure SQL variant), `compute.bicep`, `observability.bicep`. `main.bicep` selects the data module via a `dataProvider` parameter (`'postgres' | 'azuresql'`, default `'postgres'`).
