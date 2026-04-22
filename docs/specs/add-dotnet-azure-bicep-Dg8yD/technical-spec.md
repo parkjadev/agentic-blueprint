@@ -311,7 +311,7 @@ claude-config/scripts/update-plan-status.sh docs/specs/add-dotnet-azure-bicep-Dg
 
 The marker becomes `<!-- status: shipped (#PR) -->`, keeping the spec in sync with what has been built.
 
-### Phase 1: Project skeleton <!-- status: pending -->
+### Phase 1: Project skeleton <!-- status: shipped (#103) -->
 
 - Create `starters/dotnet-azure/` directory structure.
 - Initialise .NET 9 solution: `DotnetAzure.Api` (minimal APIs) and `DotnetAzure.Tests` (xUnit).

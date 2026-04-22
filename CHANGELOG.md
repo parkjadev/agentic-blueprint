@@ -12,14 +12,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - New sacred template `docs/templates/release-strategy.md` for downstream projects to document their chosen release profile, branch/environment mapping, preview environments, feature flags, schema migrations, approval gates, and rollback levers (#88).
 - Added a worked example of the release-strategy template at `docs/examples/release-strategy.md`, demonstrating Profile A (Simplified / GitHub Flow) for a fictional small-team SaaS (#93).
-- **.NET + Azure starter Phase 1** — new `starters/dotnet-azure/` with a .NET 9 minimal-API solution, `ApiResponse<T>` envelope matching the sibling starters, health endpoint, xUnit + `WebApplicationFactory<Program>` test project, starter-local CLAUDE.md, `/check` command, and clean-boot contract (`dotnet build` + `dotnet test` + `dotnet format --verify-no-changes`). Reference implementation of Profile A on Azure — coexists with the Next.js and Flutter starters; Bicep modules, Entra auth, EF Core, and deploy workflow follow in Phases 2–4. Spec: `docs/specs/add-dotnet-azure-bicep-Dg8yD/` (#102).
-- `.github/workflows/dotnet-starter-check.yml` — path-scoped CI workflow for the .NET starter (runs build, test, and format verification on any PR that touches `starters/dotnet-azure/**`).
+- **.NET + Azure starter Phase 1** — new `starters/dotnet-azure/` with a .NET 9 minimal-API solution, `ApiResponse<T>` envelope matching the sibling starters, health endpoint, xUnit + `WebApplicationFactory<Program>` test project, starter-local CLAUDE.md, `/check` command, and clean-boot contract (`dotnet build` + `dotnet test` + `dotnet format --verify-no-changes`). Reference implementation of Profile A on Azure — coexists with the Next.js and Flutter starters; Bicep modules, Entra auth, EF Core, and deploy workflow follow in Phases 2–4. Spec: `docs/specs/add-dotnet-azure-bicep-Dg8yD/` (#103).
+- `.github/workflows/dotnet-starter-check.yml` — path-scoped CI workflow for the .NET starter (runs build, test, and format verification on any PR that touches `starters/dotnet-azure/**`) (#103).
 
 ### Changed
 
 - Four `/plan` and `/ship` harness tweaks from the #88 retro: split spec-writer per spec, branch-prefix precondition, reorder PR-before-changelog, and require `<!-- status: pending -->` marker on plan files (#90).
 - Rule 5 and Rule 6 in `hard-rules-check` now exempt `chore/*` branches, alongside `main` and `release/*`. Trust-based exemption for memory-sync, dep bumps, and small fixes (#91).
-- `starter-verify` skill now accepts a third target, `dotnet`, running the .NET starter's clean-boot contract in-tree. Skipped gracefully when the .NET SDK is absent — same pattern Flutter uses when its CLI is missing (#102).
+- `starter-verify` skill now accepts a third target, `dotnet`, running the .NET starter's clean-boot contract in-tree. Skipped gracefully when the .NET SDK is absent — same pattern Flutter uses when its CLI is missing (#103).
 
 ## [3.0.0] — 2026-04-20
 
