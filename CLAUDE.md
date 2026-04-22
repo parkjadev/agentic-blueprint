@@ -1,10 +1,12 @@
 # CLAUDE.md
 
-Primitive map for Claude Code (and any other agent) working in this repository. Start here, then drill into the harness, templates, or starters as needed.
+Primitive map for Claude Code (and any other agent) working in this repository. Start here, then drill into the harness, templates, or research briefs as needed.
+
+> **Transitional note — v5 agnostic redesign in flight.** The v4 reference starters (`starters/nextjs/`, `starters/flutter/`, `starters/dotnet-azure/`) have been retired. The blueprint is being re-framed so `/spec idea` drives stack selection via research rather than shipping opinionated starters. The authoritative design for v5 will land under `docs/specs/agentic-blueprint-v5-agnostic/` when `/spec idea` completes. Until then, expect the harness to reference retired primitives in a few places — those will be reconciled by the v5 PR.
 
 ## What this repo is
 
-A framework for building products with AI collaborators. Ships document templates, workflow guides, optional code starters, and a beat-aware Claude Code harness.
+A framework for building products with AI collaborators. Ships document templates, workflow guides, and a beat-aware Claude Code harness.
 
 The master plan is the **three-beat lifecycle**: **Spec → Ship → Signal**.
 
@@ -20,14 +22,13 @@ v4 collapses the previous five-stage model (Research & Think → Plan → Build 
 |---|---|---|
 | Slash commands | `.claude/commands/` | Beat entry points: `/spec <idea\|epic\|feature\|fix\|chore>`, `/ship`, `/signal <init\|sync\|audit\|status>`, `/beat <status\|install\|update>` |
 | Subagents | `.claude/agents/` | Isolated workers: `spec-researcher`, `spec-author` |
-| Skills | `.claude/skills/` | Progressive-disclosure helpers: `australian-spelling`, `hard-rules-check`, `signal-sync`, `starter-verify` |
-| Hooks | `.claude/hooks/` | `session-start`, `beat-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-secret-scan`, `pre-commit-gate` |
+| Skills | `.claude/skills/` | Progressive-disclosure helpers: `australian-spelling`, `hard-rules-check`, `signal-sync` (plus a dormant `starter-verify` pending v5 retirement/rework) |
+| Hooks | `.claude/hooks/` | `session-start`, `beat-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-secret-scan`, `pre-commit-gate`, `prune-merged-branches` |
 | Settings | `.claude/settings.json` | Permission baseline and hook wiring |
-| Sacred templates | `docs/templates/` | The core IP — 9 spec-driven templates. Never modify in a feature PR (Rule 4) |
-| Beat guides | `docs/guides/` | Long-form guides for each beat, plus a tool-reference with the 2-profile × 3-beat matrix |
+| Sacred templates | `docs/templates/` | The core IP — spec-driven document templates. Never modify in a feature PR (Rule 4) |
+| Beat guides | `docs/guides/` | Long-form guides for each beat, plus a tool-reference (v5 will re-frame this around research-driven stack selection) |
 | Research briefs | `docs/research/` | Spec-beat output; lands via `/spec idea` or `/spec feature` |
-| Specs | `docs/specs/<slug>.md` (flat) or `docs/specs/<slug>/` (legacy) | Spec-beat output; filled-in templates with `scope:` + `parent:` frontmatter |
-| Starters | `starters/nextjs/`, `starters/flutter/` | Optional reference implementations |
+| Specs | `docs/specs/<slug>.md` (flat) or `docs/specs/<slug>/` (folder) | Spec-beat output; filled-in templates with `scope:` + `parent:` frontmatter |
 | Copy-ready bundle | `claude-config/` | What downstream projects copy via `/beat install` |
 
 When in doubt, run `/beat` for a read-only status snapshot + the next-best command.
@@ -39,7 +40,7 @@ Enforced by `.claude/hooks/pre-commit-gate.sh` via the `hard-rules-check` skill.
 **Hard Rules (hook-gated):**
 
 1. [Australian spelling throughout](./docs/principles/01-australian-spelling.md)
-2. [Starters stay generic and boot clean](./docs/principles/02-starters-generic-boot-clean.md)
+2. [Starters stay generic and boot clean](./docs/principles/02-starters-generic-boot-clean.md) *(vacuously passing until v5 reintroduces starters or supersedes this rule)*
 3. [Spec-before-Ship](./docs/principles/03-spec-before-ship.md)
 4. [Templates versioned, not edited in flight](./docs/principles/04-templates-versioned.md)
 5. [Descriptive profiles, not prescriptive](./docs/principles/05-descriptive-profiles.md)

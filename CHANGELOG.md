@@ -23,6 +23,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Four `/plan` and `/ship` harness tweaks from the #88 retro: split spec-writer per spec, branch-prefix precondition, reorder PR-before-changelog, and require `<!-- status: pending -->` marker on plan files (#90).
 - Rule 5 and Rule 6 in `hard-rules-check` now exempt `chore/*` branches, alongside `main` and `release/*`. Trust-based exemption for memory-sync, dep bumps, and small fixes (#91).
 - `starter-verify` skill now accepts a third target, `dotnet`, running the .NET starter's clean-boot contract in-tree. Skipped gracefully when the .NET SDK is absent — same pattern Flutter uses when its CLI is missing (#103).
+- Hard Rule 2 (`starters generic and boot clean`) now passes vacuously when the `starters/` tree is absent. Preserves the rule infrastructure for v5 without forcing a pass/fail on a non-existent surface.
+- Root `CLAUDE.md` and `docs/guides/tool-reference.md` gained transitional banners pointing at the v5 platform-agnostic redesign. The v4 fixed-profile matrix remains readable for historical context.
+
+### Removed
+
+- **All v4 reference starters retired** in preparation for the v5 platform-agnostic redesign. The blueprint is being re-framed so `/spec idea` drives stack selection via research rather than shipping opinionated starters. Removed:
+  - `starters/nextjs/` — Next.js 15 + Supabase reference implementation
+  - `starters/flutter/` — Flutter mobile companion
+  - `starters/dotnet-azure/` — .NET 9 + Azure Bicep reference (Phases 1 + 2 shipped in #103 and #106 respectively; Phase 3 PR #108 closed without merging)
+  - `.github/workflows/bootstrap-smoke-test.yml`, `dotnet-starter-check.yml`, `dotnet-azure-bicep-validate.yml`, `dotnet-azure-deploy.yml` — starter-scoped CI workflows
+  - `claude-config/scripts/bootstrap-smoke-test.sh` — dogfooding harness that copied starters
+  - `docs/specs/dotnet-azure-phase-2.md` — Phase 2 slug-match stub
+- Adopters of v4 can pin to the pre-retirement commit if they need the previous starter trees. The v5 design will articulate the migration path once `/spec idea` lands.
 
 ## [3.0.0] — 2026-04-20
 

@@ -2,6 +2,8 @@
 
 > Which tool for which role — a decision framework, not a vendor pitch.
 
+> **Transitional note — v5 agnostic redesign in flight.** The two fixed platform profiles below (Claude-native, OutSystems ODC) and the references to `starters/nextjs/` / `starters/flutter/` describe the v4 model, which is in the process of being superseded. The v4 reference starters have been retired; the v5 redesign will replace the fixed-profile matrix with a research-driven stack selection during the Spec beat. Track the design at `docs/specs/agentic-blueprint-v5-agnostic/` once `/spec idea` lands.
+
 v4 ships two platform profiles: **Claude-native** (pro-code SaaS + mobile) and **OutSystems ODC** (low-code enterprise delivery). Spec and Signal artefacts are identical across both profiles; only Ship mechanics diverge. That's where the sellable IP concentrates — the discipline travels; the deployment tooling doesn't.
 
 ## The role model
