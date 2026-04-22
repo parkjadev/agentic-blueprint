@@ -320,10 +320,11 @@ The marker becomes `<!-- status: shipped (#PR) -->`, keeping the spec in sync wi
 ### Phase 2: Bicep modules and deploy workflow <!-- status: pending -->
 
 - Create `starters/dotnet-azure/infra/` with `main.bicep` orchestrator.
-- Write the six Bicep modules: `network.bicep`, `identity.bicep`, `data.bicep`, `compute.bicep`, `observability.bicep`.
-- Write `infra/parameters/dev.bicepparam.example`, `staging.bicepparam.example`, `prod.bicepparam.example`.
+- Write the child Bicep modules: `network.bicep`, `identity.bicep`, `data.bicep` (PostgreSQL Flexible Server), `data-azuresql.bicep` (Azure SQL variant), `compute.bicep`, `observability.bicep`. `main.bicep` selects the data module via a `dataProvider` parameter (`'postgres' | 'azuresql'`, default `'postgres'`).
+- Write `infra/parameters/dev.bicepparam.example`, `staging.bicepparam.example`, `prod.bicepparam.example`. **`network.bicep` is required in `dev.bicepparam.example`** to maintain dev/prod parity — Container Apps VNET integration is on by default across all environments.
 - Write `.github/workflows/deploy.yml` with OIDC federation steps, image build, ACR push, `az deployment sub create`, and `/health` smoke test.
-- Acceptance: `bicep build infra/main.bicep` exits zero; `az deployment sub what-if` on the test subscription exits zero with no warnings; second deploy reports zero changes.
+- Commit placeholder files only; real tenant-specific values live in `*.bicepparam` (gitignored) and `.env` (gitignored). `.bicepparam.example` and `.env.example` are the committed placeholders.
+- Acceptance: `bicep build infra/main.bicep` exits zero for both `dataProvider=postgres` and `dataProvider=azuresql`; `az deployment sub what-if` on the test subscription exits zero with no warnings; second deploy reports zero changes.
 
 ### Phase 3: Widget domain, auth, EF Core, and tests <!-- status: pending -->
 
@@ -367,7 +368,7 @@ The marker becomes `<!-- status: shipped (#PR) -->`, keeping the spec in sync wi
 | Microsoft Entra tenant | Issues JWTs validated by `Microsoft.Identity.Web`; Entra admin for Postgres | None for this starter; a different starter would be required for a non-Entra identity provider |
 | GitHub repository with OIDC federated credential | Allows GitHub Actions to authenticate to Azure without client secrets | The Bicep + deploy pattern works with any CI system that supports OIDC; GitHub Actions is the reference |
 | Azure Container Registry (provisioned by Bicep) | Stores the container image; pulled by Container Apps using managed identity | Can be swapped for another OCI-compliant registry by editing `identity.bicep` and the GHA workflow |
-| Azure Database for PostgreSQL Flexible Server (provisioned by Bicep) | Application database | **Azure SQL swap:** Replace `data.bicep` with a `data-azuresql.bicep` module and swap the EF provider from `Npgsql.EntityFrameworkCore.PostgreSQL` to `Microsoft.EntityFrameworkCore.SqlServer`. The managed-identity auth pattern is identical. |
+| Azure Database for PostgreSQL Flexible Server (provisioned by Bicep, default) | Application database — default `dataProvider=postgres` | **Azure SQL variant ships in-box:** set `dataProvider=azuresql` in `main.bicepparam` to swap `data.bicep` for `data-azuresql.bicep` and flip the EF provider package from `Npgsql.EntityFrameworkCore.PostgreSQL` to `Microsoft.EntityFrameworkCore.SqlServer`. The managed-identity auth pattern is identical across both. |
 | Docker (local) | Runs local Postgres via `docker compose` for development | Any OCI-compliant runtime (e.g. Podman) works with the Compose file |
 | .NET 9 SDK | Build and test | .NET 8 LTS is a compatible downgrade; change the `TargetFramework` in `.csproj` and the `mcr.microsoft.com/dotnet/sdk:9.0` image tag |
 
@@ -379,11 +380,22 @@ The marker becomes `<!-- status: shipped (#PR) -->`, keeping the spec in sync wi
 
 ## Open Questions
 
+### Resolved (2026-04-22)
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Ship a second Bicep variant for Azure SQL (`data-azuresql.bicep`), or Postgres-only with a swap-path note? | **Ship both.** `main.bicep` selects via a `dataProvider` parameter (`'postgres'` default, `'azuresql'` alternative). EF provider package is selected at build time. |
+| 3 | Require `network.bicep` in `dev.bicepparam`, or optional? | **Required in dev.** Dev matches prod topology; Container Apps VNET integration is on by default across environments. |
+
+### Still open
+
 | # | Question | Owner | Due |
 |---|---|---|---|
-| 1 | Should the starter ship a second Bicep variant for Azure SQL (`data-azuresql.bicep`), or keep it Postgres-only and rely on the swap-path note in this spec? | parkjadev | 2026-05-06 |
 | 2 | Use Dapr for the service-to-service story (P2 feature), or leave it to a separate spec after the P0/P1 baseline ships? Dapr adds a sidecar and operator dependency that may complicate the "boots clean" story. | parkjadev | 2026-05-06 |
-| 3 | Should the `network.bicep` VNET module be required in `dev.bicepparam`, or optional? Making it optional simplifies evaluation but diverges dev from prod topology — a risk for adopters who later find VNET integration breaks their service. | Spec author | 2026-05-06 |
+
+Additional decisions logged during review:
+
+- **Tenant-specific config convention.** `.env.example` + `*.bicepparam.example` placeholder files are committed; real `*.env` and `*.bicepparam` files are gitignored. Consistent with the sibling starters' secrets convention.
 
 ---
 

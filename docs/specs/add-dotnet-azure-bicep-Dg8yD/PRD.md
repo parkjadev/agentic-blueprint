@@ -132,7 +132,6 @@ The two existing starters (`starters/nextjs/` and `starters/flutter/`) demonstra
 ## Out of Scope
 
 - Replacing or deprecating `starters/nextjs/` or `starters/flutter/`. This starter coexists as a third option and is not a replacement.
-- Azure SQL as a primary database. Adopters may swap the EF provider and `data.bicep` module; a migration note is included in the technical spec. The starter ships Postgres-first.
 - Multi-region failover, geo-redundancy, or availability-zone configuration.
 - Terraform or Pulumi alternatives to Bicep.
 - Azure Developer CLI (`azd`) integration. The starter uses plain Bicep + `az deployment sub create` for maximum transparency.
@@ -142,11 +141,15 @@ The two existing starters (`starters/nextjs/` and `starters/flutter/`) demonstra
 
 ## Open Questions
 
-| # | Question | Owner | Due |
+All three original questions were resolved during spec review (2026-04-22); no open questions remain at PRD scope.
+
+### Resolved
+
+| # | Question | Decision | Resolved |
 |---|---|---|---|
-| 1 | Should the starter ship a second Bicep variant for Azure SQL alongside the Postgres modules, or document the swap path only? Shipping both reduces a future PR but increases initial surface area. | Spec author / adopter feedback | 2026-05-06 |
-| 2 | Should the `network.bicep` module be required in the dev parameter set, or optional? VNET integration on Container Apps adds cost and complexity that may deter local evaluation. | Spec author | 2026-05-06 |
-| 3 | How should "tenant-specific config" (Entra tenant ID, subscription ID, client ID) be expressed without any real values reaching `git`? Proposed: `.env.example` + `*.bicepparam.example` placeholder files, with real files in `.gitignore`. Confirm this is consistent with the sibling starters' secrets convention. | Spec author | 2026-04-29 |
+| 1 | Ship a second Bicep variant for Azure SQL alongside the Postgres modules? | **Yes** — both `data.bicep` (Postgres Flexible Server) and `data-azuresql.bicep` (Azure SQL) ship in Phase 2. EF provider selection is driven by a build-time switch; only one provider is referenced by the composed `main.bicep` per deployment. | 2026-04-22 |
+| 2 | Require `network.bicep` in the dev parameter set, or keep it optional? | **Required in dev.** Dev must match prod topology so adopters do not discover VNET-integration breakage after the fact. The added cost is accepted as the price of parity. | 2026-04-22 |
+| 3 | How should tenant-specific config (Entra tenant ID, subscription ID, client ID) be expressed without real values reaching `git`? | **`.env.example` + `*.bicepparam.example` placeholder files committed, real `*.env` and `*.bicepparam` in `.gitignore`.** This is consistent with the sibling starters' secrets convention. | 2026-04-22 |
 
 ## Appendix
 
