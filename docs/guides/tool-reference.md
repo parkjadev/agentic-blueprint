@@ -27,7 +27,7 @@ This is the load-bearing table. Spec and Signal rows are identical across profil
 | Beat | Claude-native | OutSystems ODC |
 |---|---|---|
 | **Spec** | Claude Desktop for ideation + `/spec` for artefact generation. `spec-researcher` subagent for deep research. `spec-author` subagent for PRD + technical-spec | Same templates (`docs/templates/`) and `/spec` flow. ODC Lifecycle captures scope decisions. Specs live in git even when implementation is in ODC Studio |
-| **Ship** | `/ship` — Claude Code PR loop, GitHub Flow, Vercel auto-deploy, CI gates, `starter-verify` skill, Dispatch + Remote Control for mobile supervision during long builds | ODC Service Studio + Mentor build the app; ODC pipelines handle Dev → Test → Prod promotion. Specs stay in git; the deploy step is replaced by ODC's promotion flow. `/ship` still orchestrates the pre-build gate and CHANGELOG update |
+| **Ship** | `/ship` — Claude Code PR loop, GitHub Flow, CI gates, `starter-verify` skill, Dispatch + Remote Control for mobile supervision during long builds. Deploy target is project-specific; common choices include Vercel (Next.js), Azure App Service / Container Apps via Bicep, AWS, and Fly.io | ODC Service Studio + Mentor build the app; ODC pipelines handle Dev → Test → Prod promotion. Specs stay in git; the deploy step is replaced by ODC's promotion flow. `/ship` still orchestrates the pre-build gate and CHANGELOG update |
 | **Signal** | `/signal init` → Claude Scheduled Tasks for automation; `/signal sync` for post-merge close-out; `/signal audit` for weekly self-review; Cowork for ops-heavy non-code workflows; incident runbooks in `docs/operations/` | ODC LifeTime dashboards + Architecture Dashboard fill the monitoring role. External scheduled jobs (Claude Scheduled Tasks or GitHub Actions) cover anything ODC doesn't. Same `incident-runbook.md` template, same `docs/signal/learnings.md` accumulator |
 
 ## Profile A — Claude-native
@@ -39,7 +39,7 @@ This is the load-bearing table. Spec and Signal rows are identical across profil
 | Research tool | Claude web search; Perplexity Deep Research for broader passes |
 | Thinking partner | Claude Desktop Chat (Projects) |
 | Agentic coder | Claude Code (Terminal + VS Code) |
-| Deployment pipeline | Claude Code + Vercel MCP |
+| Deployment pipeline | Claude Code driving GitHub Actions + a platform of choice. Common choices: Vercel (Next.js and similar edge-first stacks), Azure via Bicep + `az` CLI, AWS (CDK / Terraform), Fly.io, Railway |
 | Scheduled automation | Claude Scheduled Tasks (`/signal init`) |
 | Ops surface | Cowork |
 | Mobile supervision | Dispatch + Remote Control |
@@ -99,7 +99,7 @@ Even within a single profile, tools hand off to each other at beat boundaries:
 
 ## MCP integrations worth naming
 
-- **Vercel MCP** — deployment inspection and log tail during `/ship` preview smoke-test.
+- **Deployment MCP (platform-specific)** — deployment inspection and log tail during `/ship` preview smoke-test. One common choice is Vercel MCP when the stack is Next.js; Azure, AWS, and Fly.io fill the role via their own CLIs (`az`, `aws`, `fly`) or project-specific MCP servers where available.
 - **GitHub CLI (`gh`)** — no MCP needed; the CLI covers issue, PR, and label operations well enough.
 - **Anthropic Admin API** — for `/signal status` API-spend reporting when `ANTHROPIC_ADMIN_KEY` is configured.
 
