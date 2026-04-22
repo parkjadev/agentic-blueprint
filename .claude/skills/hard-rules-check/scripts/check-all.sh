@@ -29,7 +29,16 @@ cd "$REPO_ROOT"
 
 fails=0
 pass()    { printf "  ✓ %s\n" "$1"; }
-fail()    { printf "  ✗ %s — %s\n" "$1" "$2"; fails=$((fails+1)); }
+fail()    {
+  printf "  ✗ %s — %s\n" "$1" "$2"
+  # Emit a GitHub Actions annotation when running in CI so the failure
+  # surfaces on the annotations API even when the full log is auth-gated.
+  if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
+    local escaped="${2//$'\n'/%0A}"
+    printf "::error title=%s::%s\n" "$1" "$escaped"
+  fi
+  fails=$((fails+1))
+}
 header()  { printf "\n== %s ==\n" "$1"; }
 
 # Detect current branch. On GitHub Actions PR events, HEAD is detached so
@@ -75,22 +84,26 @@ fi
 
 header "Rule 2: Starters generic and boot clean"
 rule2_fail=0
-# 2a: brand/domain strings
-if grep -rniE '\b(acme|blueprint-inc|customer-x|mycompany)\b' starters/ >/dev/null 2>&1; then
-  fail "Rule 2" "domain/brand strings found in starters/"
-  rule2_fail=1
-fi
-# 2b: smoke-test script present
-if [[ -f claude-config/scripts/smoke-test.sh || -f claude-config/scripts/bootstrap-smoke-test.sh ]]; then
-  :
-elif [[ ! -d claude-config/scripts ]]; then
-  :
+if [[ ! -d starters ]]; then
+  pass "starters/ retired pending v5 agnostic redesign — rule vacuously passes"
 else
-  fail "Rule 2" "claude-config/scripts/{smoke-test,bootstrap-smoke-test}.sh missing"
-  rule2_fail=1
-fi
-if [[ $rule2_fail -eq 0 ]]; then
-  pass "starters/ generic; smoke-test script present (run via /ship — not invoked here for speed)"
+  # 2a: brand/domain strings
+  if grep -rniE '\b(acme|blueprint-inc|customer-x|mycompany)\b' starters/ >/dev/null 2>&1; then
+    fail "Rule 2" "domain/brand strings found in starters/"
+    rule2_fail=1
+  fi
+  # 2b: smoke-test script present
+  if [[ -f claude-config/scripts/smoke-test.sh || -f claude-config/scripts/bootstrap-smoke-test.sh ]]; then
+    :
+  elif [[ ! -d claude-config/scripts ]]; then
+    :
+  else
+    fail "Rule 2" "claude-config/scripts/{smoke-test,bootstrap-smoke-test}.sh missing"
+    rule2_fail=1
+  fi
+  if [[ $rule2_fail -eq 0 ]]; then
+    pass "starters/ generic; smoke-test script present (run via /ship — not invoked here for speed)"
+  fi
 fi
 
 header "Rule 3: Spec-before-Ship"
