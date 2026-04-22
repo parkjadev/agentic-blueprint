@@ -100,7 +100,7 @@ Every Claude Code session reads `CLAUDE.md` at the repo root — plus any nested
 
 ## Platform profiles
 
-- **Claude-native**: `/ship` orchestrates the full loop. Claude Code + Vercel MCP for deploy inspection. Dispatch + Remote Control for mobile supervision during long builds.
+- **Claude-native**: `/ship` orchestrates the full loop. Claude Code drives GitHub Actions; deploy target is project-specific (Vercel, Azure via Bicep, AWS, Fly.io — pick what fits the stack). Deploy inspection via the platform's MCP or CLI (Vercel MCP for Next.js; `az` / `aws` / `fly` CLIs otherwise). Dispatch + Remote Control for mobile supervision during long builds.
 - **OutSystems ODC**: Ship mechanics diverge — ODC Service Studio + Mentor produce the build; ODC pipelines handle Dev → Test → Prod promotion. The spec contract and CI gate logic from `/ship` are still relevant; the deploy step is replaced by the ODC promotion flow. Docs stay in git.
 
 See `docs/guides/tool-reference.md` for the full matrix.
