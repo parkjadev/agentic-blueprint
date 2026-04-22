@@ -5,17 +5,13 @@ using Xunit;
 
 namespace DotnetAzure.Tests;
 
-public sealed class HealthEndpointTests : IClassFixture<WebApplicationFactory<Program>>
+public sealed class HealthEndpointTests(WebApplicationFactory<Program> factory)
+    : IClassFixture<WebApplicationFactory<Program>>
 {
-    private readonly WebApplicationFactory<Program> _factory;
-
-    public HealthEndpointTests(WebApplicationFactory<Program> factory) =>
-        _factory = factory;
-
     [Fact]
     public async Task Get_health_returns_200_ok()
     {
-        using var client = _factory.CreateClient();
+        using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/health");
 
@@ -25,7 +21,7 @@ public sealed class HealthEndpointTests : IClassFixture<WebApplicationFactory<Pr
     [Fact]
     public async Task Get_health_body_uses_api_response_envelope()
     {
-        using var client = _factory.CreateClient();
+        using var client = factory.CreateClient();
 
         var body = await client.GetFromJsonAsync<HealthResponse>("/health");
 
