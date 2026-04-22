@@ -1,0 +1,25 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{json,yml,yaml,md,bicep,bicepparam}]
+indent_size = 2
+
+[*.{cs,csproj,sln}]
+indent_size = 4
+# Force C# analysers to surface style issues as errors so `dotnet format --verify-no-changes` catches drift.
+dotnet_analyzer_diagnostic.severity = warning
+
+[*.cs]
+# Prefer modern C# idioms — file-scoped namespaces, target-typed new, primary constructors.
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_prefer_simple_using_statement = true:suggestion
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false

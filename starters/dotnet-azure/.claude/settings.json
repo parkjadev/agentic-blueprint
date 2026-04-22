@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(git status)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git fetch:*)",
+      "Bash(git pull:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet test:*)",
+      "Bash(dotnet run:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(dotnet format:*)",
+      "Bash(dotnet ef:*)",
+      "Bash(bicep build:*)",
+      "Bash(az deployment:*)",
+      "Read(//**)",
+      "Glob(//**)",
+      "Grep(//**)"
+    ],
+    "ask": [
+      "Bash(dotnet add:*)",
+      "Bash(dotnet remove:*)",
+      "Bash(dotnet publish:*)",
+      "Bash(az login:*)",
+      "Bash(az account:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(docker:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(git push --force:*)",
+      "Bash(git reset --hard:*)"
+    ]
+  }
+}
