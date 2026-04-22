@@ -1,0 +1,67 @@
+name: .NET Azure — Bicep Validate
+
+# Runs `bicep build` on every module in `starters/dotnet-azure/infra/` on any
+# PR that touches the starter's infrastructure. This is a syntax + type-check
+# gate — it does not contact Azure. Real `what-if` and deploys live in the
+# companion `dotnet-azure-deploy.yml` workflow, which requires adopter-
+# configured OIDC federation.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'starters/dotnet-azure/infra/**'
+      - '.github/workflows/dotnet-azure-bicep-validate.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'starters/dotnet-azure/infra/**'
+      - '.github/workflows/dotnet-azure-bicep-validate.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bicep-build:
+    name: Bicep build (all modules)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: starters/dotnet-azure/infra
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bicep CLI
+        run: az bicep install
+
+      - name: Show Bicep version
+        run: az bicep version
+
+      - name: Build main.bicep (postgres path)
+        run: az bicep build --file main.bicep --stdout > /dev/null
+
+      - name: Build every child module independently
+        # Ensures both data modules compile — the dataProvider conditional
+        # in main.bicep only exercises one path per deployment, so we
+        # validate the other path by building the module directly.
+        run: |
+          for module in modules/*.bicep; do
+            echo "→ building $module"
+            az bicep build --file "$module" --stdout > /dev/null
+          done
+
+      - name: Lint parameter examples
+        # .bicepparam files reference main.bicep. `bicep build-params`
+        # validates them against the template's parameter schema.
+        run: |
+          for param in parameters/*.bicepparam.example; do
+            # build-params requires the file extension to be .bicepparam
+            cp "$param" "${param%.example}"
+            echo "→ linting ${param%.example}"
+            az bicep build-params --file "${param%.example}" --stdout > /dev/null
+            rm "${param%.example}"
+          done

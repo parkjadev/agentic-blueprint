@@ -1,0 +1,135 @@
+name: .NET Azure — Deploy
+
+# Adopter-facing deploy workflow. Manual-trigger only by default — accidents
+# become failed tries, not surprise deploys. Fork the repo, configure the
+# required secrets, and trigger this workflow from the Actions tab or via
+# `gh workflow run`.
+#
+# Required repository or environment secrets (configure under Settings →
+# Secrets and variables → Actions → {Repository,Environment} secrets):
+#
+#   AZURE_CLIENT_ID          — OIDC federated client ID
+#   AZURE_TENANT_ID          — Entra tenant ID
+#   AZURE_SUBSCRIPTION_ID    — Target subscription ID
+#
+# Required repository or environment variables:
+#
+#   BICEPPARAM_CONTENT_<ENV> — The body of the `<env>.bicepparam` file,
+#                              stored as a GitHub secret (contains tenant
+#                              and subscription IDs).  Not committed.
+#
+# Federated credential setup — see the "Configure deploys" section of
+# `starters/dotnet-azure/README.md`.
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment (dev | staging | prod).
+        required: true
+        type: choice
+        options: [dev, staging, prod]
+        default: dev
+      dataProvider:
+        description: Data-tier variant.
+        required: true
+        type: choice
+        options: [postgres, azuresql]
+        default: postgres
+      whatIfOnly:
+        description: When true, run `az deployment sub what-if` and stop. No resources are created or modified.
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write  # required for OIDC federation
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.environment }} (${{ inputs.dataProvider }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: ${{ inputs.environment }}
+
+    defaults:
+      run:
+        working-directory: starters/dotnet-azure/infra
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Bicep CLI
+        run: az bicep install
+
+      - name: Materialise bicepparam from secret
+        # The real parameter file is kept in a GitHub secret so tenant IDs
+        # never reach the git history. Fall back to the committed example
+        # when the secret is missing, so adopters can exercise what-if on a
+        # placeholder template before standing up their own parameters.
+        env:
+          BICEPPARAM_CONTENT: ${{ secrets[format('BICEPPARAM_CONTENT_{0}', inputs.environment)] }}
+        run: |
+          set -euo pipefail
+          if [[ -n "${BICEPPARAM_CONTENT:-}" ]]; then
+            printf '%s' "$BICEPPARAM_CONTENT" > "parameters/${{ inputs.environment }}.bicepparam"
+            echo "wrote parameters/${{ inputs.environment }}.bicepparam from BICEPPARAM_CONTENT_${{ inputs.environment }}"
+          else
+            cp "parameters/${{ inputs.environment }}.bicepparam.example" "parameters/${{ inputs.environment }}.bicepparam"
+            echo "::warning::No BICEPPARAM_CONTENT_${{ inputs.environment }} secret found; using committed placeholder"
+          fi
+
+      - name: What-if
+        run: |
+          az deployment sub what-if \
+            --location australiaeast \
+            --template-file main.bicep \
+            --parameters parameters/${{ inputs.environment }}.bicepparam \
+            --parameters dataProvider=${{ inputs.dataProvider }}
+
+      - name: Deploy
+        if: ${{ ! inputs.whatIfOnly }}
+        id: deploy
+        run: |
+          DEPLOYMENT_NAME="dotnet-azure-${{ inputs.environment }}-$(date +%s)"
+          az deployment sub create \
+            --location australiaeast \
+            --name "$DEPLOYMENT_NAME" \
+            --template-file main.bicep \
+            --parameters parameters/${{ inputs.environment }}.bicepparam \
+            --parameters dataProvider=${{ inputs.dataProvider }} \
+            --query 'properties.outputs' \
+            -o json > outputs.json
+          CONTAINER_APP_URL=$(jq -r '.containerAppUrl.value' outputs.json)
+          echo "container_app_url=$CONTAINER_APP_URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed to $CONTAINER_APP_URL"
+
+      - name: Smoke-test /health
+        if: ${{ ! inputs.whatIfOnly }}
+        run: |
+          URL="${{ steps.deploy.outputs.container_app_url }}/health"
+          echo "GET $URL"
+          for attempt in 1 2 3 4 5 6; do
+            if curl --fail --silent --show-error --max-time 10 "$URL" > response.json; then
+              cat response.json
+              echo
+              exit 0
+            fi
+            echo "attempt $attempt failed; sleeping 15s"
+            sleep 15
+          done
+          echo "::error::health check did not pass after 6 attempts"
+          exit 1

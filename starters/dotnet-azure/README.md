@@ -55,12 +55,46 @@ All three must exit zero on a fresh checkout. The `dotnet-starter-check` GitHub 
 
 | Phase | Scope | Status |
 |---|---|---|
-| 1 | Project skeleton — solution, health endpoint, `ApiResponse<T>`, CLAUDE.md, clean-boot contract | **shipping now** |
-| 2 | Bicep modules (incl. Azure SQL variant), GitHub Actions deploy workflow with OIDC | pending |
+| 1 | Project skeleton — solution, health endpoint, `ApiResponse<T>`, CLAUDE.md, clean-boot contract | shipped (#103) |
+| 2 | Bicep modules (`main` + `network`/`identity`/`observability`/`data`/`data-azuresql`/`compute`), parameter examples, GitHub Actions validate + deploy workflows (OIDC-ready) | **shipping now** |
 | 3 | Widget domain example, Entra auth wiring, EF Core + migration, integration tests | pending |
 | 4 | Dockerfile, Application Insights + OpenTelemetry, full README quickstart, `tool-reference.md` cross-reference | pending |
 
 Tracking spec: [`docs/specs/add-dotnet-azure-bicep-Dg8yD/technical-spec.md`](../../docs/specs/add-dotnet-azure-bicep-Dg8yD/technical-spec.md).
+
+## Configure deploys (Phase 2 adopter setup)
+
+The `dotnet-azure-deploy.yml` workflow is `workflow_dispatch`-only by default — no surprise deploys. To enable it on your fork:
+
+1. **Create the federated credential.** In your Entra tenant, register an app (or reuse an existing one) for GitHub Actions OIDC. Add a federated credential scoped to the repo and branch you deploy from (typically `main`).
+
+   ```bash
+   az ad app federated-credential create \
+     --id <app-object-id> \
+     --parameters '{
+       "name": "github-main",
+       "issuer": "https://token.actions.githubusercontent.com",
+       "subject": "repo:<your-org>/<your-repo>:ref:refs/heads/main",
+       "audiences": ["api://AzureADTokenExchange"]
+     }'
+   ```
+
+2. **Grant the federated identity Contributor on the target subscription** (or narrower scope if you provision the resource group yourself).
+
+3. **Add repository secrets** under Settings → Secrets and variables → Actions:
+
+   | Secret | Value |
+   |---|---|
+   | `AZURE_CLIENT_ID` | The federated app's Application (client) ID |
+   | `AZURE_TENANT_ID` | Your Entra tenant ID |
+   | `AZURE_SUBSCRIPTION_ID` | Target subscription ID |
+   | `BICEPPARAM_CONTENT_dev` | Contents of your real `dev.bicepparam` (paste the whole file) |
+   | `BICEPPARAM_CONTENT_staging` | Contents of your real `staging.bicepparam` |
+   | `BICEPPARAM_CONTENT_prod` | Contents of your real `prod.bicepparam` |
+
+4. **Trigger the workflow** from the Actions tab or via `gh workflow run dotnet-azure-deploy.yml -f environment=dev -f dataProvider=postgres`.
+
+   Set `whatIfOnly: true` for a dry run that reports Azure changes without applying them.
 
 ## Structure
 
