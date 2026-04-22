@@ -1,0 +1,40 @@
+// dev.bicepparam.example — copy to dev.bicepparam (gitignored) and fill in
+// the placeholders for your Entra tenant and subscription before deploying.
+//
+// Deploy:
+//   az deployment sub create \
+//     --location australiaeast \
+//     --name dotnet-azure-dev-$(date +%s) \
+//     --template-file ../main.bicep \
+//     --parameters dev.bicepparam
+
+using '../main.bicep'
+
+param environmentName = 'dev'
+param location = 'australiaeast'
+param resourceGroupName = 'rg-dotnet-azure-dev'
+param baseName = 'dotazdev'
+
+// Postgres (default). Set to 'azuresql' to use the Azure SQL variant; no
+// other parameter changes required.
+param dataProvider = 'postgres'
+
+// Entra — fill from `az account show` and your API app registration.
+param entraTenantId = '<your-entra-tenant-id>'
+param apiClientId = '<your-api-app-registration-client-id>'
+
+// Database administrator — typically your own user or an `ops-` group.
+param databaseAdminObjectId = '<entra-object-id-for-db-admin>'
+param databaseAdminDisplayName = '<db-admin@your-tenant.onmicrosoft.com>'
+
+// Container image — defaults to Azure's quickstart so the first deploy
+// succeeds before Phase 4 lands the Dockerfile. Swap this to your ACR
+// reference once the image is built.
+param containerImage = 'mcr.microsoft.com/k8se/quickstart:latest'
+
+param tags = {
+  environment: 'dev'
+  starter: 'dotnet-azure'
+  managedBy: 'bicep'
+  costcentre: '<your-cost-centre>'
+}

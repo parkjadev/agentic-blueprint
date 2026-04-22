@@ -22,14 +22,28 @@ This file captures what's specific to **this starter**.
 | Infrastructure (Phase 2) | Bicep + Azure CLI | Ships `data.bicep` (Postgres Flexible Server) and `data-azuresql.bicep` (Azure SQL) variants |
 | Deploy pipeline (Phase 2) | GitHub Actions + OIDC federation | No client secrets in repository |
 
-## Project structure (current — Phase 1)
+## Project structure (current — Phase 1 + Phase 2)
 
 ```
 starters/dotnet-azure/
 ├── DotnetAzure.sln
 ├── global.json                         # SDK pin + roll-forward policy
 ├── .editorconfig                       # formatter and analyser settings
+├── .env.example                        # placeholders — real .env gitignored
 ├── .gitignore                          # excludes bin/obj, secrets, *.bicepparam
+├── infra/
+│   ├── main.bicep                      # orchestrator, subscription-scoped
+│   ├── modules/
+│   │   ├── network.bicep               # VNET + subnets + private DNS
+│   │   ├── identity.bicep              # user-assigned managed identity
+│   │   ├── observability.bicep         # Log Analytics + Application Insights
+│   │   ├── data.bicep                  # Postgres Flexible Server (default)
+│   │   ├── data-azuresql.bicep         # Azure SQL variant
+│   │   └── compute.bicep               # ACR + Container Apps Env + Container App
+│   └── parameters/
+│       ├── dev.bicepparam.example
+│       ├── staging.bicepparam.example
+│       └── prod.bicepparam.example
 ├── src/
 │   └── DotnetAzure.Api/
 │       ├── DotnetAzure.Api.csproj
@@ -44,10 +58,9 @@ starters/dotnet-azure/
         └── HealthEndpointTests.cs
 ```
 
-Subsequent phases add (in order): `infra/` with Bicep modules (Phase 2),
-`src/DotnetAzure.Api/Widgets/` + EF Core entity + auth wiring + widget tests
-(Phase 3), `Dockerfile` + `docker-compose.yml` + `README.md` quickstart
-(Phase 4).
+Phase 3 will add `src/DotnetAzure.Api/Widgets/` + EF Core entity + auth wiring +
+widget tests. Phase 4 adds `Dockerfile`, `docker-compose.yml`, and the full
+adopter quickstart.
 
 ## Starter-specific conventions
 
@@ -98,8 +111,29 @@ enforces the same sequence on every PR that touches `starters/dotnet-azure/`.
 
 ## What's coming in later phases
 
-- **Phase 2** — `infra/` with `main.bicep` + child modules (`network`, `identity`, `data`, `data-azuresql`, `compute`, `observability`), `.bicepparam.example` placeholders, GitHub Actions deploy workflow with OIDC federation.
 - **Phase 3** — Entra ID JWT bearer wiring, EF Core + `Widget` entity (`InitialCreate` migration), widget CRUD endpoints, integration tests via Testcontainers.
 - **Phase 4** — multi-stage `Dockerfile`, `docker-compose.yml` for local Postgres, OpenTelemetry → Application Insights, `README.md` quickstart, cross-reference added to `docs/guides/tool-reference.md`.
 
 Full phase detail lives in the spec at `docs/specs/add-dotnet-azure-bicep-Dg8yD/technical-spec.md`.
+
+## Infrastructure (Phase 2)
+
+```
+infra/
+├── main.bicep               # subscription-scoped orchestrator
+├── modules/
+│   ├── network.bicep        # VNET + subnets (Container Apps, Postgres, private endpoints) + private DNS
+│   ├── identity.bicep       # user-assigned managed identity
+│   ├── observability.bicep  # Log Analytics workspace + Application Insights
+│   ├── data.bicep           # PostgreSQL Flexible Server (Entra-only auth, managed-identity access)
+│   ├── data-azuresql.bicep  # Azure SQL Database variant (same contract)
+│   └── compute.bicep        # ACR + Container Apps Environment + Container App
+└── parameters/
+    ├── dev.bicepparam.example
+    ├── staging.bicepparam.example
+    └── prod.bicepparam.example
+```
+
+Selecting a data provider: `main.bicep` takes a `dataProvider` parameter with allowed values `'postgres'` (default) or `'azuresql'`. The corresponding module deploys; the other stays dormant. EF provider selection for the running API is a Phase 3 concern.
+
+Secrets handling: real `.bicepparam` files are gitignored (see `.gitignore`). The committed `.example` files hold placeholders only. CI materialises the real file from a GitHub secret (`BICEPPARAM_CONTENT_<env>`) — see `.github/workflows/dotnet-azure-deploy.yml`.
