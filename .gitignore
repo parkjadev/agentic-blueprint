@@ -1,17 +1,8 @@
 # IP / internal docs
 Agentic-Blueprint-v2.0.md
 
-# Next.js
-starters/nextjs/node_modules/
-starters/nextjs/.next/
-starters/nextjs/next-env.d.ts
-starters/nextjs/tsconfig.tsbuildinfo
-
-# Flutter
-starters/flutter/.dart_tool/
-starters/flutter/build/
-starters/flutter/.flutter-plugins
-starters/flutter/.flutter-plugins-dependencies
+# Subagent isolation worktrees (created by Agent tool with isolation: 'worktree')
+.claude/worktrees/
 
 # IDE
 .idea/
