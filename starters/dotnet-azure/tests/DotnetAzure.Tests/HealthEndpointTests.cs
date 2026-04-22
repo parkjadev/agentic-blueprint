@@ -30,10 +30,10 @@ public sealed class HealthEndpointTests : IClassFixture<WebApplicationFactory<Pr
         var body = await client.GetFromJsonAsync<HealthResponse>("/health");
 
         Assert.NotNull(body);
-        Assert.True(body!.Success);
+        Assert.True(body.Success);
         Assert.Null(body.Error);
         Assert.NotNull(body.Data);
-        Assert.Equal("healthy", body.Data!.Status);
+        Assert.Equal("healthy", body.Data.Status);
     }
 
     private sealed record HealthResponse(bool Success, HealthData? Data, ErrorBody? Error);

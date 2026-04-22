@@ -24,6 +24,24 @@ csharp_prefer_simple_using_statement = true:suggestion
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 
+# Prefer `var` — readable and idiomatic modern C#. Aligning the preference
+# with what the code actually uses keeps `dotnet format --verify-no-changes`
+# happy without suppressing IDE hints for the genuinely ambiguous cases.
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Expression-bodied members are fine across the board. Writers can still
+# choose block bodies; the preference just says "either form is acceptable".
+csharp_style_expression_bodied_methods = true:suggestion
+csharp_style_expression_bodied_constructors = true:suggestion
+csharp_style_expression_bodied_operators = true:suggestion
+csharp_style_expression_bodied_properties = true:suggestion
+csharp_style_expression_bodied_indexers = true:suggestion
+csharp_style_expression_bodied_accessors = true:suggestion
+csharp_style_expression_bodied_lambdas = true:suggestion
+csharp_style_expression_bodied_local_functions = true:suggestion
+
 [tests/**/*.cs]
 # xUnit tests use the `Method_name_with_underscores` convention — readable
 # scenario names beat PascalCase in a test harness. CA1707 is the idiomatic
