@@ -191,7 +191,7 @@ Rollback: revert the PR. No data migration or infrastructure change means rollba
 | Runtime activation control | Mechanism to deploy code dark and activate it for users selectively, decoupling deployment from release | Feature flag services; self-hosted or managed |
 
 - Paragraph on schema changes: expand-migrate-contract is mandatory under this model. Destructive schema changes (column drop, rename, type change) must be split across three PRs — expand (add new), migrate (backfill/dual-write), contract (remove old) — never bundled with the application code that depends on the new schema.
-- Back-link: "For operational detail and preconditions, see [Choosing a release strategy](stage-4-ship.md#choosing-a-release-strategy) in the Stage 4 guide."
+- Back-link: "For operational detail and preconditions, see [Choosing a release strategy](../../guides/beat-ship.md) in the Stage 4 guide."
 
 **Sub-section heading (exact):**
 
@@ -212,7 +212,7 @@ Rollback: revert the PR. No data migration or infrastructure change means rollba
 | CI gate | Automated test suite that must pass on every branch; does not replace the human approval gate | Same tooling options as Profile A |
 
 - Paragraph noting that deployment frequency under this model is lower by design. The trade-off is deliberate: the approval gate provides an audit trail and regulatory compliance path at the cost of longer lead time.
-- Back-link: "For operational detail and preconditions, see [Choosing a release strategy](stage-4-ship.md#choosing-a-release-strategy) in the Stage 4 guide."
+- Back-link: "For operational detail and preconditions, see [Choosing a release strategy](../../guides/beat-ship.md) in the Stage 4 guide."
 
 ---
 

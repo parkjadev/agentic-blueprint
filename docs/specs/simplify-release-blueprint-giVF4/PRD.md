@@ -75,7 +75,7 @@ External evidence (Forsgren, Humble, Kim — *Accelerate*, 2018; subsequent DORA
 | Australian spelling | All prose in the new sections uses Australian English variants | Passes `bash .claude/skills/australian-spelling/scripts/check.sh` with exit 0 |
 | Tool-agnostic framing | No vendor names appear as requirements; only roles are described | Manual review against Principle 8; no instances of "you must use [vendor]" |
 | Descriptive profiles | Both profiles presented with equal framing; neither is labelled "recommended" or "default" in the profile section | Manual review against Principle 9 |
-| Internal links resolve | All `[text](path#anchor)` references in new content navigate to the correct location | Manual link-check during review |
+| Internal links resolve | All Markdown link references in new content navigate to the correct location | Manual link-check during review |
 | No template modifications | `docs/templates/` directory is unchanged by this PR | `git diff docs/templates/` returns empty |
 
 ## Success Metrics

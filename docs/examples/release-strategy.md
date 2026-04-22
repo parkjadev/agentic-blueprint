@@ -4,7 +4,7 @@
 **Date:** 2026-04-20
 **Status:** Approved
 
-> **Worked example** of [`docs/templates/release-strategy.md`](../templates/release-strategy.md). Copy the blank template — not this file — when starting a new project. This file is updated whenever the blank template's section list changes.
+> **Worked example** of [`docs/templates/release-strategy.md`](../templates/_archive/release-strategy.md). Copy the blank template — not this file — when starting a new project. This file is updated whenever the blank template's section list changes.
 
 ---
 
@@ -85,4 +85,4 @@ N/A — no approval gate beyond PR review. Lumen handles no regulated data, has 
 
 ---
 
-*Worked example — see [docs/templates/release-strategy.md](../templates/release-strategy.md) for the blank template.*
+*Worked example — see [docs/templates/release-strategy.md](../templates/_archive/release-strategy.md) for the blank template.*
