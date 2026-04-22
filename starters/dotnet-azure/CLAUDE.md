@@ -53,7 +53,7 @@ Subsequent phases add (in order): `infra/` with Bicep modules (Phase 2),
 
 These complement the parent Hard Rules; they're .NET-only concerns.
 
-1. **Every endpoint returns `ApiResponse<T>`.** Success: `Results.Ok(ApiResponse<T>.Ok(data))`. Failure: `Results.Json(ApiResponse<T>.Fail(code, message), statusCode: 400)` (or 401/403/404). Never return raw payloads — the envelope matches what the Next.js and Flutter clients expect.
+1. **Every endpoint returns `ApiResponse<T>`.** Success: `Results.Ok(ApiResponse.Ok(data))` — `T` is inferred from the argument. Failure: `Results.Json(ApiResponse.Fail(code, message), statusCode: 400)` (or 401/403/404). Factory helpers live on the non-generic `ApiResponse` static class (CA1000); the record type remains `ApiResponse<T>`. Never return raw payloads — the envelope matches what the Next.js and Flutter clients expect.
 2. **Minimal APIs, not MVC controllers.** Endpoints are declared with `app.MapGet` / `MapPost` / etc. Group related endpoints via `app.MapGroup("/api/widgets")` once there's more than one resource.
 3. **Records over classes for DTOs.** `public sealed record` with positional parameters; `Nullable` is enabled and warnings are errors, so nullability must be expressed at declaration.
 4. **No Supabase, no Drizzle, no Node runtime.** This starter is Azure-native. Cross-starter parity is at the API contract, not the runtime.

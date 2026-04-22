@@ -210,10 +210,15 @@ Defined in `src/DotnetAzure.Api/ApiResponse.cs`. Matches the envelope shape used
 public sealed record ApiResponse<T>(bool Success, T? Data = default, ApiError? Error = null);
 public sealed record ApiError(string Code, string Message);
 
-// Success helper:
-ApiResponse<T>.Ok(T data) => new(true, data);
-// Error helper:
-ApiResponse<object>.Fail(string code, string message) => new(false, Error: new(code, message));
+// Factory helpers sit on a non-generic static type so `T` is inferred from
+// the argument — declaring static members on the generic record would trip
+// CA1000 ("Do not declare static members on generic types").
+public static class ApiResponse
+{
+    public static ApiResponse<T> Ok<T>(T data) => new(true, data);
+    public static ApiResponse<object?> Fail(string code, string message) =>
+        new(false, Error: new ApiError(code, message));
+}
 ```
 
 ## Auth & Authorisation
