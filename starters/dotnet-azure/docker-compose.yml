@@ -1,0 +1,38 @@
+# docker-compose.yml — local development Postgres for the .NET + Azure starter.
+#
+# Usage:
+#   docker compose up db
+#
+# Then run the API with the default connection string in .env.example:
+#   Host=localhost;Port=5432;Database=appdb;Username=postgres;Password=dev
+#
+# Applies the InitialCreate migration on first run via the API's own startup
+# (when adopters wire `db.Database.Migrate()` into Program.cs for local) or
+# by running `dotnet ef database update` from the starters/dotnet-azure/
+# directory.
+#
+# This file is for local development only. Production Postgres is provisioned
+# by `infra/modules/data.bicep` as an Azure Database for PostgreSQL Flexible
+# Server with Entra-only auth — no password ever touches a connection string.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: dotnet-azure-dev-db
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pg-data:
+    name: dotnet-azure-dev-db-data

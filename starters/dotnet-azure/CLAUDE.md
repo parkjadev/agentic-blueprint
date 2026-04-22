@@ -22,7 +22,7 @@ This file captures what's specific to **this starter**.
 | Infrastructure (Phase 2) | Bicep + Azure CLI | Ships `data.bicep` (Postgres Flexible Server) and `data-azuresql.bicep` (Azure SQL) variants |
 | Deploy pipeline (Phase 2) | GitHub Actions + OIDC federation | No client secrets in repository |
 
-## Project structure (current — Phase 1 + Phase 2)
+## Project structure (current — Phase 1 + Phase 2 + Phase 3)
 
 ```
 starters/dotnet-azure/
@@ -31,35 +31,39 @@ starters/dotnet-azure/
 ├── .editorconfig                       # formatter and analyser settings
 ├── .env.example                        # placeholders — real .env gitignored
 ├── .gitignore                          # excludes bin/obj, secrets, *.bicepparam
-├── infra/
-│   ├── main.bicep                      # orchestrator, subscription-scoped
-│   ├── modules/
-│   │   ├── network.bicep               # VNET + subnets + private DNS
-│   │   ├── identity.bicep              # user-assigned managed identity
-│   │   ├── observability.bicep         # Log Analytics + Application Insights
-│   │   ├── data.bicep                  # Postgres Flexible Server (default)
-│   │   ├── data-azuresql.bicep         # Azure SQL variant
-│   │   └── compute.bicep               # ACR + Container Apps Env + Container App
-│   └── parameters/
-│       ├── dev.bicepparam.example
-│       ├── staging.bicepparam.example
-│       └── prod.bicepparam.example
+├── docker-compose.yml                  # Postgres 16 for local dev
+├── infra/                              # see "Infrastructure" section below
 ├── src/
 │   └── DotnetAzure.Api/
 │       ├── DotnetAzure.Api.csproj
-│       ├── Program.cs                  # minimal API — `GET /health`
+│       ├── Program.cs                  # minimal API — health + widget CRUD
 │       ├── ApiResponse.cs              # envelope — never bypass
+│       ├── Data/
+│       │   ├── AppDbContext.cs         # EF Core context (Widgets DbSet)
+│       │   ├── AppDbContextFactory.cs  # design-time factory for `dotnet ef`
+│       │   ├── Entities/
+│       │   │   ├── Widget.cs
+│       │   │   └── WidgetStatus.cs
+│       │   └── Migrations/             # hand-authored InitialCreate
+│       ├── Endpoints/
+│       │   └── WidgetEndpoints.cs      # 5 routes under /api/widgets
+│       ├── Validation/
+│       │   └── WidgetRequests.cs       # Create/Update request DTOs
 │       ├── appsettings.json
 │       ├── appsettings.Development.json
 │       └── Properties/launchSettings.json
 └── tests/
     └── DotnetAzure.Tests/
         ├── DotnetAzure.Tests.csproj
-        └── HealthEndpointTests.cs
+        ├── Fixtures/
+        │   ├── TestAuthHandler.cs      # X-Test-User scheme for unit tests
+        │   └── TestWebApplicationFactory.cs
+        ├── HealthEndpointTests.cs
+        ├── WidgetEndpointsTests.cs     # in-memory DB + TestAuthHandler
+        └── WidgetIntegrationTests.cs   # Testcontainers Postgres — Category=Integration
 ```
 
-Phase 3 will add `src/DotnetAzure.Api/Widgets/` + EF Core entity + auth wiring +
-widget tests. Phase 4 adds `Dockerfile`, `docker-compose.yml`, and the full
+Phase 4 adds `Dockerfile`, Application Insights + OpenTelemetry, and the full
 adopter quickstart.
 
 ## Starter-specific conventions
@@ -67,11 +71,13 @@ adopter quickstart.
 These complement the parent Hard Rules; they're .NET-only concerns.
 
 1. **Every endpoint returns `ApiResponse<T>`.** Success: `Results.Ok(ApiResponse.Ok(data))` — `T` is inferred from the argument. Failure: `Results.Json(ApiResponse.Fail(code, message), statusCode: 400)` (or 401/403/404). Factory helpers live on the non-generic `ApiResponse` static class (CA1000); the record type remains `ApiResponse<T>`. Never return raw payloads — the envelope matches what the Next.js and Flutter clients expect.
-2. **Minimal APIs, not MVC controllers.** Endpoints are declared with `app.MapGet` / `MapPost` / etc. Group related endpoints via `app.MapGroup("/api/widgets")` once there's more than one resource.
+2. **Minimal APIs, not MVC controllers.** Endpoints are declared via `app.MapGet` / `MapPost` / etc. The Widget group lives at `app.MapGroup("/api/widgets").RequireAuthorization()`.
 3. **Records over classes for DTOs.** `public sealed record` with positional parameters; `Nullable` is enabled and warnings are errors, so nullability must be expressed at declaration.
 4. **No Supabase, no Drizzle, no Node runtime.** This starter is Azure-native. Cross-starter parity is at the API contract, not the runtime.
 5. **Secrets flow through Container App environment variables.** `appsettings.json` holds placeholder strings only. Real values live in gitignored `.env` (local) or are injected by the Bicep-provisioned Container App env block (production).
-6. **Australian spelling** in all prose, comments, error messages, and user-visible strings. Enforced by the repo-wide rule check (Hard Rule 1).
+6. **Ownership via JWT claims.** `WidgetEndpoints` resolves the current user via `ClaimTypes.NameIdentifier` / `oid` / `sub` (in that order). `OwnerId == currentUser` is enforced inside each handler — never trust the client to pass an owner.
+7. **`/health` is anonymous.** Container Apps liveness probes hit it without a bearer; every other endpoint requires a valid Entra JWT. Don't move the probe path without updating `infra/modules/compute.bicep`.
+8. **Australian spelling** in all prose, comments, error messages, and user-visible strings. Enforced by the repo-wide rule check (Hard Rule 1).
 
 ## Clean-boot contract (Hard Rule 2)
 
@@ -80,9 +86,14 @@ checkout with the .NET 9 SDK installed:
 
 ```bash
 dotnet build
-dotnet test
+dotnet test --filter "Category!=Integration"
 dotnet format --verify-no-changes
 ```
+
+Integration tests (`Category=Integration`) need a Docker daemon for
+Testcontainers Postgres and are run separately — locally via
+`dotnet test` without the filter, in CI via a dedicated job (wired in
+Phase 4 when the compose service plugs into the smoke-test harness).
 
 Use `/check` (see `.claude/commands/check.md`) to run the sequence.
 
@@ -95,6 +106,8 @@ enforces the same sequence on every PR that touches `starters/dotnet-azure/`.
 | File | Why |
 |---|---|
 | `src/DotnetAzure.Api/ApiResponse.cs` | Defines the API contract. Changing this breaks every endpoint and drifts from the sibling starters. |
+| `src/DotnetAzure.Api/Data/AppDbContext.cs` | EF Core model configuration. Changes here must travel with a new migration (never alter a landed migration). |
+| `src/DotnetAzure.Api/Data/Migrations/` | Landed migrations are immutable. Add new migrations; don't edit committed ones. |
 | `global.json` | Pins the SDK band. Changing it affects every local dev environment and the CI runner. |
 | `DotnetAzure.sln` | Project wiring. Do not hand-edit GUIDs or ordering. |
 | `.editorconfig` | Formatting and analyser rules. Changes alter what `dotnet format --verify-no-changes` accepts. |
@@ -111,10 +124,24 @@ enforces the same sequence on every PR that touches `starters/dotnet-azure/`.
 
 ## What's coming in later phases
 
-- **Phase 3** — Entra ID JWT bearer wiring, EF Core + `Widget` entity (`InitialCreate` migration), widget CRUD endpoints, integration tests via Testcontainers.
-- **Phase 4** — multi-stage `Dockerfile`, `docker-compose.yml` for local Postgres, OpenTelemetry → Application Insights, `README.md` quickstart, cross-reference added to `docs/guides/tool-reference.md`.
+- **Phase 4** — multi-stage `Dockerfile`, OpenTelemetry → Application Insights, `README.md` quickstart, cross-reference added to `docs/guides/tool-reference.md`.
 
 Full phase detail lives in the spec at `docs/specs/add-dotnet-azure-bicep-Dg8yD/technical-spec.md`.
+
+## Working with EF Core migrations
+
+The `InitialCreate` migration lives at `src/DotnetAzure.Api/Data/Migrations/`
+and is applied via `Database.Migrate()` in integration tests and at
+adopter-driven `dotnet ef database update` time. To add a new migration:
+
+```bash
+cd starters/dotnet-azure
+export ConnectionStrings__AppDb='Host=localhost;Port=5432;Database=appdb;Username=postgres;Password=dev'
+dotnet ef migrations add <MigrationName> --project src/DotnetAzure.Api
+```
+
+Commit the generated `{timestamp}_<MigrationName>.cs`, `.Designer.cs`, and
+the updated `AppDbContextModelSnapshot.cs` together.
 
 ## Infrastructure (Phase 2)
 
