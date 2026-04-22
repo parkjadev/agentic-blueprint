@@ -2,8 +2,8 @@
 
 **Parent:** [`add-dotnet-azure-bicep-Dg8yD`](./add-dotnet-azure-bicep-Dg8yD/)
 **Phase:** 2 of 4 — Bicep modules + deploy workflow
-**Branch:** `claude/dotnet-azure-phase-2`
-**Status:** In flight
+**Branch:** `claude/dotnet-azure-phase-2` (merged)
+**Status:** Shipped (#106)
 
 ---
 
