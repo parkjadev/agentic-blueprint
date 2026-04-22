@@ -11,7 +11,7 @@
 
 - PRD — [`docs/specs/add-release-strategy-example-QPmAW/PRD.md`](../specs/add-release-strategy-example-QPmAW/PRD.md)
 - Technical spec — [`docs/specs/add-release-strategy-example-QPmAW/technical-spec.md`](../specs/add-release-strategy-example-QPmAW/technical-spec.md)
-- Blank template being illustrated — [`docs/templates/release-strategy.md`](../templates/release-strategy.md)
+- Blank template being illustrated — [`docs/templates/release-strategy.md`](../templates/_archive/release-strategy.md)
 - Predecessor PR #88 artefacts — [`docs/specs/release-strategy-template-Hhjow/PRD.md`](../specs/release-strategy-template-Hhjow/PRD.md), [`docs/specs/release-strategy-template-Hhjow/technical-spec.md`](../specs/release-strategy-template-Hhjow/technical-spec.md), [`docs/plans/release-strategy-template-Hhjow.md`](./release-strategy-template-Hhjow.md)
 - Predecessor research briefs (domain context; no fresh brief this PR) — [`docs/research/release-strategy-template-Hhjow-brief.md`](../research/release-strategy-template-Hhjow-brief.md), [`docs/research/simplify-release-blueprint-giVF4-brief.md`](../research/simplify-release-blueprint-giVF4-brief.md)
 
@@ -27,7 +27,7 @@ Materialise `docs/examples/release-strategy.md` — a fully filled-in worked exa
 4. **Fictional project.** "Lumen" — solo-founder productivity SaaS, live (first external user onboarded), pre-revenue. Tool-agnostic framing throughout; vendor names permitted in footnotes only.
 5. **Branch rename required before /build.** Current branch `claude/add-release-strategy-example-QPmAW` will be blocked by `.claude/hooks/template-guard.sh` when editing `docs/templates/README.md` for the catalogue cross-link. Rename to `docs/add-release-strategy-example-QPmAW` as Step 1.
 6. **Inline guidance comments removed in the example.** The example shows the finished artefact, not another template to fill. A top-of-file note redirects readers to the blank template.
-7. **Distinct footer.** Example uses `*Worked example — see [docs/templates/release-strategy.md](../templates/release-strategy.md) for the blank template.*` rather than the sacred-template footer, to avoid the "copy this file" misreading.
+7. **Distinct footer.** Example uses `*Worked example — see [docs/templates/release-strategy.md](../templates/_archive/release-strategy.md) for the blank template.*` rather than the sacred-template footer, to avoid the "copy this file" misreading.
 8. **Spec set.** PRD + technical-spec only. No api-spec, data-model-spec, auth-spec, or architecture — the feature has no such surfaces.
 9. **Migration regime in the example:** live (expand-migrate-contract), trigger to tighten: first external user (already past). Rollout ladder: internal → 1% → 10% → 100%. Both choices aligned across PRD and technical-spec after the reviewer pass.
 
@@ -59,7 +59,7 @@ Create `docs/examples/release-strategy.md`. Structure:
   8. Rollback Procedures — four rows: disable flag / promote previous deployment / revert commit / restore snapshot. Decision-tree prose for escalation.
   9. Unresolved Questions — illustrative table with one entry shown resolved (strikethrough + resolution note).
 - Remove the inline HTML-comment guidance blocks from the blank template (they do not belong in a finished-artefact example).
-- Footer: `*Worked example — see [docs/templates/release-strategy.md](../templates/release-strategy.md) for the blank template.*` — NOT the sacred-template footer.
+- Footer: `*Worked example — see [docs/templates/release-strategy.md](../templates/_archive/release-strategy.md) for the blank template.*` — NOT the sacred-template footer.
 
 ### Step 3 — Register the example in the catalogue and guide
 

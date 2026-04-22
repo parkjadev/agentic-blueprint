@@ -102,7 +102,7 @@ Single-file change with two small cross-link edits. No phasing, no feature flags
 - Inline HTML-comment guidance blocks from the blank template are REMOVED in the example. The example shows the finished artefact, not another template to fill; leaving them in would be misleading and increase structural noise.
 - Top-of-file note (directly under the metadata block, above the first heading): "Worked example of `docs/templates/release-strategy.md`. Copy the blank template — not this file — when starting a new project. Updated when the blank template's section list changes."
 - Metadata block: Author "Lumen founder (example)", Date "2026-04-20", Status "Approved" — modelling a completed document.
-- Footer distinguishes the example from a sacred template — use `*Worked example — see [docs/templates/release-strategy.md](../templates/release-strategy.md) for the blank template.*` rather than the standard `*Template from [agentic-blueprint]...*` footer. This prevents readers from mistaking the file as something to be copied verbatim.
+- Footer distinguishes the example from a sacred template — a "Worked example" line linking back to the blank template at `docs/templates/_archive/release-strategy.md`, rather than the standard `*Template from [agentic-blueprint]...*` footer. This prevents readers from mistaking the file as something to be copied verbatim.
 
 ### Phase 3: Cross-link from the template catalogue and Stage-4 guide <!-- status: shipped (#93) -->
 
