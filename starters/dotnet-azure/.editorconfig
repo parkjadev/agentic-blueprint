@@ -23,3 +23,9 @@ csharp_style_prefer_primary_constructors = true:suggestion
 csharp_prefer_simple_using_statement = true:suggestion
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
+
+[tests/**/*.cs]
+# xUnit tests use the `Method_name_with_underscores` convention — readable
+# scenario names beat PascalCase in a test harness. CA1707 is the idiomatic
+# rule to suppress for test projects.
+dotnet_diagnostic.CA1707.severity = none
