@@ -1,7 +1,7 @@
 ---
 description: Spec — frame the problem, define done. v4 sub-verbs — idea / epic / feature / fix / chore.
 argument-hint: <idea|epic|feature|fix|chore> <slug> [--parent <parent-slug>]
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep
+allowed-tools: Bash Read Write Edit Glob Grep
 ---
 
 # /spec — Spec beat (v4)

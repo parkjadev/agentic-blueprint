@@ -1,7 +1,7 @@
 ---
 description: Signal — run + monitor + learn + scheduled automation. Feeds back into Spec.
 argument-hint: <init|sync|audit|status> [scope]
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep
+allowed-tools: Bash Read Write Edit Glob Grep
 ---
 
 # /signal — Signal beat (v4)
