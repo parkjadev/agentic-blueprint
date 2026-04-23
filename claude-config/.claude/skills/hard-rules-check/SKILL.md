@@ -1,18 +1,18 @@
 ---
 name: hard-rules-check
-description: Use before generating code, opening a PR, or running /ship. Verifies the repo's 9 Hard Rules via scripts/check-all.sh (Australian spelling, no domain logic in starters, clean boot, optional Zod env schemas, spec-first, plan-before-code, templates unmodified, tool-agnostic guides, descriptive profiles). Keywords — hard rules, compliance, pre-commit, lint, CLAUDE.md rules, blueprint rules, rule check.
+description: Use before generating code, opening a PR, or running /ship. Verifies the repo's 4 Hard Rules via scripts/check-all.sh (Australian spelling, spec-before-ship, templates and contracts versioned, descriptive profiles). Keywords — hard rules, compliance, pre-commit, lint, CLAUDE.md rules, blueprint rules, rule check.
 allowed-tools: Read, Grep, Glob, Bash
 model: sonnet
 ---
 
 # Hard rules check
 
-The blueprint has 9 Hard Rules (see `/CLAUDE.md`). This skill verifies compliance before risky actions.
+The blueprint has 4 Hard Rules + 3 meta-principles (see `/CLAUDE.md`). This skill verifies compliance before risky actions.
 
 ## When to reach for this skill
 
 - Before a `/ship` — every rule must pass before a PR opens
-- Before writing code that touches starters, env config, or `docs/templates/`
+- Before writing code that touches `docs/templates/`, `docs/contracts/`, or hook logic
 - Before a commit that adds a new doc or spec
 - Asked anything about "hard rules", "compliance", "pre-commit check", "blueprint rules"
 
@@ -34,14 +34,11 @@ The blueprint has 9 Hard Rules (see `/CLAUDE.md`). This skill verifies complianc
 | # | Rule | Check mechanism |
 |---|---|---|
 | 1 | Australian spelling throughout | Shells out to `australian-spelling` check |
-| 2 | No domain-specific business logic in starters | Greps for forbidden brand strings in `starters/` |
-| 3 | All starters must boot clean | `bash claude-config/scripts/smoke-test.sh all` |
-| 4 | Optional services (Zod schemas in env.ts) | Greps for optional Zod fields |
-| 5 | Spec-driven | Branch has `docs/specs/<slug>/` present |
-| 6 | Plan-before-code | Branch has `docs/plans/<slug>.md` |
-| 7 | Templates are sacred | `git diff` must not modify `docs/templates/*` |
-| 8 | Tool-agnostic framing in guides | Greps for vendor lock-in patterns in `docs/guides/` |
-| 9 | Platform profiles descriptive | Greps for prescriptive language in profiles |
+| 3 | Spec-before-Ship | Branch has `docs/specs/<slug>/` present, or `[infra]` / `[docs]` tagged commit |
+| 4 | Templates + contracts versioned | `git diff` must not modify `docs/templates/*` or `docs/contracts/*` outside `[release]` commits / `docs/*`, `templates/*`, `contracts/*` branches |
+| 5 | Descriptive profiles, not prescriptive | Greps for prescriptive language in `docs/guides/` |
+
+Rule 2 ("starters generic and boot clean") was retired in v5.0 — see `docs/principles/_archive/02-starters-generic-boot-clean.md`. Numbering preserved to keep downstream references stable.
 
 ## Do NOT
 

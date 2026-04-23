@@ -23,6 +23,18 @@ Draft one or more spec documents under `docs/specs/<slug>.md` (flat) or `docs/sp
   - `feature` → PRD (`scope: feature`) + technical-spec (`scope: feature`)
   - `fix` → technical-spec only (`scope: fix`; sections: Problem, Root cause, Fix, Regression test)
 - Pointer to research brief at `docs/research/<slug>-brief.md` (or parent's brief)
+- **Context pack (optional).** The caller may inline relevant brief excerpts + template skeletons as prompt content so you don't burn tool calls re-Reading. If present, use it in place of the corresponding Reads; only Read files that aren't covered.
+
+## Large-output protocol
+
+Long single-`Write` calls hit stream-idle timeouts. For any spec whose final body will exceed ~1500 words:
+
+1. **First Write is small.** Initial `Write` creates the file with frontmatter + title + first 2 sections only. Target ≤ 1500 words in the payload.
+2. **Append with Edit.** Subsequent sections land via `Edit` calls that append (using the last paragraph of the current file as `old_string`), each chunk ≤ 1500 words.
+3. **Never batch the full spec into one `Write`.** A 3000-word spec is one `Write` + ≥ 1 `Edit`; a 6000-word spec is one `Write` + ≥ 3 `Edit`s.
+4. **Heartbeat early.** First `Write` must land within the first 3 tool calls (≤ 1 template Read + ≤ 1 brief Read + Write). No more than 2 Reads before the first Write.
+
+Mirrors `spec-researcher`'s write-first protocol. Trades tool-call count for stream reliability.
 
 ## Process — Pass 1: Draft
 

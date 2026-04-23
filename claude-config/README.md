@@ -30,7 +30,8 @@ cp -R claude-config/github/. .github/
 ./claude-config/scripts/setup-labels.sh
 ./claude-config/scripts/setup-branch-protection.sh
 
-# 3. File the bootstrap issue (Hard Rule 5 applies from commit 1)
+# 3. File the bootstrap issue (use a `chore/*` branch to skip Rule 3 for
+#    the initial scaffold commit)
 gh issue create \
   --title "chore: initial scaffold" \
   --label "type:chore" \
@@ -65,6 +66,4 @@ Idempotent — re-running skips issues whose titles already exist.
 
 ## Keeping the harness in sync
 
-The harness under `claude-config/.claude/` mirrors the blueprint's own
-`.claude/`. When either changes, the other should change in the same
-PR. The `docs-inspector` subagent flags drift during `/run health-check`.
+The harness under `claude-config/.claude/` mirrors the blueprint's own `.claude/`. When either changes, the other should change in the same PR. `/beat update` in an adopter repo picks up the latest bundle; see `.claude/commands/beat.md` for the update flow semantics.

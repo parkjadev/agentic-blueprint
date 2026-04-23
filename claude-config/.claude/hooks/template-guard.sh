@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# PreToolUse hook — block Write/Edit into docs/templates/ (Hard Rule #7).
+# PreToolUse hook — block Write/Edit into docs/templates/ or docs/contracts/
+# (Hard Rule 4 — sacred specification artefacts).
 # Reads the tool-call JSON from stdin; exits non-zero to block.
 
 set -uo pipefail
@@ -30,36 +31,41 @@ case "$path" in
   *)  rel="$path";;
 esac
 
-if [[ "$rel" == docs/templates/* ]]; then
-  # Always-allowed paths: the _archive/ subfolder is where retired templates
-  # live. Moving content into or editing provenance stubs inside _archive/ is
-  # not an edit to the active template contract.
-  if [[ "$rel" == docs/templates/_archive/* ]]; then
+# Protected directories — edits require a dedicated branch name, a release
+# environment escape, or live in an _archive/ subfolder.
+protected=""
+case "$rel" in
+  docs/templates/*) protected="docs/templates";;
+  docs/contracts/*) protected="docs/contracts";;
+esac
+
+if [[ -n "$protected" ]]; then
+  # Always-allowed: the _archive/ subfolder is where retired content lives.
+  if [[ "$rel" == "$protected"/_archive/* ]]; then
     exit 0
   fi
 
   # Session-level escape: AGENTIC_BLUEPRINT_RELEASE=1 signals an explicit
-  # release rebuild where template edits are expected (e.g. v4 migration).
+  # release rebuild where edits to sacred paths are expected.
   if [[ "${AGENTIC_BLUEPRINT_RELEASE:-0}" == "1" ]]; then
     exit 0
   fi
 
-  # Branch-name escape (per docs/principles/07-templates-are-sacred.md):
-  # template changes may land on a dedicated `docs/*` or `templates/*` branch.
-  # Any other branch trying to edit docs/templates/ is blocked.
+  # Branch-name escape: edits may land on a dedicated `docs/*`,
+  # `templates/*`, or `contracts/*` branch. Any other branch is blocked.
   branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
   case "$branch" in
-    docs/*|templates/*) exit 0;;
+    docs/*|templates/*|contracts/*) exit 0;;
   esac
 
   cat <<EOF >&2
-Blocked: $rel is in docs/templates/, which is sacred (Hard Rule #7).
+Blocked: $rel is in $protected/, which is sacred (Hard Rule 4).
 
-Templates define the spec contract. Edit for clarity in a dedicated docs: PR,
+Sacred paths define the spec contract. Edit for clarity in a dedicated PR,
 never bundled into a feature change. Either:
-  - Move to a branch named \`docs/<slug>\` or \`templates/<slug>\`, or
+  - Move to a branch named \`docs/<slug>\`, \`templates/<slug>\`, or \`contracts/<slug>\`, or
   - Set AGENTIC_BLUEPRINT_RELEASE=1 for an explicit release rebuild, or
-  - Edit under docs/templates/_archive/ (always allowed).
+  - Edit under $protected/_archive/ (always allowed).
 EOF
   exit 2
 fi
