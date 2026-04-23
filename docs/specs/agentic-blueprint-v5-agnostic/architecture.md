@@ -1,182 +1,115 @@
 # Architecture — Agentic Blueprint v5 (Platform-Agnostic Redesign)
 
-**Author:** spec-author subagent
+**Author:** solo maintainer
 **Date:** 2026-04-23
 **Status:** Draft
-**Scope:** product
-**Parent:** none
 
 ---
 
 ## System Overview
 
-The agentic-blueprint is a repo-native framework, not a runtime application. It has no servers, no database, and no deployment pipeline of its own. It ships a bundle of configuration files, document templates, and workflow guides that wire up an AI-collaboration harness inside an adopter's repository.
+The agentic-blueprint is a repo-native framework, not a runtime application. It has no servers, no database, no deployment pipeline of its own. It ships a bundle of configuration files, document templates, and workflow guides that wire up an AI-collaboration harness inside a repository.
 
-The framework is installed via `/beat install`, which copies the bundle into the adopter's repo and leaves their source code untouched. Once installed, the harness runs entirely through Claude Code slash commands, hooks, and subagents — all of which execute inside the adopter's local or CI environment.
+v5.0's scope is narrower than the research brief suggested. With a single user (me) and no active pilot project, v5.0 ships just the structural pivots needed to make the blueprint stack-agnostic. Broader-adopter concerns (plugin packs, AGENTS.md emission, v4 migration) are deferred to v5.x contingent on real demand.
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│  Adopter repository                                       │
-│                                                           │
-│  ┌─────────────────┐   ┌──────────────────────────────┐  │
-│  │  .claude/        │   │  docs/                       │  │
-│  │  ├── commands/   │   │  ├── specs/<slug>/           │  │
-│  │  ├── agents/     │   │  ├── research/<slug>-brief   │  │
-│  │  ├── skills/     │   │  ├── templates/ (sacred)     │  │
-│  │  ├── hooks/      │   │  ├── contracts/ (NEW v5)     │  │
-│  │  └── settings.json│  │  ├── guides/                 │  │
-│  └─────────────────┘   │  └── principles/              │  │
-│                         └──────────────────────────────┘  │
-│  ┌─────────────────┐   ┌──────────────────────────────┐  │
-│  │  CLAUDE.md       │   │  AGENTS.md  (NEW v5)         │  │
-│  │  (fenced merge)  │   │  (emitted by /beat install)  │  │
-│  └─────────────────┘   └──────────────────────────────┘  │
-│                                                           │
-│  ┌─────────────────────────────────────────────────────┐ │
-│  │  .github/workflows/hard-rules.yml  (CI gate)        │ │
-│  └─────────────────────────────────────────────────────┘ │
-└──────────────────────────────────────────────────────────┘
-         │                            │
-         ▼                            ▼
-┌─────────────────┐        ┌─────────────────────────────┐
-│  Claude Code     │        │  Claude Code Marketplace     │
-│  (local agent)   │        │  plugin packs (per-stack)    │
-└─────────────────┘        └─────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  Repository using agentic-blueprint                          │
+│                                                              │
+│  ┌─────────────────┐   ┌──────────────────────────────────┐ │
+│  │  .claude/        │   │  docs/                           │ │
+│  │  ├── commands/   │   │  ├── specs/<slug>/               │ │
+│  │  ├── agents/     │   │  ├── research/<slug>-brief.md    │ │
+│  │  ├── skills/     │   │  ├── templates/ (sacred)         │ │
+│  │  ├── hooks/      │   │  ├── contracts/ (NEW in v5.0)    │ │
+│  │  └── settings.json│  │  ├── guides/                     │ │
+│  └─────────────────┘   │  └── principles/                 │ │
+│                         └──────────────────────────────────┘ │
+│                                                              │
+│  CLAUDE.md  (harness config, fenced block)                   │
+│  claude-config/VERSION  (semver, for /beat update)           │
+└─────────────────────────────────────────────────────────────┘
+         │
+         │ (Hard Rules gate runs on every commit + in CI)
+         ▼
+    GitHub Actions — hard-rules-check workflow
 ```
-
-The framework has one external integration point at install time (copying from `claude-config/` in the blueprint repo) and one at runtime (the Claude Code Marketplace for optional plugin packs). Everything else is local to the adopter's repo.
 
 ---
 
 ## Component Map
 
-| Component | Responsibility | Location | Notes |
+| Component | Responsibility | Location | v5.0 change |
 |---|---|---|---|
-| `/spec` command | Entry point for Spec beat: idea, epic, feature, fix, chore modes | `.claude/commands/spec.md` | Invokes spec-researcher and spec-author subagents |
-| `/ship` command | Entry point for Ship beat: idempotent PR loop with gates | `.claude/commands/ship.md` | Invokes pre-commit hooks and CI gate |
-| `/signal` command | Entry point for Signal beat: init, sync, audit, status | `.claude/commands/signal.md` | Invokes signal-sync skill |
-| `/beat` command | Harness management: status, install, update | `.claude/commands/beat.md` | Install/update runs copy from `claude-config/` |
-| `spec-researcher` subagent | Scoped web research for stack alternatives, market analysis, risk identification | `.claude/agents/spec-researcher` | Context-budget guardrail (P0): single WebSearch-or-question per step |
-| `spec-author` subagent | Drafts + self-reviews spec documents from templates | `.claude/agents/spec-author` | Two-pass: draft then self-review; chunked-write protocol enforced |
-| `australian-spelling` skill | Prose compliance check for Hard Rule 1 | `.claude/skills/australian-spelling/` | Shells out to check script; wordlist at `references/wordlist.md` |
-| `hard-rules-check` skill | Verifies all five Hard Rules before risky actions | `.claude/skills/hard-rules-check/` | Calls `check-all.sh`; non-zero exit on violation |
-| `signal-sync` skill | Post-merge signal synchronisation, learnings log | `.claude/skills/signal-sync/` | Evolves in v5 to be platform-agnostic (see Open Questions) |
-| `starter-verify` skill | v4 legacy — verified starter boot. Retired in v5. | `.claude/skills/starter-verify/` | Removed from `/beat install` v5; shim emits deprecation warning |
-| `session-start` hook | Sets up context at session open | `.claude/hooks/session-start` | |
-| `beat-aware-prompt` hook | Injects beat-context into the system prompt | `.claude/hooks/beat-aware-prompt` | |
-| `template-guard` hook | Prevents edits to `docs/templates/` without `[release]` prefix | `.claude/hooks/template-guard` | Enforces Hard Rule 4 |
-| `pre-write-spelling` hook | Checks Australian spelling before file writes | `.claude/hooks/pre-write-spelling` | Enforces Hard Rule 1 |
-| `pre-commit-secret-scan` hook | Scans for secrets before commit | `.claude/hooks/pre-commit-secret-scan` | |
-| `pre-commit-gate` hook | Runs full hard-rules-check before commit | `.claude/hooks/pre-commit-gate` | Reads commit message prefix for tagged exceptions |
-| `prune-merged-branches` hook | Cleans up merged branches post-Ship | `.claude/hooks/prune-merged-branches` | |
-| Sacred templates | Nine spec-driven document templates. Rule-4 protected — never edited in a feature PR. | `docs/templates/` | PRD, architecture, technical-spec, research-brief, and others |
-| `docs/contracts/` | NEW v5. Stack-agnostic interface contracts (JSON Schema + prose). Rule-4 protected. Replaces opinionated starters as the reference artefact. | `docs/contracts/` | Copied by `/beat install` into adopter repo |
-| `docs/principles/` | Long-form rationale for each Hard Rule and meta-principle | `docs/principles/` | Rules 1–8; read-only for agents |
-| `docs/guides/` | Long-form beat guides and tool reference | `docs/guides/` | Reframed in v5: tool-reference becomes role + inputs matrix |
-| `claude-config/` | Copy-ready bundle for `/beat install` and `/beat update` | `claude-config/` | Contains `VERSION` file for semver tracking |
-| `claude-config/VERSION` | Semver version of the installed blueprint bundle | `claude-config/VERSION` | Written/updated by `/beat install` and `/beat update` |
-| `.github/workflows/hard-rules.yml` | CI gate running hard-rules-check on every PR | `.github/workflows/` | GitHub Actions; porting notes for GitLab/CircleCI in `docs/guides/` |
-| `CLAUDE.md` | Primary harness-configuration file; fenced-merge on install | Root of adopter repo | Always present; never replaced wholesale — fence merge only |
-| `AGENTS.md` | NEW v5. Agent-agnostic harness-configuration file emitted by `/beat install`. Enables non-Claude agents to read blueprint conventions. | Root of adopter repo | Emitted fresh on install; opt-in on update |
+| Slash commands | Beat entry points (`/spec`, `/ship`, `/signal`, `/beat`) | `.claude/commands/` | No primitive change; `/spec idea` wires stack-selection research |
+| Subagents | Isolated workers — `spec-researcher`, `spec-author` | `.claude/agents/` | Chunked-write + context-pack protocols locked as baseline (from #113) |
+| Skills | Progressive-disclosure helpers — `australian-spelling`, `hard-rules-check`, `signal-sync` | `.claude/skills/` | `starter-verify` removed (no starters to verify); `hard-rules-check` loses Rule 2 if retired |
+| Hooks | `session-start`, `beat-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-secret-scan`, `pre-commit-gate`, `prune-merged-branches` | `.claude/hooks/` | No change; pre-commit-gate still enforces the remaining rules |
+| Sacred templates | Spec-driven document scaffolds (PRD, technical-spec, architecture, research-brief, etc.) | `docs/templates/` | Budget preambles shipped in #114 locked as baseline |
+| **Reference contracts** | **NEW.** Stack-agnostic interface definitions — `ApiResponse<T>` envelope, error taxonomy, auth-token shape, telemetry schema. Rule-4 protected. | `docs/contracts/` | **Net-new directory in v5.0** |
+| Principles | Hard Rules 1–5 + meta-principles 6–8 as prose | `docs/principles/` | Rule 2 file moves to `_archive/` if retired |
+| Guides | Long-form beat guides and tool reference | `docs/guides/` | `tool-reference.md` reframed as role + inputs matrix |
+| CI wrapper | GitHub Actions workflow invoking `scripts/check-all.sh` | `.github/workflows/` | No change |
+| VERSION file | Semver marker for `/beat update` drift detection | `claude-config/VERSION` | Bump to `5.0.0` at release cut |
+
+Removed in v5.0 transition (already gone from repo post PR #109):
+
+- `starters/` (Next.js, Flutter, .NET + Azure reference trees)
+- `.github/workflows/bootstrap-smoke-test.yml`
+- `claude-config/scripts/bootstrap-smoke-test.sh`
+- `starter-verify` skill
+
+Deferred to v5.x (not built in v5.0):
+
+- AGENTS.md emitter in `/beat install`
+- Plugin-pack marketplace integration
+- Per-stack plugin packs (Next.js, Flutter, .NET + Azure)
+- Migration shim + guide
 
 ---
 
 ## Data Flow
 
-Three key flows define how the framework operates at runtime.
-
-### Flow 1: `/spec idea` → Research Brief → Spec Documents → Branch + Issue
+### Flow 1: `/spec idea` produces a stack recommendation
 
 ```
-Human: /spec idea <slug>
-  │
-  ├─▶ spec-researcher subagent
-  │     ├── Reads existing research brief if present
-  │     ├── Executes scoped web search (single WebSearch per step — budget guardrail)
-  │     ├── Evaluates stack alternatives against problem constraints
-  │     └── Writes docs/research/<slug>-brief.md
-  │
-  ├─▶ spec-author subagent
-  │     ├── Reads research brief + parent spec (if any)
-  │     ├── Reads relevant template(s) from docs/templates/
-  │     ├── PASS 1 — Draft
-  │     │     ├── Writes docs/specs/<slug>/PRD.md  (chunk 1: Write ≤ 1500 words)
-  │     │     ├── Appends remaining sections       (chunks: Edit ≤ 1500 words each)
-  │     │     └── Writes docs/specs/<slug>/architecture.md (same chunked protocol)
-  │     └── PASS 2 — Self-review
-  │           ├── Section completeness check
-  │           ├── Hard-rules-check skill
-  │           ├── Australian-spelling skill
-  │           ├── Internal consistency check (PRD ↔ architecture)
-  │           └── Fixes issues in-place before returning
-  │
-  └─▶ Harness creates GitHub issue + feature branch
+User runs `/spec idea <product>`
+  → spec-researcher (subagent)
+    → Reads problem statement from prompt
+    → Reads prior briefs in docs/research/ (dedup)
+    → Writes skeleton brief within 90s (checkpoint)
+    → WebSearch — one query per research question (budget: ≤ 10 questions)
+    → Appends findings via Edit (≤ 1500 words/chunk)
+    → Produces docs/research/<slug>-brief.md with stack recommendation
+  → spec-author (subagent)
+    → Reads brief + templates
+    → Writes PRD skeleton within 3 tool calls (heartbeat)
+    → Appends sections via Edit (≤ 1500 words/chunk)
+    → Produces docs/specs/<slug>/PRD.md + architecture.md
+  → User reviews; may override stack pick; flips status Draft → Approved
+  → /ship scaffolds the project manually against docs/contracts/
 ```
 
-### Flow 2: `/ship` → PR Loop with Gates → Merge → Verify
+The critical path is the research step. Stack-selection quality gates whether v5.0 delivers on its core promise.
+
+### Flow 2: `/ship` implements a feature with Hard Rules enforcement
 
 ```
-Human: /ship
-  │
-  ├─▶ Spec-before-Ship check (Hard Rule 3)
-  │     └── docs/specs/<slug>/ must exist; exit non-zero if missing
-  │
-  ├─▶ Implementation loop
-  │     ├── Agent writes / edits source files
-  │     ├── pre-write-spelling hook fires on each Write (Hard Rule 1)
-  │     └── template-guard hook fires if docs/templates/ is touched (Hard Rule 4)
-  │
-  ├─▶ pre-commit-gate hook
-  │     ├── Reads commit message prefix (tagged exceptions: [release], [infra], [docs], [bulk])
-  │     ├── Runs hard-rules-check skill (all five rules)
-  │     │     ├── Rule 1: australian-spelling check
-  │     │     ├── Rule 2: plugin-pack boot-clean verification (if a pack is present)
-  │     │     ├── Rule 3: spec-before-ship check
-  │     │     ├── Rule 4: templates not modified
-  │     │     └── Rule 5: no prescriptive language in profiles/guides
-  │     └── Exit non-zero on any failure — commit blocked
-  │
-  ├─▶ CI: hard-rules.yml (GitHub Actions)
-  │     └── Mirrors pre-commit-gate in CI — prevents bypass via direct push
-  │
-  ├─▶ PR opens → preview smoke-test → human review
-  │
-  ├─▶ Squash-merge to main
-  │
-  └─▶ Post-merge verify + prune-merged-branches hook
+User runs `/ship`
+  → Reads the approved spec (PRD / technical-spec for the slug)
+  → Implements feature on a branch
+  → On every commit, pre-commit-gate.sh runs:
+      - Rule 1 (Australian spelling)
+      - Rule 3 (Spec-before-Ship — [docs]/[infra] exceptions)
+      - Rule 4 (Templates versioned — [release] exception or templates/* branch)
+      - Rule 5 (Descriptive profiles)
+      - (Rule 2 — removed in v5.0 if retirement accepted)
+  → Opens PR; CI re-runs the same check
+  → Squash-merge on green
+  → signal-sync skill runs post-merge
 ```
 
-### Flow 3: `/beat install` into an Existing Repo
-
-```
-Human: /beat install  (run inside adopter's repo)
-  │
-  ├─▶ Dry-run pass
-  │     └── Reports: create / merge / skip for each artefact
-  │
-  ├─▶ Copy .claude/ bundle from claude-config/
-  │
-  ├─▶ CLAUDE.md fence-merge
-  │     ├── If CLAUDE.md exists: insert blueprint content inside
-  │     │   <!-- agentic-blueprint:begin/end --> fence block
-  │     └── If absent: write CLAUDE.md fresh
-  │
-  ├─▶ AGENTS.md emission (NEW v5)
-  │     ├── If absent: write AGENTS.md with agent-agnostic harness conventions
-  │     └── If present: offer to update (opt-in)
-  │
-  ├─▶ Copy docs/ scaffolding
-  │     ├── docs/templates/  (9 sacred templates)
-  │     ├── docs/contracts/  (NEW v5 — stack-agnostic interface contracts)
-  │     ├── docs/principles/ (Hard Rule rationale)
-  │     └── docs/guides/     (beat guides + tool-reference)
-  │
-  ├─▶ Install CI wrapper
-  │     └── .github/workflows/hard-rules.yml
-  │         (or print porting notes for GitLab / CircleCI)
-  │
-  └─▶ Write claude-config/VERSION  (semver of installed bundle)
-```
+No stack-specific branching in the Ship flow itself — it runs identically regardless of what `/spec idea` picked.
 
 ---
 
@@ -184,13 +117,11 @@ Human: /beat install  (run inside adopter's repo)
 
 | Service | Purpose | Required | Failure Behaviour |
 |---|---|---|---|
-| **Claude Code** | Primary agent runtime; executes slash commands, subagents, hooks | Yes | Framework non-operational without an agent runtime; AGENTS.md enables fallback to non-Claude agents |
-| **Claude Code Marketplace** | Distribution channel for per-stack plugin packs (Option D) | No | Core harness fully functional without any plugin pack installed |
-| **GitHub Actions** | CI gate for hard-rules-check on every PR | No (but strongly recommended) | Without CI gate, pre-commit hook is the only enforcement; bypass risk increases |
-| **GitLab CI / CircleCI** | Alternative CI platforms; porting notes in `docs/guides/` | No | Not first-class in v5.0; adopters follow porting guide |
-| **Non-Claude agents** (Cursor, Copilot Workspace, etc.) | Secondary agent runtimes reading `AGENTS.md` | No | AGENTS.md is advisory; non-Claude agents operate with reduced harness integration |
+| Claude Code (CLI or IDE extension) | Runtime for all slash commands, subagents, hooks | Yes | Blueprint cannot execute; fall back to plain git + manual spec drafting |
+| GitHub (git host + Actions) | Remote, PRs, CI gate | Yes for CI | Local pre-commit-gate still fires; PRs/CI not available |
+| WebSearch / WebFetch (via Claude Code) | External research in `spec-researcher` | Required during Spec beat | `spec-researcher` produces a lower-confidence brief from repo-internal context alone |
 
-The blueprint has no database dependency, no network service, and no runtime infrastructure of its own. All state lives in the adopter's git repository.
+Deferred integrations: Claude Code Plugin Marketplace (for v5.x plugin packs), non-Claude agent runtimes (for AGENTS.md consumers), alternative CI platforms (GitLab, CircleCI).
 
 ---
 
@@ -198,43 +129,33 @@ The blueprint has no database dependency, no network service, and no runtime inf
 
 | Decision | Choice | Alternatives Considered | Rationale |
 |---|---|---|---|
-| Starter replacement model | Two-layer: `docs/contracts/` in core (Option C) + per-stack plugin packs on Marketplace (Option D) | Option A (AI generator, deferred to v5.x); Option B (keep starters); Option E (no replacement) | Option C gives all personas access to reference contracts without imposing stack opinions. Option D re-serves the reference-code-reader persona via Marketplace without polluting the core repo. |
-| AGENTS.md emission | Separate file emitted alongside CLAUDE.md; agent-agnostic prose | Symlink from AGENTS.md → CLAUDE.md; single merged file; no AGENTS.md | Separate file allows agent-agnostic framing without duplicating or diluting CLAUDE.md. Symlink risks VCS issues on some platforms. |
-| Hard Rule 2 disposition | Reframe: "any stack-pack plugin must boot clean via its own declared verification harness" | Retire Rule 2 entirely; keep Rule 2 unchanged (vacuously passing) | Retiring a Hard Rule weakens the gates-over-guidance principle. Keeping it unchanged leaves a permanently dormant rule. Reframing preserves the intent and gives it real teeth in the plugin-pack context. |
-| Migration strategy | Pin-to-commit (`3bb4c27`) + two-release deprecation shim + migration guide | Hard cut (no shim); automatic migration script | Hard cut would break known v4 adopters. Automatic script is complex and error-prone for diverse repo structures. Pin + shim + guide balances continuity with a clear migration path. |
-| Research-budget guardrail | Single WebSearch-or-question constraint encoded in spec-researcher + research-brief template | No constraint; post-hoc token-count check; separate rate-limiting layer | Constraint must be structural (in the agent definition and template) not advisory, to prevent the stream-idle-timeout class of incidents (Risk R6). PRs #113/#114 validated this approach. |
-| spec-author large-output protocol | First Write ≤ 1500 words; subsequent sections via Edit ≤ 1500 words each | Single Write for full document; streaming without chunking | Single Write of a full spec risks truncation and context-window exhaustion. Chunked Edit protocol ensures the document lands completely and the file is always in a valid state for self-review. |
-| `docs/contracts/` Rule protection | Rule-4 protected (template-guard hook; `[release]` tag required to modify) | Rule-3 protection only; no special protection; freely editable | Contracts are the reference artefact in v5. Unrestricted edits would cause them to drift toward opinionated starters over time (Risk R7). Rule-4 treatment gives contracts the same versioning discipline as sacred templates. |
+| Starter replacement | `docs/contracts/` reference library only | (A) Research-derived scaffold generator; (B) Adopter-curated source pointers; (D) Marketplace plugin packs | (A) is complex with no pilot to validate against; (B) loses contract discipline; (D) requires governance infra we don't have. Contracts-only ships the load-bearing IP without overhead. |
+| Hard Rule 2 treatment | Retire in v5.0; revisit in v5.x if plugin packs land | Reframe to "plugin must boot clean"; reframe to "scaffolded project must boot clean" | Both reframes are vacuous until Option D or Option A ships. Honest retirement beats a dormant rule. |
+| Subagent reliability | Chunked-write + context-pack protocols as agent-definition contract | Main-thread-only drafting; always-inline context | Subagents give context isolation; chunked-write makes them reliable. See #113/#114. |
+| Budget enforcement | Template preamble comments (words ≤ 4000 / 4500); operator-observed, not CI-gated in v5.0 | Pre-commit check on word count; CI failure on overrun | Automated word-count gating is v5.x polish; preamble + self-review is enough for solo use. |
+| v4 migration surface | No migration support in v5.0 | Pin-to-commit; shim layer; migration guide | No v4 adopters exist. Investing in migration before there's someone to migrate is over-engineering. |
+| Multi-agent portability | Deferred (no AGENTS.md emission in v5.0) | Emit AGENTS.md as symlink; emit as separate file | Claude Code is the only runtime in active use. Revisit when a non-Claude agent is in the loop. |
 
 ---
 
 ## Environment Architecture
 
-The agentic-blueprint has no dev/staging/production environments of its own. It is a framework installed into adopters' repositories.
+Not applicable for the blueprint itself — it's a static repo bundle, not a deployed service.
 
-| Context | Description | Notes |
-|---|---|---|
-| Blueprint repo itself | Canonical source of the `claude-config/` bundle, templates, and guides | Developed under the same three-beat lifecycle it prescribes; hard-rules CI gate on every PR |
-| Adopter repo — local | Adopter runs slash commands locally via Claude Code or another agent runtime | No blueprint-specific server; all state in git |
-| Adopter repo — CI | Adopter's CI runs `hard-rules.yml` on every PR | Blueprint provides the workflow file; CI infrastructure is the adopter's own |
-| Plugin-pack development | Plugin-pack author develops against `docs/contracts/` and publishes to Claude Code Marketplace | Pack's own CI must include a boot-clean verification harness (reframed Hard Rule 2) |
-
-There is no long-lived staging branch for the blueprint itself. Squash-merge to `main` is the only promotion path — consistent with the Ship beat the blueprint prescribes.
+For projects *using* the blueprint, environment architecture is a per-project decision recorded in that project's own architecture spec. The blueprint does not prescribe dev / staging / prod topology.
 
 ---
 
 ## Security Architecture
 
-The blueprint's security posture is repo-hygiene focused. There is no network service to secure.
+Blueprint-level security concerns are limited to repo hygiene:
 
-- **Secret scanning:** `pre-commit-secret-scan` hook fires on every commit; blocks secrets from entering the git history.
-- **Template protection:** `template-guard` hook prevents edits to `docs/templates/` in feature PRs (Hard Rule 4). The `[release]` commit-message prefix is required to bypass — creating an auditable exception in the git log.
-- **Contracts protection:** `docs/contracts/` carries the same Rule-4 protection as sacred templates (template-guard hook applies to both paths).
-- **Australian-spelling enforcement:** `pre-write-spelling` hook fires on every file write (Hard Rule 1). Non-compliant prose is blocked before it reaches git.
-- **Hard-rules CI gate:** `.github/workflows/hard-rules.yml` mirrors the pre-commit gate in CI. Direct push cannot bypass the rules.
-- **No secrets in the blueprint:** The framework contains no API keys, credentials, or environment-specific configuration. `claude-config/` carries only structural files.
-- **Commit-message audit trail:** Tagged exceptions (`[release]`, `[infra]`, `[docs]`, `[bulk]`) are recorded in the git log. Rules 1, 2, and 5 are never skippable via any tag.
-- **Plugin-pack supply chain:** Plugin packs distribute via Claude Code Marketplace. The governance document (P1) will define the minimum verification harness required for a pack to claim Rule-2 compliance.
+- **Secret-scan pre-commit hook** (`pre-commit-secret-scan.sh`) blocks commits containing likely secrets (API keys, `.env` contents, credentials).
+- **Australian-spelling pre-write hook** (`pre-write-spelling.sh`) is a prose gate, not a security gate — included here for completeness.
+- **Template-guard hook** (`template-guard.sh`) prevents accidental edits to `docs/templates/` outside `docs/*` / `templates/*` branches or `AGENTIC_BLUEPRINT_RELEASE=1` environment.
+- **Hard-rules CI gate** re-runs the local checks on PR to prevent local-gate bypass.
+
+For projects *using* the blueprint, security architecture is captured in that project's own architecture + auth specs. The blueprint does not prescribe runtime security posture.
 
 ---
 
