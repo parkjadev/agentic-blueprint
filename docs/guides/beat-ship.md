@@ -47,7 +47,7 @@ Writes code, runs tests as it goes, commits in logical chunks with conventional-
 
 ### 4. Local gate
 
-Runs `bash .claude/skills/hard-rules-check/scripts/check-all.sh`. All 5 v4 Hard Rules must pass. Tagged-exception prefixes in the commit range are honoured.
+Runs `bash .claude/skills/hard-rules-check/scripts/check-all.sh`. All 4 Hard Rules must pass. Tagged-exception prefixes in the commit range are honoured.
 
 ### 5. Starter check (if touched)
 

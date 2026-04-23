@@ -1,6 +1,6 @@
-# 2. Starters stay generic and boot clean
+# 2. Starters stay generic and boot clean (retired in v5.0)
 
-> Hard Rule. Enforced by `.claude/skills/hard-rules-check/scripts/check-all.sh` (domain-string grep + smoke-test script present) and the `starter-verify` skill during `/ship`.
+> **Retired.** This rule was active in v4 when the blueprint shipped Next.js / Flutter / .NET + Azure starters. PR #109 retired the starters; PR #115 (v5.0 PRD) resolved the retire-vs-reframe question as retire. Archived here for provenance; can be rebuilt if plugin packs ship in v5.x. Hook enforcement removed from `check-all.sh` in the same PR that archived this file.
 
 ## The rule
 

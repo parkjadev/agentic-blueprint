@@ -35,14 +35,13 @@ When in doubt, run `/beat` for a read-only status snapshot + the next-best comma
 
 ## Hard Rules
 
-Enforced by `.claude/hooks/pre-commit-gate.sh` via the `hard-rules-check` skill. Five enforced Hard Rules + three meta-principles. Rationale and remediation live in [`docs/principles/`](./docs/principles/).
+Enforced by `.claude/hooks/pre-commit-gate.sh` via the `hard-rules-check` skill. Four enforced Hard Rules + three meta-principles. Rationale and remediation live in [`docs/principles/`](./docs/principles/). (Rule 2 retired in v5.0 — see [`_archive/02-starters-generic-boot-clean.md`](./docs/principles/_archive/02-starters-generic-boot-clean.md); numbering preserved so downstream references to Rules 3/4/5 don't silently shift.)
 
 **Hard Rules (hook-gated):**
 
 1. [Australian spelling throughout](./docs/principles/01-australian-spelling.md)
-2. [Starters stay generic and boot clean](./docs/principles/02-starters-generic-boot-clean.md) *(vacuously passing until v5 reintroduces starters or supersedes this rule)*
 3. [Spec-before-Ship](./docs/principles/03-spec-before-ship.md)
-4. [Templates versioned, not edited in flight](./docs/principles/04-templates-versioned.md)
+4. [Templates versioned, not edited in flight](./docs/principles/04-templates-versioned.md) — covers `docs/templates/` and `docs/contracts/`
 5. [Descriptive profiles, not prescriptive](./docs/principles/05-descriptive-profiles.md)
 
 **Meta-principles (design of the harness; not hook-gated):**
@@ -62,7 +61,7 @@ The pre-commit gate reads the commit message first. These prefixes skip specific
 | `[docs]` | Rule 3 (Spec-before-Ship) | Doc-only commits |
 | `[bulk]` | >50-file runaway guard | Genuine bulk updates |
 
-Rules 1, 2, 5 are never skippable. Every skip is recorded in the git log.
+Rules 1 and 5 are never skippable. Every skip is recorded in the git log.
 
 ## Quick reference — the three beats
 
