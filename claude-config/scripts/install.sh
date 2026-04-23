@@ -7,6 +7,7 @@
 #
 # Behaviour:
 #   - Refuses on a dirty working tree unless --force
+#   - Fails fast if any source path is missing (pre-flight stat check)
 #   - Merges existing CLAUDE.md via <!-- agentic-blueprint:begin/end --> fence
 #   - Creates docs/ scaffolding (templates, contracts, specs, research, operations, signal)
 #   - Copies the sacred templates + stack-agnostic reference contracts
@@ -26,11 +27,43 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# BUNDLE_DIR  = .../claude-config/ — self-contained adopter bundle
+# BLUEPRINT_ROOT = parent of BUNDLE_DIR — where docs/ and .github/ live
+BUNDLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+BLUEPRINT_ROOT="$(cd "$BUNDLE_DIR/.." && pwd)"
 
-echo "agentic-blueprint install — source: $SRC_DIR"
-echo "dry-run: $DRY_RUN · force: $FORCE"
+echo "agentic-blueprint install"
+echo "  bundle:    $BUNDLE_DIR"
+echo "  blueprint: $BLUEPRINT_ROOT"
+echo "  dry-run:   $DRY_RUN · force: $FORCE"
 echo
+
+# 0. Pre-flight stat check — every source path must exist before any write.
+required_sources=(
+  "$BUNDLE_DIR/.claude/commands"
+  "$BUNDLE_DIR/.claude/agents"
+  "$BUNDLE_DIR/.claude/skills"
+  "$BUNDLE_DIR/.claude/hooks"
+  "$BUNDLE_DIR/.claude/settings.json"
+  "$BUNDLE_DIR/CLAUDE.md.template"
+  "$BUNDLE_DIR/VERSION"
+  "$BUNDLE_DIR/scheduled-tasks.yaml"
+  "$BLUEPRINT_ROOT/docs/templates"
+  "$BLUEPRINT_ROOT/docs/contracts"
+  "$BLUEPRINT_ROOT/.github/workflows/hard-rules-check.yml"
+)
+missing=()
+for p in "${required_sources[@]}"; do
+  [[ -e "$p" ]] || missing+=("$p")
+done
+if (( ${#missing[@]} > 0 )); then
+  echo "ERROR: required source paths missing from the blueprint checkout:" >&2
+  for p in "${missing[@]}"; do echo "  - $p" >&2; done
+  echo
+  echo "If you invoked via bootstrap.sh, the tmp clone may have been partial." >&2
+  echo "If you invoked from a local clone, ensure it is not shallow or partial." >&2
+  exit 1
+fi
 
 # 1. Working tree cleanliness.
 if [[ $FORCE -eq 0 ]]; then
@@ -42,7 +75,7 @@ fi
 
 # 2. Detect clashes in .claude/commands/
 clashes=""
-for f in "$SRC_DIR/.claude/commands"/*.md; do
+for f in "$BUNDLE_DIR/.claude/commands"/*.md; do
   [[ -f "$f" ]] || continue
   base=$(basename "$f")
   if [[ -f ".claude/commands/$base" ]]; then
@@ -69,15 +102,15 @@ if [[ -d .claude ]]; then
   done
 fi
 run "mkdir -p .claude"
-run "cp -R \"$SRC_DIR/.claude/commands\" .claude/commands"
-run "cp -R \"$SRC_DIR/.claude/agents\" .claude/agents"
-run "cp -R \"$SRC_DIR/.claude/skills\" .claude/skills"
-run "cp -R \"$SRC_DIR/.claude/hooks\" .claude/hooks"
+run "cp -R \"$BUNDLE_DIR/.claude/commands\" .claude/commands"
+run "cp -R \"$BUNDLE_DIR/.claude/agents\" .claude/agents"
+run "cp -R \"$BUNDLE_DIR/.claude/skills\" .claude/skills"
+run "cp -R \"$BUNDLE_DIR/.claude/hooks\" .claude/hooks"
 if [[ ! -f .claude/settings.json ]]; then
-  run "cp \"$SRC_DIR/.claude/settings.json\" .claude/settings.json"
+  run "cp \"$BUNDLE_DIR/.claude/settings.json\" .claude/settings.json"
 fi
 
-# 4. CLAUDE.md — merge or write fresh.
+# 4. CLAUDE.md — merge or write fresh (source: CLAUDE.md.template).
 BLUEPRINT_PREAMBLE_START='<!-- agentic-blueprint:begin -->'
 BLUEPRINT_PREAMBLE_END='<!-- agentic-blueprint:end -->'
 
@@ -89,18 +122,18 @@ if [[ -f CLAUDE.md ]]; then
     if [[ $DRY_RUN -eq 0 ]]; then
       {
         echo "$BLUEPRINT_PREAMBLE_START"
-        cat "$SRC_DIR/CLAUDE.md"
+        cat "$BUNDLE_DIR/CLAUDE.md.template"
         echo "$BLUEPRINT_PREAMBLE_END"
         echo
         cat CLAUDE.md
       } > CLAUDE.md.new
       mv CLAUDE.md.new CLAUDE.md
     else
-      echo "DRY: merge CLAUDE.md with fenced block at top"
+      echo "DRY: merge CLAUDE.md with fenced block at top (source: $BUNDLE_DIR/CLAUDE.md.template)"
     fi
   fi
 else
-  run "cp \"$SRC_DIR/CLAUDE.md\" CLAUDE.md"
+  run "cp \"$BUNDLE_DIR/CLAUDE.md.template\" CLAUDE.md"
 fi
 
 # 5. docs/ scaffolding.
@@ -109,26 +142,22 @@ for d in docs/templates docs/contracts docs/specs docs/research docs/operations 
 done
 
 # Copy the sacred templates if docs/templates/ is empty of them.
-if [[ -d "$SRC_DIR/docs/templates" ]]; then
-  for t in "$SRC_DIR/docs/templates"/*.md; do
-    [[ -f "$t" ]] || continue
-    base=$(basename "$t")
-    if [[ ! -f "docs/templates/$base" ]]; then
-      run "cp \"$t\" \"docs/templates/$base\""
-    fi
-  done
-fi
+for t in "$BLUEPRINT_ROOT/docs/templates"/*.md; do
+  [[ -f "$t" ]] || continue
+  base=$(basename "$t")
+  if [[ ! -f "docs/templates/$base" ]]; then
+    run "cp \"$t\" \"docs/templates/$base\""
+  fi
+done
 
 # Copy the stack-agnostic reference contracts (v5+).
-if [[ -d "$SRC_DIR/docs/contracts" ]]; then
-  for c in "$SRC_DIR/docs/contracts"/*.md; do
-    [[ -f "$c" ]] || continue
-    base=$(basename "$c")
-    if [[ ! -f "docs/contracts/$base" ]]; then
-      run "cp \"$c\" \"docs/contracts/$base\""
-    fi
-  done
-fi
+for c in "$BLUEPRINT_ROOT/docs/contracts"/*.md; do
+  [[ -f "$c" ]] || continue
+  base=$(basename "$c")
+  if [[ ! -f "docs/contracts/$base" ]]; then
+    run "cp \"$c\" \"docs/contracts/$base\""
+  fi
+done
 
 # Seed empty signal logs.
 for log in learnings.md agent-log.md dependencies.md spend.md; do
@@ -138,7 +167,7 @@ done
 # 6. GitHub Actions hard-rules workflow.
 if [[ -d .git ]] && [[ ! -f .github/workflows/hard-rules.yml ]]; then
   run "mkdir -p .github/workflows"
-  run "cp \"$SRC_DIR/.github/workflows/hard-rules-check.yml\" .github/workflows/hard-rules.yml"
+  run "cp \"$BLUEPRINT_ROOT/.github/workflows/hard-rules-check.yml\" .github/workflows/hard-rules.yml"
 else
   if [[ ! -d .git ]]; then
     echo "Non-git directory — skipping GitHub Actions install. Port check-all.sh to your CI manually."
@@ -161,11 +190,11 @@ done
 
 # 8. VERSION pin.
 run "mkdir -p claude-config"
-run "cp \"$SRC_DIR/claude-config/VERSION\" claude-config/VERSION"
-run "cp \"$SRC_DIR/claude-config/scheduled-tasks.yaml\" claude-config/scheduled-tasks.yaml"
+run "cp \"$BUNDLE_DIR/VERSION\" claude-config/VERSION"
+run "cp \"$BUNDLE_DIR/scheduled-tasks.yaml\" claude-config/scheduled-tasks.yaml"
 
 echo
 echo "agentic-blueprint install complete."
-VER=$(cat "$SRC_DIR/claude-config/VERSION" 2>/dev/null || echo "?")
+VER=$(cat "$BUNDLE_DIR/VERSION" 2>/dev/null || echo "?")
 echo "Version: $VER"
 echo "Next: run /beat status in Claude Code"
