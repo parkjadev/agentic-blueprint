@@ -83,7 +83,7 @@ v5.0 is scoped for one user. Designing for hypothetical adopters without a pilot
 | Stack-agnostic `/spec idea` flow | `spec-researcher` evaluates stack alternatives against the problem at hand; produces a research brief with a ranked recommendation. Stack selection is an output of Spec, not an input. | P0 | 1 |
 | Hard Rule 2 retirement (not reframe) | Retire Rule 2 for v5.0 — with no starters and no plugin packs in v5.0, the reframe ("plugin must boot clean") would be vacuous again. Principles file reduces to 4 Hard Rules (1, 3, 4, 5) + 3 meta-principles. Reinstate if/when plugin packs land in v5.x. | P0 | — |
 | `/beat install` cleanup | Remove starter-related copy paths and the legacy `starter-verify` skill dispatch. No new install mechanics — `/beat install` keeps doing what it does minus the starter surface. | P0 | 2 |
-| `tool-reference.md` reframe | Rewrite `docs/guides/tool-reference.md` as a role + inputs matrix rather than a shopping list — already groundwork for non-Claude agents without committing to AGENTS.md emission yet. | P0 | 1, 2 |
+| Profile sweep + `tool-reference.md` reframe | Drop the three v4 platform profiles (Claude-native / Cursor+Perplexity / OutSystems ODC) from `docs/guides/tool-reference.md` and the beat guides; keep only the Claude Code profile in active use. Rewrite `tool-reference.md` as a role + inputs matrix rather than a shopping list — groundwork for future multi-agent work without committing to AGENTS.md emission now. Rule 5 principle file (`05-descriptive-profiles.md`) stays untouched — the discipline is still "describe, don't prescribe". | P0 | 1, 2 |
 | Research-budget guardrail baseline | Lock the chunked-write protocol + template budget preambles (already shipped in #113/#114) as v5.0 baseline — no reversion. | P0 | 1 |
 | AGENTS.md emitter | Emit `AGENTS.md` alongside `CLAUDE.md` from `/beat install`. | **P2 — deferred** | — |
 | Plugin-pack marketplace integration | Per-stack plugin packs on the Claude Code Marketplace. | **P2 — deferred** | — |
@@ -127,7 +127,7 @@ v5.0 deliberately excludes the following. Each is a legitimate future concern, n
 - **Option A scaffold generator.** Manual scaffolding against the contracts is adequate for v5.0.
 - **Signal beat platform-agnostic redesign.** `signal-sync` assumes Vercel. If the next project uses Vercel, defer. If not, handle when it bites.
 - **CI wrapper portability beyond GitHub Actions.** GitLab/CircleCI porting notes stay at "guidance" level.
-- **Multi-profile or multi-persona documentation.** Descriptive-profiles (Rule 5) still applies, but the v4 three-profile docs (Claude-native, Cursor+Perplexity, OutSystems ODC) can be trimmed to just the one profile I actually use.
+- **Multi-profile or multi-persona documentation.** See the "Profile sweep" P0 feature — the v4 three-profile docs (Claude-native, Cursor+Perplexity, OutSystems ODC) are dropped in v5.0 because only one profile is in active use. Rule 5 ("descriptive, not prescriptive") stays as the principle — v5.x can reintroduce profiles if multi-agent adopters materialise.
 
 ---
 
@@ -147,11 +147,15 @@ Risks R3 (plugin-pack governance), R4 (v4 migration friction), R5 (AGENTS.md fra
 
 ## Open Questions
 
-| # | Question | Owner | Due |
-|---|---|---|---|
-| 1 | When does v5.0 cut as a versioned release? Options: (a) at merge of this PRD's Ship epic, (b) only after the first real project has completed its Spec beat on v5.0 | Maintainer | Before final Ship epic merge |
-| 2 | Is "retire Rule 2" the right call, or is it better to reframe to something non-vacuous (e.g. "the project initialised by `/spec idea` must boot clean")? The reframe requires Option A; retirement is simpler. | Maintainer | Before Hard Rule 2 feature PR |
-| 3 | Should v5.0 trim the v4 three-profile docs (Claude-native, Cursor+Perplexity, OutSystems ODC) down to the one profile in active use, or leave them as reference? | Maintainer | During `tool-reference.md` reframe feature PR |
+No open questions. The three deferred-to-maintainer questions from earlier drafts were resolved on 2026-04-23 — see *Resolved Decisions* below.
+
+## Resolved Decisions
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | When does v5.0 cut as a versioned release? | **At Ship epic merge** — don't block on a pilot project landing. `claude-config/VERSION` bumps to `5.0.0` when the final v5.0 feature PR merges. |
+| 2 | Retire vs. reframe Rule 2? | **Retire.** The reframe would be vacuous without plugin packs or a scaffold generator. Reinstate in v5.x if plugin packs land. |
+| 3 | Trim the v4 three-profile docs to the one in active use? | **Yes — drop them.** v5 is agnostic by design; the multi-profile docs described users who don't exist. Rule 5 principle stays; concrete multi-profile content is v5.x material contingent on real multi-agent adopters. |
 
 ---
 

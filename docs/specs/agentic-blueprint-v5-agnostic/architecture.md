@@ -48,7 +48,7 @@ v5.0's scope is narrower than the research brief suggested. With a single user (
 | Sacred templates | Spec-driven document scaffolds (PRD, technical-spec, architecture, research-brief, etc.) | `docs/templates/` | Budget preambles shipped in #114 locked as baseline |
 | **Reference contracts** | **NEW.** Stack-agnostic interface definitions — `ApiResponse<T>` envelope, error taxonomy, auth-token shape, telemetry schema. Rule-4 protected. | `docs/contracts/` | **Net-new directory in v5.0** |
 | Principles | Hard Rules 1–5 + meta-principles 6–8 as prose | `docs/principles/` | Rule 2 file moves to `_archive/` if retired |
-| Guides | Long-form beat guides and tool reference | `docs/guides/` | `tool-reference.md` reframed as role + inputs matrix |
+| Guides | Long-form beat guides and tool reference | `docs/guides/` | Profile sweep: drop the v4 three-profile content (Claude-native / Cursor+Perplexity / OutSystems ODC) from `tool-reference.md` and from beat guides; reframe `tool-reference.md` as a role + inputs matrix |
 | CI wrapper | GitHub Actions workflow invoking `scripts/check-all.sh` | `.github/workflows/` | No change |
 | VERSION file | Semver marker for `/beat update` drift detection | `claude-config/VERSION` | Bump to `5.0.0` at release cut |
 
@@ -135,6 +135,8 @@ Deferred integrations: Claude Code Plugin Marketplace (for v5.x plugin packs), n
 | Budget enforcement | Template preamble comments (words ≤ 4000 / 4500); operator-observed, not CI-gated in v5.0 | Pre-commit check on word count; CI failure on overrun | Automated word-count gating is v5.x polish; preamble + self-review is enough for solo use. |
 | v4 migration surface | No migration support in v5.0 | Pin-to-commit; shim layer; migration guide | No v4 adopters exist. Investing in migration before there's someone to migrate is over-engineering. |
 | Multi-agent portability | Deferred (no AGENTS.md emission in v5.0) | Emit AGENTS.md as symlink; emit as separate file | Claude Code is the only runtime in active use. Revisit when a non-Claude agent is in the loop. |
+| v4 three-profile docs | Drop (Claude-native / Cursor+Perplexity / OutSystems ODC content removed) | Keep all three as reference; keep but archive | Agnostic by design means profiles aren't needed. Only the Claude Code profile has a real user. Rule 5 principle stays; concrete profiles return in v5.x if multi-agent adopters arrive. |
+| v5.0 release cut | Bump `claude-config/VERSION` to `5.0.0` at final Ship epic merge | Wait until pilot project completes its first Spec beat | Don't block a structural release on external demand that may never come. Cut when the code is ready; battle-testing is v5.0's own success metric. |
 
 ---
 
