@@ -2,7 +2,7 @@
 
 Long-form guides for the v4 three-beat lifecycle: **Spec → Ship → Signal**.
 
-Read them end to end for the narrative, or jump to the beat you need. Each guide includes why the beat exists, how it works, exit criteria, platform notes (Claude-native / OutSystems ODC), and anti-patterns.
+Read them end to end for the narrative, or jump to the beat you need. Each guide includes why the beat exists, how it works, exit criteria, platform notes, and anti-patterns.
 
 ## Guides
 
@@ -14,7 +14,7 @@ Read them end to end for the narrative, or jump to the beat you need. Each guide
 
 Plus a cross-cutting reference:
 
-- [Tool Reference](tool-reference.md) — role mapping and beat × profile matrix across Claude-native and OutSystems ODC.
+- [Tool Reference](tool-reference.md) — role × inputs matrix. Stack selection happens per project during the Spec beat; this doc describes the roles every project needs to fill, not a fixed list of tools to use.
 
 ## Related surfaces
 
