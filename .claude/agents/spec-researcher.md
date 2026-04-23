@@ -25,9 +25,18 @@ Long web-search passes and large single-`Write` payloads both hit stream-idle ti
 
 - Topic or feature name / slug
 - Output path (`docs/research/<slug>-brief.md`)
-- Scope hint: `product` (wide market + user research) vs `feature` (narrow — competitors + feasibility)
+- Scope hint: `product` (wide market + user research + **stack selection**) vs `feature` (narrow — competitors + feasibility)
 - Prior briefs in `docs/research/` to avoid duplicating
 - **Context pack (optional).** The caller may inline known findings + competitor data as prompt content to save fresh WebSearches. If present, treat as authoritative for the claims it covers and only fresh-search gaps.
+
+## Stack selection (scope: product only)
+
+When scope is `product` (i.e. called from `/spec idea`), the brief's **Stack Selection** section is required. Stack selection is an output of the Spec beat, not an input — you are not confirming a predetermined choice, you are evaluating alternatives.
+
+1. Pick 4–6 evaluation criteria that actually discriminate for this product. Avoid generic checklists — data-sovereignty, runtime-cost ceiling, team-skill inventory, time-to-first-deploy, ecosystem maturity, regulatory constraints are candidates; the relevant subset depends on the problem.
+2. Identify at least **three** stack alternatives. Fewer is not research — it's assertion. Three forces discrimination and surfaces real trade-offs.
+3. Score each alternative against the criteria and write a one-paragraph recommendation that cites the criteria table, not ad-hoc claims. Include caveats ("fall back to Y if Z").
+4. If the caller pre-names a preferred stack, treat that as a hypothesis to test, not a decision to confirm. Evaluate it alongside two genuine alternatives.
 
 ## Process
 
