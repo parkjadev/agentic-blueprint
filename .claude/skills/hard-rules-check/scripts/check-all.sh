@@ -134,24 +134,24 @@ else
   fail "Rule 3" "no docs/specs/$slug (folder or .md file) and no spec changes on branch '$branch' — use [infra]/[docs] prefix for harness changes, or create a spec"
 fi
 
-header "Rule 4: Templates versioned, not edited in flight"
-template_changes=$(git diff --name-only "$base_ref"...HEAD 2>/dev/null \
-  | grep '^docs/templates/' \
-  | grep -v '^docs/templates/_archive/' || true)
+header "Rule 4: Templates + contracts versioned, not edited in flight"
+sacred_changes=$(git diff --name-only "$base_ref"...HEAD 2>/dev/null \
+  | grep -E '^docs/(templates|contracts)/' \
+  | grep -vE '^docs/(templates|contracts)/_archive/' || true)
 
-if [[ -n "$template_changes" ]]; then
+if [[ -n "$sacred_changes" ]]; then
   branch_r4="$branch"
   if [[ "${AGENTIC_BLUEPRINT_RELEASE:-0}" == "1" ]]; then
-    pass "docs/templates/ edited with AGENTIC_BLUEPRINT_RELEASE=1 (release-mode escape)"
+    pass "docs/templates/ or docs/contracts/ edited with AGENTIC_BLUEPRINT_RELEASE=1 (release-mode escape)"
   else
     # Per-commit check: every commit in range that touches a non-archive
-    # template path must carry a [release] subject.
+    # sacred path must carry a [release] subject.
     bad_commit=""
     while read -r sha; do
       [[ -z "$sha" ]] && continue
       touches_active=$(git show --name-only --format= "$sha" 2>/dev/null \
-        | grep '^docs/templates/' \
-        | grep -v '^docs/templates/_archive/' || true)
+        | grep -E '^docs/(templates|contracts)/' \
+        | grep -vE '^docs/(templates|contracts)/_archive/' || true)
       if [[ -n "$touches_active" ]]; then
         subject=$(git log -1 --format=%s "$sha" 2>/dev/null || echo "")
         if [[ "$subject" != \[release\]* ]]; then
@@ -159,23 +159,23 @@ if [[ -n "$template_changes" ]]; then
           break
         fi
       fi
-    done < <(git log --format=%H "$base_ref"..HEAD -- 'docs/templates/' 2>/dev/null)
+    done < <(git log --format=%H "$base_ref"..HEAD -- 'docs/templates/' 'docs/contracts/' 2>/dev/null)
 
     if [[ -z "$bad_commit" ]]; then
-      pass "docs/templates/ edited with [release]-tagged commit(s)"
+      pass "docs/templates/ or docs/contracts/ edited with [release]-tagged commit(s)"
     else
       case "$branch_r4" in
-        docs/*|templates/*)
-          pass "docs/templates/ edited on dedicated '$branch_r4' (reviewer approval required at merge)"
+        docs/*|templates/*|contracts/*)
+          pass "sacred paths edited on dedicated '$branch_r4' (reviewer approval required at merge)"
           ;;
         *)
-          fail "Rule 4" "branch '$branch_r4' has untagged template-touching commit: $bad_commit — use a [release]-prefixed subject, AGENTIC_BLUEPRINT_RELEASE=1, or a 'docs/*'/'templates/*' branch"
+          fail "Rule 4" "branch '$branch_r4' has untagged sacred-path-touching commit: $bad_commit — use a [release]-prefixed subject, AGENTIC_BLUEPRINT_RELEASE=1, or a 'docs/*'/'templates/*'/'contracts/*' branch"
           ;;
       esac
     fi
   fi
 else
-  pass "docs/templates/ untouched (or only _archive/ moves)"
+  pass "docs/templates/ and docs/contracts/ untouched (or only _archive/ moves)"
 fi
 
 header "Rule 5: Descriptive profiles, not prescriptive"
