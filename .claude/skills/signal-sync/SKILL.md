@@ -1,7 +1,7 @@
 ---
 name: signal-sync
 description: Use during the Signal beat (/signal sync, /signal audit) to close the loop after a merge — plan-status markers, CHANGELOG append/validate, cross-reference audit, stale-brief archival. Merged v3 memory-sync + changelog-entry + docs-inspector logic into one skill. Keywords — Signal beat, post-merge, changelog, memory sync, docs sync, cross-reference audit, close the loop.
-allowed-tools: Read, Edit, Bash, Glob, Grep
+allowed-tools: Read Edit Bash Glob Grep
 model: sonnet
 ---
 

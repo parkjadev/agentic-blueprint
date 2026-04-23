@@ -93,19 +93,25 @@ fi
 run() { if [[ $DRY_RUN -eq 1 ]]; then echo "DRY: $*"; else eval "$*"; fi; }
 
 # 3. Copy .claude/ bundle (backup any pre-existing locals).
+#
+# Portability note: `cp -R src dest` nests when dest exists — it creates
+# dest/src/... instead of replacing dest. To avoid this class of bug on
+# re-runs (especially with --force), we always remove the target directory
+# first. A fresh backup captures any pre-existing content before removal.
 if [[ -d .claude ]]; then
+  run "rm -rf .claude/_pre-install-backup"
   run "mkdir -p .claude/_pre-install-backup"
   for sub in commands agents skills hooks; do
     if [[ -d ".claude/$sub" ]]; then
-      run "cp -R .claude/$sub .claude/_pre-install-backup/$sub"
+      run "cp -R \".claude/$sub\" \".claude/_pre-install-backup/$sub\""
     fi
   done
 fi
 run "mkdir -p .claude"
-run "cp -R \"$BUNDLE_DIR/.claude/commands\" .claude/commands"
-run "cp -R \"$BUNDLE_DIR/.claude/agents\" .claude/agents"
-run "cp -R \"$BUNDLE_DIR/.claude/skills\" .claude/skills"
-run "cp -R \"$BUNDLE_DIR/.claude/hooks\" .claude/hooks"
+for sub in commands agents skills hooks; do
+  run "rm -rf \".claude/$sub\""
+  run "cp -R \"$BUNDLE_DIR/.claude/$sub\" \".claude/$sub\""
+done
 if [[ ! -f .claude/settings.json ]]; then
   run "cp \"$BUNDLE_DIR/.claude/settings.json\" .claude/settings.json"
 fi
