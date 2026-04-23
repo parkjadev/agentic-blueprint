@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [5.0.2] — 2026-04-23
+
+Patch release. Fixes `install.sh` crashes on first real adopter use — the v5.0.1 `bootstrap.sh` one-liner runs cleanly but the underlying installer was broken at several source paths, producing mid-install crashes (`cat: …/CLAUDE.md: No such file or directory`) and latent bugs that `--dry-run` couldn't see because it only echoed commands without stat-ing sources.
+
+### Fixed
+
+- **`claude-config/scripts/install.sh` source paths corrected.** `SRC_DIR` resolved to `claude-config/` but roughly half the references assumed it was the blueprint repo root. Rewritten with explicit `BUNDLE_DIR` (= `claude-config/`) + `BLUEPRINT_ROOT` (= parent) variables and every reference updated to the right one. Concrete fixes: `CLAUDE.md` → `CLAUDE.md.template`; `$SRC_DIR/.github/…` → `$BLUEPRINT_ROOT/.github/…`; `$SRC_DIR/docs/…` → `$BLUEPRINT_ROOT/docs/…`; `$SRC_DIR/claude-config/VERSION` → `$BUNDLE_DIR/VERSION` (the former resolved to `claude-config/claude-config/VERSION`) (#127).
+
+### Added
+
+- **Pre-flight stat check in `install.sh`.** Before writing anything, verifies every required source path exists. Fails fast with the full missing-paths list instead of partial-install + mid-run crash. Catches the next class of path-mismatch bug at invocation instead of two-thirds of the way through (#127).
+
 ## [5.0.1] — 2026-04-23
 
 Patch release. Closes the first-time adopter bootstrap gap v5.0 shipped with and trims the last cross-version migration artefact.
