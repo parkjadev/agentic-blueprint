@@ -85,13 +85,6 @@ The scope-aware frontmatter on PRD and technical-spec toggles conditional sectio
 - Parent linkage (`parent:`) is correct for epic/feature specs.
 - Hard Rule 3 (Spec-before-Ship) passes on the branch.
 
-## Platform profiles
-
-See `docs/guides/tool-reference.md` for the full matrix. Summary:
-
-- **Claude-native**: Claude Desktop for ideation + `/spec` for artefact generation. Single tool covers the full beat.
-- **OutSystems ODC**: Same `docs/templates/` and `/spec` flow; ODC Lifecycle captures scope decisions; specs still live in git even when implementation is in ODC Studio.
-
 ## Anti-patterns
 
 | Anti-pattern | Why it fails | Do this instead |

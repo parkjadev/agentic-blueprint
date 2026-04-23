@@ -97,12 +97,9 @@ Signal feeds Spec. The `docs/signal/learnings.md` file + the weekly `/signal aud
 - `docs/signal/` is bootstrapped with `learnings.md`, `agent-log.md`, `dependencies.md`, `spend.md` — accumulating logs seeded empty at install.
 - A `/signal audit` has run at least once so the team understands its output shape.
 
-## Platform profiles
+## Platform
 
-- **Claude-native**: Claude Scheduled Tasks for automation; Cowork for ops-heavy non-code workflows (contract review, research compilation). Full implementation.
-- **OutSystems ODC**: ODC LifeTime dashboards + Architecture Dashboard fill the monitoring role. `docs/templates/incident-runbook.md` is still the triage surface. External scheduled jobs (Claude Scheduled Tasks or GitHub Actions) fill any gap.
-
-See `docs/guides/tool-reference.md` for the full matrix.
+Scheduled automation fills the Signal beat's Scheduled-automation role. The canonical example is Claude Scheduled Tasks, but anything that can run a cron plus hit an AI API works — GitHub Actions `schedule`, external task runners, or project-native timers where the stack provides them. The monitoring + Ops-surface roles map to whatever dashboards and runbook targets the deploy stack provides. See `docs/guides/tool-reference.md` for the role × inputs matrix.
 
 ## Anti-patterns
 

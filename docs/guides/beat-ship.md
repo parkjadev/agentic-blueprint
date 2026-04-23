@@ -8,7 +8,7 @@ Claude Code in 2026 collapses the v3 Plan → Build → Ship stages into one con
 
 The **Ship** beat is where the spec contract becomes running code — and where the automated gates live. The human decides when to merge; the loop handles build → test → PR → CI → deploy → verify without discrete stage boundaries.
 
-## Why GitHub Flow (Profile A)
+## Why GitHub Flow
 
 The default release profile is simplified GitHub Flow:
 
@@ -94,12 +94,9 @@ Every Claude Code session reads `CLAUDE.md` at the repo root — plus any nested
 - CHANGELOG `[Unreleased]` entry (if user-visible).
 - Branch auto-deleted; issue auto-closed via "Closes #N" in PR body.
 
-## Platform profiles
+## Platform
 
-- **Claude-native**: `/ship` orchestrates the full loop. Claude Code drives GitHub Actions; deploy target is project-specific (Vercel, Azure via Bicep, AWS, Fly.io — pick what fits the stack). Deploy inspection via the platform's MCP or CLI (Vercel MCP for Next.js; `az` / `aws` / `fly` CLIs otherwise). Dispatch + Remote Control for mobile supervision during long builds.
-- **OutSystems ODC**: Ship mechanics diverge — ODC Service Studio + Mentor produce the build; ODC pipelines handle Dev → Test → Prod promotion. The spec contract and CI gate logic from `/ship` are still relevant; the deploy step is replaced by the ODC promotion flow. Docs stay in git.
-
-See `docs/guides/tool-reference.md` for the full matrix.
+`/ship` orchestrates the full loop. Claude Code drives GitHub Actions; the deploy target is project-specific — the stack-selection research from `/spec idea` names it. Common choices are Vercel, Azure (via `az` / Bicep), AWS (CDK / Terraform), and Fly.io. Deploy inspection goes through the matching platform MCP or CLI. See `docs/guides/tool-reference.md` for the role × inputs matrix.
 
 ## Anti-patterns
 
