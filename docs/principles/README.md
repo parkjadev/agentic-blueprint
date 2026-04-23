@@ -2,9 +2,7 @@
 
 The principles that underlie the Agentic Blueprint. Each file captures one principle — the what, the why, what compliance looks like in practice, and the common failure mode.
 
-**v4 streamline:** 12 principles → 8. Rules merged where they answered the same question (old #5+#6 → new #3; old #8+#9 → new #5). The Next-specific Zod rule was retired.
-
-**v5.0:** Rule 2 ("starters generic and boot clean") retired to `_archive/` once the v4 starters were removed. The reframe would be vacuous without plugin packs, and an always-passing rule corrodes the hard-rules contract. Hard Rules are now 4 (1, 3, 4, 5).
+**History.** v4 streamlined 12 principles → 8. Rules merged where they answered the same question (old #5+#6 → new #3; old #8+#9 → new #5). The Next-specific Zod rule was retired. v5.0 then retired Rule 2 ("starters generic and boot clean") to `_archive/` once the v4 starters were removed — the reframe would be vacuous without plugin packs, and an always-passing rule corrodes the hard-rules contract. **Hard Rules are now 4 (1, 3, 4, 5)** + 3 meta-principles. Numbering is preserved so downstream references don't silently shift.
 
 ## Hard Rules (enforced by `.claude/hooks/pre-commit-gate.sh` + `.claude/skills/hard-rules-check/scripts/check-all.sh`)
 
