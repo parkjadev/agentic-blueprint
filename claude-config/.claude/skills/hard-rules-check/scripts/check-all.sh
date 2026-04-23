@@ -123,6 +123,11 @@ if [[ -n "$sacred_changes" ]]; then
   else
     # Per-commit check: every commit in range that touches a non-archive
     # sacred path must carry a [release] subject.
+    #
+    # When pre-commit-gate.sh is running the check with PENDING_AMEND=1,
+    # the HEAD commit is about to be rewritten — treat its effective
+    # subject as PENDING_COMMIT_SUBJECT, not the still-on-disk value.
+    head_sha="$(git rev-parse HEAD 2>/dev/null || echo "")"
     bad_commit=""
     while read -r sha; do
       [[ -z "$sha" ]] && continue
@@ -130,7 +135,11 @@ if [[ -n "$sacred_changes" ]]; then
         | grep -E '^docs/(templates|contracts)/' \
         | grep -vE '^docs/(templates|contracts)/_archive/' || true)
       if [[ -n "$touches_active" ]]; then
-        subject=$(git log -1 --format=%s "$sha" 2>/dev/null || echo "")
+        if [[ "$sha" == "$head_sha" && "${PENDING_AMEND:-0}" == "1" && -n "${PENDING_COMMIT_SUBJECT:-}" ]]; then
+          subject="$PENDING_COMMIT_SUBJECT"
+        else
+          subject=$(git log -1 --format=%s "$sha" 2>/dev/null || echo "")
+        fi
         if [[ "$subject" != \[release\]* ]]; then
           bad_commit="$sha — $subject"
           break

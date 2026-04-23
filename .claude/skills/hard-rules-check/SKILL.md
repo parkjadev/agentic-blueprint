@@ -1,7 +1,7 @@
 ---
 name: hard-rules-check
 description: Use before generating code, opening a PR, or running /ship. Verifies the repo's 4 Hard Rules via scripts/check-all.sh (Australian spelling, spec-before-ship, templates and contracts versioned, descriptive profiles). Keywords — hard rules, compliance, pre-commit, lint, CLAUDE.md rules, blueprint rules, rule check.
-allowed-tools: Read, Grep, Glob, Bash
+allowed-tools: Read Grep Glob Bash
 model: sonnet
 ---
 

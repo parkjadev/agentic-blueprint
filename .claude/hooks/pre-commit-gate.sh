@@ -35,8 +35,13 @@ cd "$REPO_ROOT"
 # the very first commit of a branch. (check-all.sh otherwise only sees
 # already-landed commits via `git log base_ref..HEAD`.) Supports `-m "..."`,
 # `-m '...'`, and `-F <file>` forms.
+#
+# Also detect `--amend` so Rule 4 can treat the HEAD commit's effective
+# subject as the pending one (amends rewrite HEAD; the subject the gate
+# needs to evaluate against is the new one, not the one still on disk).
 # -----------------------------------------------------------------------------
 pending_commit_subject=""
+pending_amend=0
 case "$cmd" in
   *"git commit"*)
     pending_commit_subject=$(printf '%s' "$cmd" | python3 -c '
@@ -53,6 +58,9 @@ if f:
     except Exception:
         pass
 ' 2>/dev/null || echo "")
+    case "$cmd" in
+      *" --amend"*|*" --amend "*) pending_amend=1;;
+    esac
     ;;
 esac
 
@@ -92,7 +100,7 @@ if [[ ! -x "$SCRIPT" && ! -f "$SCRIPT" ]]; then
   exit 0
 fi
 
-if ! PENDING_COMMIT_SUBJECT="$pending_commit_subject" bash "$SCRIPT" >/tmp/hard-rules.out 2>&1; then
+if ! PENDING_COMMIT_SUBJECT="$pending_commit_subject" PENDING_AMEND="$pending_amend" bash "$SCRIPT" >/tmp/hard-rules.out 2>&1; then
   cat <<EOF >&2
 Blocked: Hard Rules check failed.
 

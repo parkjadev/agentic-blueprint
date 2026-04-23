@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [5.0.4] — 2026-04-23
+
+Patch release. Three adopter-visible bugs surfaced after v5.0.3's clean install: skill frontmatter still comma-separated, `install.sh` nesting on re-run, Rule 4 gate blind to `git commit --amend` subjects.
+
+### Fixed
+
+- **Skills' `allowed-tools` frontmatter** converted from comma-separated to space-separated across all 3 skills (`australian-spelling`, `hard-rules-check`, `signal-sync`) in both the live `.claude/skills/` and the bundle mirror. Same bug and same fix as #128 for commands — skills were out of scope there; `tools` were being read as literal strings, allow-lists effectively empty. Subagents still use comma-form; not fixed pre-emptively (different parser, no symptom yet) (#129).
+- **`claude-config/scripts/install.sh` `cp -R` nesting on re-run.** When `.claude/commands/` already existed, `cp -R src dest` nested instead of replacing (created `dest/commands/commands/*`). Fixed by `rm -rf` before each `cp -R` — applies to both the backup location and each live subdirectory. Idempotent across re-runs and `--force` reinstalls (#129).
+- **Rule 4 gate now honours `PENDING_COMMIT_SUBJECT` on `git commit --amend`.** #116 fixed the same class of bug for Rule 3 (first-commit-on-branch with tagged prefix); Rule 4 had a parallel bug for amends because it walks committed history per-SHA via `git log -1 --format=%s` — the amended subject is invisible pre-land. Now: `pre-commit-gate.sh` detects `--amend` and exports `PENDING_AMEND=1`; `check-all.sh` Rule 4 treats the HEAD commit's effective subject as `PENDING_COMMIT_SUBJECT` when the flag is set. Unblocks `git commit --amend -m "[release] ..."` from inside Claude Code (#129).
+
 ## [5.0.3] — 2026-04-23
 
 Patch release. Fixes `allowed-tools` frontmatter format on all four slash-command definitions so Claude Code actually parses the tool allow-list instead of treating it as a literal string.
