@@ -18,7 +18,7 @@ Plus a cross-cutting reference:
 
 ## Related surfaces
 
-- [Principles](../principles/) — the 5 Hard Rules (1–5) + 3 meta-principles (6–8) that underpin every beat.
+- [Principles](../principles/) — the 4 Hard Rules (1, 3, 4, 5) + 3 meta-principles (6–8) that underpin every beat. (Rule 2 retired in v5.0; numbering preserved.)
 - [Templates](../templates/) — the sacred spec templates filled during `/spec`.
 - [Operations](../operations/) — Signal-beat runbooks (incident response, post-mortems).
 

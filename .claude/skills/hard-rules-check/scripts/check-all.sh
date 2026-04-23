@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
-# Hard Rules compliance check (v4 — 8 rules).
+# Hard Rules compliance check (v5 — 4 rules + 3 meta-principles).
 # Exits 0 if all rules pass, non-zero with a short failure summary otherwise.
 # Each check runs independently; all are evaluated so we report every failure.
 #
-# v4 ruleset:
+# v5 ruleset:
 #   1. Australian spelling                   (content gate)
-#   2. Starters generic and boot clean       (merged v3 #2 + #3)
 #   3. Spec-before-Ship                      (merged v3 #5 + #6)
-#   4. Templates versioned, not edited       (v3 #7 with [release]/env escapes)
+#   4. Templates + contracts versioned       (covers docs/templates/ and docs/contracts/)
 #   5. Descriptive profiles, not prescriptive (merged v3 #8 + #9)
 #   6–8. Meta-principles (progressive disclosure, context economy, gates over
 #        guidance) — not hook-gated; read by skill authors.
 #
-# Dropped in v4: v3 #4 (Zod optional services) — moved to starters/nextjs/CLAUDE.md
-# as a starter-local convention.
+# Retired in v5.0: Rule 2 (starters generic and boot clean) — archived at
+#   docs/principles/_archive/02-starters-generic-boot-clean.md. Reinstate if
+#   plugin packs land in v5.x. Numbering preserved so downstream references to
+#   Rules 3/4/5 don't silently shift.
 #
-# Tagged-exception commit-subject prefixes (v4):
-#   [release]  skips Rule 4 (templates)       — per-commit or full range
+# Tagged-exception commit-subject prefixes:
+#   [release]  skips Rule 4 (sacred paths)     — per-commit or full range
 #   [infra]    skips Rule 3 (Spec-before-Ship) on the tagged commit
 #   [docs]     skips Rule 3 on the tagged commit
-#   [bulk]     skips the >50-file runaway guard (wired in PR 3's pre-commit-gate)
-# Rules 1, 2, 5 are never skippable.
+#   [bulk]     skips the >50-file runaway guard (wired in pre-commit-gate.sh)
+# Rules 1 and 5 are never skippable.
 
 set -uo pipefail
 
@@ -87,30 +88,6 @@ if bash .claude/skills/australian-spelling/scripts/check.sh docs CLAUDE.md READM
   pass "no US-English variants in docs/ or root markdown"
 else
   fail "Rule 1" "US-English variants present — run the australian-spelling script for detail"
-fi
-
-header "Rule 2: Starters generic and boot clean"
-rule2_fail=0
-if [[ ! -d starters ]]; then
-  pass "starters/ retired pending v5 agnostic redesign — rule vacuously passes"
-else
-  # 2a: brand/domain strings
-  if grep -rniE '\b(acme|blueprint-inc|customer-x|mycompany)\b' starters/ >/dev/null 2>&1; then
-    fail "Rule 2" "domain/brand strings found in starters/"
-    rule2_fail=1
-  fi
-  # 2b: smoke-test script present
-  if [[ -f claude-config/scripts/smoke-test.sh || -f claude-config/scripts/bootstrap-smoke-test.sh ]]; then
-    :
-  elif [[ ! -d claude-config/scripts ]]; then
-    :
-  else
-    fail "Rule 2" "claude-config/scripts/{smoke-test,bootstrap-smoke-test}.sh missing"
-    rule2_fail=1
-  fi
-  if [[ $rule2_fail -eq 0 ]]; then
-    pass "starters/ generic; smoke-test script present (run via /ship — not invoked here for speed)"
-  fi
 fi
 
 header "Rule 3: Spec-before-Ship"
@@ -196,7 +173,7 @@ fi
 
 echo
 if [[ $fails -eq 0 ]]; then
-  echo "All 5 Hard Rules (1–5) pass. Meta-principles 6–8 are not hook-gated."
+  echo "All 4 Hard Rules (1, 3, 4, 5) pass. Rule 2 retired in v5.0. Meta-principles 6–8 are not hook-gated."
   exit 0
 else
   echo "$fails rule(s) failed."
