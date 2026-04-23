@@ -30,16 +30,16 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 cd "$REPO_ROOT"
 
 # -----------------------------------------------------------------------------
-# Runaway-commit guard: staged diff of >50 files requires [bulk] prefix.
-# Agents that go off-rails and rewrite half the repo get stopped here.
+# Parse the pending commit subject from the command line so both the bulk
+# guard below and the Hard Rules gate can honour tagged-exception prefixes on
+# the very first commit of a branch. (check-all.sh otherwise only sees
+# already-landed commits via `git log base_ref..HEAD`.) Supports `-m "..."`,
+# `-m '...'`, and `-F <file>` forms.
 # -----------------------------------------------------------------------------
+pending_commit_subject=""
 case "$cmd" in
   *"git commit"*)
-    staged_files=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
-    if [[ -n "$staged_files" && "$staged_files" -gt 50 ]]; then
-      # Try to read the commit message from the command line.
-      # Supports both `-m "..."`/`-m '...'` inline and `-F <file>` file form.
-      msg=$(printf '%s' "$cmd" | python3 -c '
+    pending_commit_subject=$(printf '%s' "$cmd" | python3 -c '
 import re, sys, pathlib
 cmd = sys.stdin.read()
 m = re.search(r"-m\s+(?:\"([^\"]*)\"|\x27([^\x27]*)\x27)", cmd)
@@ -53,7 +53,18 @@ if f:
     except Exception:
         pass
 ' 2>/dev/null || echo "")
-      if [[ "$msg" != \[bulk\]* ]]; then
+    ;;
+esac
+
+# -----------------------------------------------------------------------------
+# Runaway-commit guard: staged diff of >50 files requires [bulk] prefix.
+# Agents that go off-rails and rewrite half the repo get stopped here.
+# -----------------------------------------------------------------------------
+case "$cmd" in
+  *"git commit"*)
+    staged_files=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
+    if [[ -n "$staged_files" && "$staged_files" -gt 50 ]]; then
+      if [[ "$pending_commit_subject" != \[bulk\]* ]]; then
         cat <<EOF >&2
 Blocked: this commit stages $staged_files files (>50).
 
@@ -81,7 +92,7 @@ if [[ ! -x "$SCRIPT" && ! -f "$SCRIPT" ]]; then
   exit 0
 fi
 
-if ! bash "$SCRIPT" >/tmp/hard-rules.out 2>&1; then
+if ! PENDING_COMMIT_SUBJECT="$pending_commit_subject" bash "$SCRIPT" >/tmp/hard-rules.out 2>&1; then
   cat <<EOF >&2
 Blocked: Hard Rules check failed.
 

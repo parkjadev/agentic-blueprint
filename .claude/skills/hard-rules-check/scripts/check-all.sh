@@ -69,7 +69,14 @@ else
   commit_subjects=""
 fi
 
-# Helper: does any commit in range carry the given bracketed prefix?
+# Pre-commit hooks can export PENDING_COMMIT_SUBJECT so the very first commit
+# on a branch can still carry an [infra]/[docs]/[release] exception — git log
+# alone only sees already-landed commits. See .claude/hooks/pre-commit-gate.sh.
+if [[ -n "${PENDING_COMMIT_SUBJECT:-}" ]]; then
+  commit_subjects=$(printf '%s\n%s' "$PENDING_COMMIT_SUBJECT" "$commit_subjects")
+fi
+
+# Helper: does any commit in range (or the pending commit) carry the given bracketed prefix?
 range_has_prefix() {
   local prefix="$1"
   echo "$commit_subjects" | grep -qE "^\[${prefix}\]" 2>/dev/null
