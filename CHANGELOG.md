@@ -6,36 +6,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [5.0.0] — 2026-04-23
 
+The platform-agnostic redesign. Stack selection becomes an output of the Spec beat (via `spec-researcher`), not an assumption baked into opinionated starters. The load-bearing IP from the retired v4 starters — interface contracts like the `ApiResponse<T>` envelope, error taxonomy, auth-token shape, telemetry schema — is lifted into first-class reference artefacts under `docs/contracts/`, protected by Rule 4. Hard Rules reduce to 4 (1, 3, 4, 5) + 3 meta-principles; Rule 2 is retired with its numbering preserved so downstream references don't shift.
 
 ### Added
 
-- New sacred template `docs/templates/release-strategy.md` for downstream projects to document their chosen release profile, branch/environment mapping, preview environments, feature flags, schema migrations, approval gates, and rollback levers (#88).
-- Added a worked example of the release-strategy template at `docs/examples/release-strategy.md`, demonstrating Profile A (Simplified / GitHub Flow) for a fictional small-team SaaS (#93).
-- **.NET + Azure starter Phase 1** — new `starters/dotnet-azure/` with a .NET 9 minimal-API solution, `ApiResponse<T>` envelope matching the sibling starters, health endpoint, xUnit + `WebApplicationFactory<Program>` test project, starter-local CLAUDE.md, `/check` command, and clean-boot contract (`dotnet build` + `dotnet test` + `dotnet format --verify-no-changes`). Reference implementation of Profile A on Azure — coexists with the Next.js and Flutter starters; Bicep modules, Entra auth, EF Core, and deploy workflow follow in Phases 2–4. Spec: `docs/specs/add-dotnet-azure-bicep-Dg8yD/` (#103).
-- `.github/workflows/dotnet-starter-check.yml` — path-scoped CI workflow for the .NET starter (runs build, test, and format verification on any PR that touches `starters/dotnet-azure/**`) (#103).
-- **.NET + Azure starter Phase 2** — Bicep infrastructure under `starters/dotnet-azure/infra/`: `main.bicep` orchestrator plus `network`, `identity`, `observability`, `data` (Postgres), `data-azuresql`, and `compute` modules. VNET-integrated Container Apps, Entra-only managed-identity auth, `dataProvider` parameter selects Postgres or Azure SQL in-tree. Ships `dev`/`staging`/`prod` `.bicepparam.example` placeholders and `.env.example`; real values stay gitignored (#106).
-- `.github/workflows/dotnet-azure-bicep-validate.yml` — path-scoped CI workflow that runs `bicep build` over `main.bicep`, every child module, and every parameter example on any PR that touches `starters/dotnet-azure/infra/**` (#106).
-- `.github/workflows/dotnet-azure-deploy.yml` — adopter-facing `workflow_dispatch` deploy workflow with OIDC federation, `what-if` → `sub create` → `/health` smoke test. Requires adopter to configure `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`, and `BICEPPARAM_CONTENT_<env>` secrets (#106).
+- **`docs/contracts/`** — stack-agnostic interface library (README + 4 day-one contracts: `api-response.md`, `error-taxonomy.md`, `auth-token.md`, `telemetry.md`). Prose + JSON Schema draft 2020-12. Rule-4 protected; `contracts/*` branches honoured as a dedicated edit context (#117).
+- **Stack Selection section** in `docs/templates/research-brief.md` and matching guidance in `spec-researcher.md` — product-scope briefs must evaluate ≥ 3 alternatives against discriminating criteria and produce a justified recommendation. Stack is an output of Spec, not an input (#118).
+- **Chunked-write + context-pack protocols** in `spec-author.md` and `spec-researcher.md` — first `Write` ≤ 1500 words, subsequent sections via `Edit` in ≤ 1500-word chunks, heartbeat within 3 tool calls. Caller may inline a context pack to save Reads. Directly mitigates the stream-idle timeouts that plagued pre-#113 subagent runs (#113).
+- **Budget preambles** on `research-brief.md` (words ≤ 4000) and `PRD.md` (words ≤ 4500) — template-level context-economy guardrail (#114).
+- **v5 product spec** — `docs/research/agentic-blueprint-v5-agnostic-brief.md` + `docs/specs/agentic-blueprint-v5-agnostic/{PRD.md, architecture.md}` (#112, #115).
 
 ### Changed
 
-- Four `/plan` and `/ship` harness tweaks from the #88 retro: split spec-writer per spec, branch-prefix precondition, reorder PR-before-changelog, and require `<!-- status: pending -->` marker on plan files (#90).
-- Rule 5 and Rule 6 in `hard-rules-check` now exempt `chore/*` branches, alongside `main` and `release/*`. Trust-based exemption for memory-sync, dep bumps, and small fixes (#91).
-- `starter-verify` skill now accepts a third target, `dotnet`, running the .NET starter's clean-boot contract in-tree. Skipped gracefully when the .NET SDK is absent — same pattern Flutter uses when its CLI is missing (#103).
-- Hard Rule 2 (`starters generic and boot clean`) now passes vacuously when the `starters/` tree is absent. Preserves the rule infrastructure for v5 without forcing a pass/fail on a non-existent surface.
-- Root `CLAUDE.md` and `docs/guides/tool-reference.md` gained transitional banners pointing at the v5 platform-agnostic redesign. The v4 fixed-profile matrix remains readable for historical context.
+- **Rule 4 extended to cover `docs/contracts/`** — `template-guard.sh` protects both sacred paths; `check-all.sh` Rule 4 check accepts `docs/*`, `templates/*`, or `contracts/*` as dedicated edit branches; `[release]` commit prefix works for both (#117).
+- **Pre-commit gate sees the pending commit subject.** `range_has_prefix` in `check-all.sh` now also reads `PENDING_COMMIT_SUBJECT`, parsed from the `-m` / `-F` args by `pre-commit-gate.sh`. Fixes the bug where first-commit-on-branch with an `[infra]` / `[docs]` / `[release]` exception was blocked even though the subject was correct (#116).
+- **`tool-reference.md` reframed** as a role × inputs matrix with an explicit "not a prescription" note, dropping the v4 two-profile split (Claude-native / OutSystems ODC). Beat guides lose their "Platform profiles" blocks (#121).
+- **`hard-rules-check` SKILL.md rewritten** — description aligned to v5's 4 rules (was still enumerating pre-v4 "9 Hard Rules"). `rules-detail.md` updated with Rule 2 archive note and v3 → v4 → v5 historical trail (#119).
 
 ### Removed
 
-- **All v4 reference starters retired** in preparation for the v5 platform-agnostic redesign. The blueprint is being re-framed so `/spec idea` drives stack selection via research rather than shipping opinionated starters. Removed:
-  - `starters/nextjs/` — Next.js 15 + Supabase reference implementation
-  - `starters/flutter/` — Flutter mobile companion
-  - `starters/dotnet-azure/` — .NET 9 + Azure Bicep reference (Phases 1 + 2 shipped in #103 and #106 respectively; Phase 3 PR #108 closed without merging)
-  - `.github/workflows/bootstrap-smoke-test.yml`, `dotnet-starter-check.yml`, `dotnet-azure-bicep-validate.yml`, `dotnet-azure-deploy.yml` — starter-scoped CI workflows
-  - `claude-config/scripts/bootstrap-smoke-test.sh` — dogfooding harness that copied starters
-  - `docs/specs/dotnet-azure-phase-2.md` — Phase 2 slug-match stub
-- Adopters of v4 can pin to the pre-retirement commit if they need the previous starter trees. The v5 design will articulate the migration path once `/spec idea` lands.
+- **Hard Rule 2** (starters generic and boot clean) — archived to `docs/principles/_archive/02-starters-generic-boot-clean.md`. Reinstate if plugin packs land in v5.x (#119).
+- **`starter-verify` skill** — removed from live `.claude/skills/` and the `claude-config/.claude/` adopter bundle. Rule 2 retirement left the skill with no rule to enforce (#120).
+- **`/beat install --new <project>` sub-verb** — greenfield scaffolding from retired starters. New projects now run `/beat install` in an empty repo then `/spec idea` for stack-selection research (#120).
+- **Two-profile platform split** — Profile A (Claude-native) and Profile B (OutSystems ODC) sections removed from `tool-reference.md` and beat guides. Rule 5 principle untouched; only the v4 two-profile enumeration is retired (#121).
+
+### v4 artefacts (retired in-flight before v5.0)
+
+Starters and their support infrastructure were retired in preparation for v5.0 (commit `a53f0ff`, PR #109):
+
+- `starters/nextjs/`, `starters/flutter/`, `starters/dotnet-azure/`
+- `.github/workflows/bootstrap-smoke-test.yml` + the three `dotnet-*` workflows
+- `claude-config/scripts/bootstrap-smoke-test.sh`
+
+Adopters of v4 can pin to the pre-retirement commit (`3bb4c27`) if they need the previous starter trees; v5.0 does not ship a migration guide because no external v4 adopters are known.
 
 ## [3.0.0] — 2026-04-20
 

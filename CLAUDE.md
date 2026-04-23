@@ -1,8 +1,8 @@
 # CLAUDE.md
 
-Primitive map for Claude Code (and any other agent) working in this repository. Start here, then drill into the harness, templates, or research briefs as needed.
+Primitive map for Claude Code (and any other agent) working in this repository. Start here, then drill into the harness, templates, contracts, or research briefs as needed.
 
-> **Transitional note — v5 agnostic redesign in flight.** The v4 reference starters (`starters/nextjs/`, `starters/flutter/`, `starters/dotnet-azure/`) have been retired. The blueprint is being re-framed so `/spec idea` drives stack selection via research rather than shipping opinionated starters. The authoritative design for v5 will land under `docs/specs/agentic-blueprint-v5-agnostic/` when `/spec idea` completes. Until then, expect the harness to reference retired primitives in a few places — those will be reconciled by the v5 PR.
+> **v5.0 state.** The blueprint is platform- and technology-agnostic. Stack selection is an output of the Spec beat (`/spec idea` evaluates alternatives via `spec-researcher`), not an input. v4's opinionated reference starters (`starters/nextjs/`, `starters/flutter/`, `starters/dotnet-azure/`) are retired; their load-bearing contract discipline lives on under `docs/contracts/`. Design artefacts: `docs/specs/agentic-blueprint-v5-agnostic/`.
 
 ## What this repo is
 
@@ -14,7 +14,7 @@ The master plan is the **three-beat lifecycle**: **Spec → Ship → Signal**.
 - **Ship** — build + test + deploy + release as one automated PR-driven loop with gates.
 - **Signal** — run + monitor + learn + scheduled automation. Feeds back into Spec.
 
-v4 collapses the previous five-stage model (Research & Think → Plan → Build → Ship → Run) because Claude Code now closes Plan → Build → Ship in one continuous motion — the spec IS the plan.
+The three-beat model collapses the older five-stage pipeline (Research & Think → Plan → Build → Ship → Run) because Claude Code now closes Plan → Build → Ship in one continuous motion — the spec IS the plan.
 
 ## Harness map (where to look for what)
 
@@ -26,7 +26,8 @@ v4 collapses the previous five-stage model (Research & Think → Plan → Build 
 | Hooks | `.claude/hooks/` | `session-start`, `beat-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-secret-scan`, `pre-commit-gate`, `prune-merged-branches` |
 | Settings | `.claude/settings.json` | Permission baseline and hook wiring |
 | Sacred templates | `docs/templates/` | The core IP — spec-driven document templates. Never modify in a feature PR (Rule 4) |
-| Beat guides | `docs/guides/` | Long-form guides for each beat, plus a tool-reference (v5 will re-frame this around research-driven stack selection) |
+| Beat guides | `docs/guides/` | Long-form guides for each beat, plus a tool-reference (role × inputs matrix — stack selection happens per-project during `/spec idea`) |
+| Reference contracts | `docs/contracts/` | Stack-agnostic interface library (API envelope, error taxonomy, auth-token shape, telemetry schema). Rule-4 protected alongside `docs/templates/`. |
 | Research briefs | `docs/research/` | Spec-beat output; lands via `/spec idea` or `/spec feature` |
 | Specs | `docs/specs/<slug>.md` (flat) or `docs/specs/<slug>/` (folder) | Spec-beat output; filled-in templates with `scope:` + `parent:` frontmatter |
 | Copy-ready bundle | `claude-config/` | What downstream projects copy via `/beat install` |
@@ -71,13 +72,13 @@ Rules 1 and 5 are never skippable. Every skip is recorded in the git log.
 
 For the long-form version, read `docs/guides/` end-to-end.
 
-## Adopting v4 into an existing repo
+## Adopting into an existing repo
 
 `/beat install` ports the blueprint into an existing codebase without touching source code:
 
 - Dry-runs first, reports what it will create/merge/skip
 - Copies `.claude/` bundle, merges existing `CLAUDE.md` via a fenced `<!-- agentic-blueprint:begin/end -->` block
-- Creates `docs/` scaffolding and copies the 9 v4 templates
+- Creates `docs/` scaffolding and copies the 9 sacred templates plus `docs/contracts/`
 - Installs the GitHub Actions hard-rules wrapper (or prints porting notes for other CI)
 - Writes `claude-config/VERSION` (semver) for future `/beat update` runs
 

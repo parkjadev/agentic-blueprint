@@ -22,45 +22,15 @@ Every product follows three beats. Most agentic tools only help with the middle 
 | **Ship** | Build + test + deploy + release as one PR-driven loop | Every agentic tool helps here — the Blueprint adds gates + idempotence |
 | **Signal** | Run + monitor + learn + scheduled automation; feeds Spec | No scheduled automation, no peer-review substitute, no durable learnings log |
 
-v4 collapses the previous five-stage model (Research & Think → Plan → Build → Ship → Run) because Claude Code now handles Plan → Build → Ship in one continuous motion. The framework is still tool-agnostic — the beats describe the work, not the tool.
+The three-beat model collapses the older Research & Think → Plan → Build → Ship → Run pipeline because Claude Code now handles Plan → Build → Ship in one continuous motion. The framework stays tool-agnostic — the beats describe the work, not the tool.
 
 ---
 
 ## Quickstart
 
-### Option A — New project from a starter
+### Option A — Adopt into an existing repo
 
-1. Click **"Use this template"** on GitHub.
-2. Copy the Next.js starter (or Flutter — same flow):
-   ```bash
-   cp -r starters/nextjs/* .
-   cp starters/nextjs/.env.example .
-   cp -r starters/nextjs/.github .
-   ```
-3. Configure Supabase (the only required service):
-   ```bash
-   cp .env.example .env.local
-   # Fill in: DATABASE_URL, NEXT_PUBLIC_SUPABASE_URL,
-   # NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY
-   ```
-4. Install the Blueprint harness:
-   ```bash
-   cp claude-config/CLAUDE.md.template CLAUDE.md
-   mkdir -p .claude
-   cp claude-config/settings.local.json.template .claude/settings.local.json
-   cp -R claude-config/github/. .github/
-   ./claude-config/scripts/setup-labels.sh
-   ./claude-config/scripts/setup-branch-protection.sh
-   ```
-5. Boot:
-   ```bash
-   pnpm install && pnpm db:push && pnpm dev
-   curl http://localhost:3000/api/health
-   ```
-
-### Option B — Adopt into an existing codebase
-
-The Blueprint ports into an existing repo without touching source code:
+The most common path. The Blueprint ports into an existing codebase without touching source code:
 
 ```bash
 # From inside your repo, using Claude Code:
@@ -69,14 +39,24 @@ The Blueprint ports into an existing repo without touching source code:
 
 `/beat install` detects your layout, dry-runs, then copies the `.claude/` bundle, merges your existing `CLAUDE.md` via a fenced block (your content stays intact), installs the GitHub Actions hard-rules wrapper, and writes `claude-config/VERSION` so future `/beat update` runs can reason about drift.
 
-### Option C — Framework only (bring your own stack)
+### Option B — New project
+
+v5 ships no opinionated starter tree. Start a new project the same way you'd start any other: initialise a repo, then run:
+
+```bash
+/beat install
+/spec idea <your-product>
+```
+
+`/spec idea` evaluates stack alternatives against your problem, produces a research brief with a ranked recommendation, then drafts PRD + architecture. Scaffold the recommended stack manually using the contracts at `docs/contracts/` as the wire-level spec.
+
+### Option C — Framework only (bring your own stack, no harness)
 
 1. Copy `docs/templates/` into your repo
-2. Copy `claude-config/CLAUDE.md.template` and customise
-3. Read the three beat guides in `docs/guides/`
-4. Follow the loop: Spec → Ship → Signal
-
-No starter code required.
+2. Copy `docs/contracts/` for stack-neutral interface definitions
+3. Copy `claude-config/CLAUDE.md.template` and customise
+4. Read the three beat guides in `docs/guides/`
+5. Follow the loop: Spec → Ship → Signal
 
 ---
 
@@ -85,19 +65,19 @@ No starter code required.
 | Guide | What it covers |
 |---|---|
 | [Spec](docs/guides/beat-spec.md) | Sub-verbs (idea / epic / feature / fix / chore), spec-researcher, spec-author, parent-linkage cascade |
-| [Ship](docs/guides/beat-ship.md) | Idempotent PR loop, GitHub Flow default, starter-verify, preview smoke-test, verify |
+| [Ship](docs/guides/beat-ship.md) | Idempotent PR loop, GitHub Flow default, preview smoke-test, verify |
 | [Signal](docs/guides/beat-signal.md) | Scheduled-task manifest, `/signal audit` peer-review substitute, feedback into Spec |
-| [Tool Reference](docs/guides/tool-reference.md) | Role mapping and the 2-profile × 3-beat matrix (Claude-native + OutSystems ODC) |
+| [Tool Reference](docs/guides/tool-reference.md) | Role × inputs matrix. Stack selection is per-project; this describes the roles every project needs to fill. |
 
 ---
 
 ## Templates
 
-Spec-driven development templates. Every feature starts as a spec before any code is written. v4 ships **9 active templates** (down from 12 in v3) — api-spec, data-model-spec, and auth-spec were absorbed into `technical-spec.md`; deployment + release-strategy were merged into `delivery.md`.
+Spec-driven development templates. Every feature starts as a spec before any code is written. The Blueprint ships **9 active templates** — api-spec, data-model-spec, and auth-spec are absorbed into `technical-spec.md`; deployment + release-strategy are merged into `delivery.md`.
 
 | Template | Beat | Structure |
 |---|---|---|
-| [Research Brief](docs/templates/research-brief.md) | Spec | Questions, findings, market landscape, implications |
+| [Research Brief](docs/templates/research-brief.md) | Spec | Questions, findings, market landscape, stack selection (product-scope), implications |
 | [PRD](docs/templates/PRD.md) | Spec | `scope: product \| epic \| feature` — Problem → Users → Journeys → Feature matrix (product only) → Metrics |
 | [Technical Spec](docs/templates/technical-spec.md) | Spec | `scope: epic \| feature \| fix` — Overview → Data model → API → Auth → Testing → Rollout |
 | [Architecture](docs/templates/architecture.md) | Spec | System diagram, component map, data flow, integrations |
@@ -111,34 +91,16 @@ Retired templates are preserved in `docs/templates/_archive/` with redirect stub
 
 ---
 
-## Starters (optional)
+## Contracts
 
-Opinionated reference implementations. Use them if the stack fits; ignore them if you're bringing your own.
+Stack-agnostic reference library at `docs/contracts/` — the load-bearing IP from the retired v4 starters, lifted into first-class artefacts protected by Hard Rule 4.
 
-### Next.js Starter (`starters/nextjs/`)
+- [`api-response.md`](docs/contracts/api-response.md) — `ApiResponse<T>` envelope (prose + JSON Schema)
+- [`error-taxonomy.md`](docs/contracts/error-taxonomy.md) — canonical error codes with HTTP mapping
+- [`auth-token.md`](docs/contracts/auth-token.md) — access + refresh token shape, JWT claims
+- [`telemetry.md`](docs/contracts/telemetry.md) — structured log + event envelope with `traceId` correlation
 
-Full-stack starter with Supabase (PostgreSQL, Auth, Storage), Drizzle ORM, and opt-in services (Stripe, Inngest, Resend). Includes example CRUD API, auth pages, rate limiting, and CI pipeline. Starter-local conventions (like the optional-services Zod pattern) live in `starters/nextjs/CLAUDE.md`.
-
-### Flutter Starter (`starters/flutter/`)
-
-Mobile companion with Supabase Auth (via `supabase_flutter`), Riverpod state management, GoRouter navigation, and Dio HTTP client matching the Next.js API envelope.
-
-### Claude Config (`claude-config/`)
-
-Copy-ready bundle for any project using Claude Code: `CLAUDE.md` template, permission settings, memory guidelines, hook patterns, issue/PR templates, bootstrap scripts, and `VERSION` pin.
-
----
-
-## Platform Profiles
-
-The Blueprint is documented for two platform profiles:
-
-| Profile | Build Tool | Best For |
-|---|---|---|
-| **Claude-native** | Claude Code | Solo founders and small teams, pro-code SaaS + mobile |
-| **OutSystems ODC** | Mentor + Enterprise Context Graph | Enterprise teams on OutSystems Developer Cloud |
-
-Spec and Signal artefacts are identical across profiles; only Ship mechanics diverge. See [Tool Reference](docs/guides/tool-reference.md) for the full beat × profile matrix.
+Projects using the Blueprint translate these into whatever their stack supports (Zod for TypeScript, Pydantic for Python, freezed for Dart, etc.). Contracts are specification, not a library.
 
 ---
 
@@ -150,7 +112,7 @@ AI is treated as a senior collaborator who needs context to perform. Output qual
 2. **Gates** beat guidance — if a rule matters, wire a hook; if you can't, drop the rule or scope it differently.
 3. **Flexibility has named escapes** — tagged commit prefixes (`[release]`, `[infra]`, `[docs]`, `[bulk]`) replace `--no-verify`.
 4. **Context compounds** — `docs/signal/learnings.md` accumulates durable insights across cycles; every future `/spec idea` reads it.
-5. **One operator, one framework** — v4 is sized for a solo developer running multiple products. Adopt-in-place via `/beat install` keeps it portable.
+5. **Stack-agnostic by design** — stack selection is an output of the Spec beat, not an input. The blueprint describes the discipline; the stack is chosen per project.
 
 ---
 
@@ -161,15 +123,13 @@ agentic-blueprint/
 ├── .claude/                    # Claude Code harness — commands, agents, skills, hooks
 ├── docs/
 │   ├── templates/              # 9 spec-driven templates (the IP) + _archive/
+│   ├── contracts/              # Stack-agnostic interface library (Rule-4 protected)
 │   ├── guides/                 # 3 beat guides + 1 tool reference
-│   ├── principles/             # 5 Hard Rules + 3 meta-principles
+│   ├── principles/             # 4 Hard Rules + 3 meta-principles
 │   ├── operations/             # Signal-beat runbooks (incident response, post-mortems)
 │   ├── research/               # Research briefs (Spec-beat output)
 │   ├── specs/                  # Filled-in specs (Spec-beat output)
 │   └── signal/                 # Accumulating logs: learnings, agent-log, dependencies, spend
-├── starters/
-│   ├── nextjs/                 # Optional: Next.js reference implementation
-│   └── flutter/                # Optional: Flutter reference implementation
 ├── claude-config/              # Copy-ready bundle for /beat install
 ├── CLAUDE.md                   # Primitive map for this repo
 ├── CHANGELOG.md
@@ -181,17 +141,11 @@ agentic-blueprint/
 ## Verification
 
 ```bash
-# Hard Rules (all 5 pass on a clean clone)
+# Hard Rules (all 4 pass on a clean clone)
 bash .claude/skills/hard-rules-check/scripts/check-all.sh
-
-# Next.js starter — must pass clean
-cd starters/nextjs
-pnpm install && pnpm type-check && pnpm lint && pnpm test:ci
-
-# Flutter starter — must pass clean
-cd starters/flutter
-flutter analyze && flutter test
 ```
+
+Four Hard Rules (1, 3, 4, 5) + three meta-principles (6, 7, 8). Rule 2 was retired in v5.0; archived at `docs/principles/_archive/02-starters-generic-boot-clean.md`. Numbering preserved so downstream references to Rules 3/4/5 don't silently shift.
 
 ---
 

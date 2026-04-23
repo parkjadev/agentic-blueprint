@@ -85,7 +85,7 @@ Commit with `[infra]` or `[docs]` prefix on a `chore/*` branch or a feature bran
 
 ## The CLAUDE.md advantage
 
-Every Claude Code session reads `CLAUDE.md` at the repo root — plus any nested `CLAUDE.md` files in directories it opens. This means starter-local conventions (like the Next.js optional-services Zod pattern in `starters/nextjs/CLAUDE.md`) get loaded automatically when the agent works in that subtree. No configuration needed.
+Every Claude Code session reads `CLAUDE.md` at the repo root — plus any nested `CLAUDE.md` files in directories it opens. Project-local conventions defined in a subtree's `CLAUDE.md` get loaded automatically when the agent works in that subtree. No configuration needed.
 
 ## Exit criteria
 
