@@ -5,6 +5,10 @@
 **Tool:** [e.g. Perplexity Deep Research, Claude web search]
 **Confidence:** High | Medium | Low
 
+<!-- Budget: words ≤ 4000 · research questions ≤ 10 · findings sections ≤ 8.
+     Long-output agents (spec-researcher) must respect these caps and produce
+     the brief via chunked Write + Edit (see agent write-first protocol). -->
+
 ---
 
 ## Research Questions

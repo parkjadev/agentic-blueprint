@@ -8,6 +8,10 @@
 
 > **Scope-aware sections.** Render the *Vision*, *Success Metrics*, *Non-Goals*, and *Feature Matrix* sections only when `Scope: product`. Render *Child features* only for `product` or `epic`. Render *Acceptance Criteria* for all scopes.
 
+<!-- Budget: words ≤ 4500 · feature-matrix rows ≤ 30 · open questions ≤ 10.
+     Long-output agents (spec-author) must chunk via Write + Edit — first Write ≤ 1500 words,
+     each subsequent Edit ≤ 1500 words (see agent large-output protocol). -->
+
 ---
 
 ## Problem Statement
