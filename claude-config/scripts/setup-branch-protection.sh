@@ -8,8 +8,9 @@
 # Defaults applied:
 #   - Pull request required before merging (1 approval)
 #   - Conversation resolution required before merging
-#   - Required status checks: the CI workflow defined in
-#     starters/nextjs/.github/workflows/ci.yml (job name: "Type Check, Lint & Test")
+#   - Required status checks: the Hard Rules workflow
+#     (.github/workflows/hard-rules.yml, job name: "Hard Rules"). Adopters
+#     add their own stack-specific checks as the project grows.
 #   - Linear history required (forces squash merges)
 #   - Force pushes blocked
 #   - Deletion blocked

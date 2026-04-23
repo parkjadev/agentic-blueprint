@@ -1,8 +1,6 @@
 # CLAUDE.md
 
-Primitive map for Claude Code (and any other agent) working in this
-repository. Copy this file to `CLAUDE.md` at your repo root, fill in
-the stack table, and customise the Hard Rules as needed.
+Primitive map for Claude Code (and any other agent) working in this repository. Copy this file to `CLAUDE.md` at your repo root, fill in the stack table, and customise as needed. `/beat install` merges this into an existing `CLAUDE.md` via a fenced `<!-- agentic-blueprint:begin/end -->` block; your content below the fence stays intact.
 
 ## What this repo is
 
@@ -10,24 +8,24 @@ the stack table, and customise the Hard Rules as needed.
 
 ## Harness map
 
-This project follows the agentic-blueprint five-stage lifecycle
-(**Research & Think → Plan → Build → Ship → Run**). The Claude Code
-harness is in `.claude/` — copy it wholesale from the blueprint's
-`claude-config/.claude/`:
+This project follows the **three-beat lifecycle** — **Spec → Ship → Signal**. The Claude Code harness is in `.claude/` — copied from the blueprint's `claude-config/.claude/` bundle.
 
 | Primitive | Location | Purpose |
 |---|---|---|
-| Slash commands | `.claude/commands/` | `/research`, `/plan`, `/build`, `/ship`, `/run`, `/stage`, `/new-feature` |
-| Subagents | `.claude/agents/` | `researcher`, `spec-writer`, `spec-reviewer`, `starter-verifier`, `docs-inspector` |
-| Skills | `.claude/skills/` | `australian-spelling`, `spec-author`, `hard-rules-check`, `changelog-entry`, `memory-sync` |
-| Hooks | `.claude/hooks/` | `session-start`, `stage-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-gate` |
+| Slash commands | `.claude/commands/` | `/spec <idea\|epic\|feature\|fix\|chore>`, `/ship`, `/signal <init\|sync\|audit\|status>`, `/beat <status\|install\|update>` |
+| Subagents | `.claude/agents/` | `spec-researcher`, `spec-author` |
+| Skills | `.claude/skills/` | `australian-spelling`, `hard-rules-check`, `signal-sync` |
+| Hooks | `.claude/hooks/` | `session-start`, `beat-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-secret-scan`, `pre-commit-gate`, `prune-merged-branches` |
 | Settings | `.claude/settings.json` | Permissions + hook wiring |
+| Sacred templates | `docs/templates/` | Spec-driven document templates (Rule 4) |
+| Reference contracts | `docs/contracts/` | Stack-agnostic interfaces: API envelope, error taxonomy, auth-token shape, telemetry schema (Rule 4) |
 
-When in doubt, run `/stage` for a read-only snapshot of where you are.
+When in doubt, run `/beat` for a read-only status snapshot + the next-best command.
 
 ## Stack
 
 <!-- TODO: fill in each row. Delete rows that don't apply. -->
+<!-- If this is a new project, `/spec idea <your-product>` produces a stack recommendation you can use to fill this in. -->
 
 | Layer | Technology | Notes |
 |---|---|---|
@@ -36,47 +34,40 @@ When in doubt, run `/stage` for a read-only snapshot of where you are.
 | Auth |  |  |
 | Database |  |  |
 | Background jobs |  |  |
-| Styling |  |  |
 | Testing |  |  |
 | Hosting |  |  |
 
 ## Hard Rules
 
-Enforced by `.claude/hooks/pre-commit-gate.sh` via the
-`hard-rules-check` skill. Rationale for each rule is in the blueprint's
-[`docs/principles/`](https://github.com/parkjadev/agentic-blueprint/tree/main/docs/principles).
+Enforced by `.claude/hooks/pre-commit-gate.sh` via the `hard-rules-check` skill. Rationale for each rule lives in the blueprint's [`docs/principles/`](https://github.com/parkjadev/agentic-blueprint/tree/main/docs/principles). Four enforced Hard Rules + three meta-principles; Rule 2 was retired in v5.0 with numbering preserved so downstream references to Rules 3/4/5 don't silently shift.
 
 1. **Australian spelling throughout.** Prose, comments, string literals.
-2. **No domain-specific business logic in starters.** Starters stay generic.
-3. **All starters must boot clean.** Every starter passes its own check suite.
-4. **Optional services.** Non-essential env vars are `.optional()` in Zod.
-5. **Spec-driven.** Every feature starts as a spec in `docs/specs/<slug>/`.
-6. **Plan-before-code.** Every feature has a plan in `docs/plans/<slug>.md`.
-7. **Templates are sacred.** `docs/templates/` is never edited in a feature PR.
-8. **Tool-agnostic framing.** Guides recommend; they do not require.
-9. **Platform profiles are descriptive, not prescriptive.**
+3. **Spec-before-Ship.** Every feature/fix starts as a spec under `docs/specs/<slug>/` before any code.
+4. **Templates + contracts versioned, not edited in flight.** `docs/templates/` and `docs/contracts/` are sacred — edits require `[release]` commit prefix, `AGENTIC_BLUEPRINT_RELEASE=1`, or a `docs/*` / `templates/*` / `contracts/*` branch.
+5. **Descriptive profiles, not prescriptive.** Guides describe toolchains; they don't pick winners.
 
-<!-- TODO: Add project-specific Hard Rules below. Keep them machine-
-     checkable — add a check to .claude/skills/hard-rules-check/scripts/
-     check-all.sh for each one you add. -->
+<!-- TODO: add project-specific Hard Rules below. Keep them machine-checkable — add a check to .claude/skills/hard-rules-check/scripts/check-all.sh for each one you add. -->
+
+## Tagged-exception commit prefixes
+
+The pre-commit gate reads the commit subject first. These prefixes replace `--no-verify` with named, auditable overrides:
+
+| Prefix | Skips | Use case |
+|---|---|---|
+| `[release]` | Rule 4 (sacred paths) | Template or contract rebuilds |
+| `[infra]` | Rule 3 (Spec-before-Ship) | CI, hooks, dependency bumps, harness-level work |
+| `[docs]` | Rule 3 | Doc-only commits |
+| `[bulk]` | >50-file runaway guard | Genuine bulk updates |
+
+Rules 1 and 5 are never skippable. Every skip is recorded in the git log.
 
 ## Meta-principles
 
-Three architectural principles shape how the harness itself is built.
-Unlike the Hard Rules, these are not machine-checked — they are lenses
-for deciding how new commands, agents, skills, and hooks should behave.
+Three architectural principles shape how the harness is built. Unlike the Hard Rules, they are not machine-checked — they are lenses for deciding how new primitives should behave.
 
-10. **Progressive disclosure.** Commands and agents load only the context
-    they need, on demand. Skills expose a short `SKILL.md` and defer
-    reference material until it's actually asked for.
-11. **Context economy.** Every token spent on framing is a token not spent
-    on the task. Prefer terse primitives, dense tables, and delegated
-    subagents over long inline prose.
-12. **Gates over guidance.** When a rule matters, enforce it with a hook
-    or CI check. Guidance in docs degrades over time; gates don't.
-
-Full rationale for all twelve principles lives in the blueprint's
-[`docs/principles/`](https://github.com/parkjadev/agentic-blueprint/tree/main/docs/principles).
+6. **Progressive disclosure.** Skills load context on demand, not upfront.
+7. **Context economy.** Subagents protect the main conversation from noise.
+8. **Gates over guidance.** If a rule matters, wire a gate.
 
 ## Environments
 
@@ -91,21 +82,16 @@ Full rationale for all twelve principles lives in the blueprint's
 ## Getting started
 
 ```bash
-# 1. Copy the harness
-cp -r <path-to-blueprint>/claude-config/.claude .
-
-# 2. Copy this template, then fill in the TODO blocks above
-cp <path-to-blueprint>/claude-config/CLAUDE.md.template CLAUDE.md
-
-# 3. Copy the sacred templates
-cp -r <path-to-blueprint>/docs/templates docs/templates
-
-# 4. Verify the Hard Rules gate runs
-bash .claude/skills/hard-rules-check/scripts/check-all.sh
+# From inside your repo, using Claude Code:
+/beat install       # copies the .claude/ bundle + merges CLAUDE.md
+/spec idea my-product   # research-driven stack selection (new project)
+# OR
+/spec feature my-first-feature   # for an existing project
 ```
 
 ## Further reading
 
 - Blueprint README — https://github.com/parkjadev/agentic-blueprint
-- Stage guides — `docs/guides/` in the blueprint
+- Beat guides — `docs/guides/` in the blueprint
 - Principle rationale — `docs/principles/` in the blueprint
+- Reference contracts — `docs/contracts/` in the blueprint
