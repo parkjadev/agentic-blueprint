@@ -9,7 +9,7 @@ Read them end to end for the narrative, or jump to the beat you need. Each guide
 | Beat | Guide | What it covers |
 |---|---|---|
 | 1 | [Spec](beat-spec.md) | Research + plan collapsed. Sub-verbs: `idea`, `epic`, `feature`, `fix`, `chore`. Produces research brief + PRD + technical-spec + branch + issue |
-| 2 | [Ship](beat-ship.md) | Build + test + deploy + release as one idempotent PR-driven loop. CI gates, starter-verify, preview smoke-test, squash-merge, post-deploy verification |
+| 2 | [Ship](beat-ship.md) | Build + test + deploy + release as one idempotent PR-driven loop. CI gates, preview smoke-test, squash-merge, post-deploy verification |
 | 3 | [Signal](beat-signal.md) | Run + monitor + learn + scheduled automation. Sub-verbs: `init`, `sync`, `audit`, `status`. Feeds back into the next Spec via `docs/signal/learnings.md` |
 
 Plus a cross-cutting reference:

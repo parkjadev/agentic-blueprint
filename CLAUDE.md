@@ -22,7 +22,7 @@ v4 collapses the previous five-stage model (Research & Think → Plan → Build 
 |---|---|---|
 | Slash commands | `.claude/commands/` | Beat entry points: `/spec <idea\|epic\|feature\|fix\|chore>`, `/ship`, `/signal <init\|sync\|audit\|status>`, `/beat <status\|install\|update>` |
 | Subagents | `.claude/agents/` | Isolated workers: `spec-researcher`, `spec-author` |
-| Skills | `.claude/skills/` | Progressive-disclosure helpers: `australian-spelling`, `hard-rules-check`, `signal-sync` (plus a dormant `starter-verify` pending v5 retirement/rework) |
+| Skills | `.claude/skills/` | Progressive-disclosure helpers: `australian-spelling`, `hard-rules-check`, `signal-sync` |
 | Hooks | `.claude/hooks/` | `session-start`, `beat-aware-prompt`, `template-guard`, `pre-write-spelling`, `pre-commit-secret-scan`, `pre-commit-gate`, `prune-merged-branches` |
 | Settings | `.claude/settings.json` | Permission baseline and hook wiring |
 | Sacred templates | `docs/templates/` | The core IP — spec-driven document templates. Never modify in a feature PR (Rule 4) |

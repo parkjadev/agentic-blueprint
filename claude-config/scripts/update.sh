@@ -6,7 +6,7 @@
 # Blueprint-owned set (updated on success):
 #   - .claude/commands/{spec,ship,signal,beat}.md
 #   - .claude/agents/{spec-researcher,spec-author}.md
-#   - .claude/skills/{australian-spelling,hard-rules-check,signal-sync,starter-verify}/
+#   - .claude/skills/{australian-spelling,hard-rules-check,signal-sync}/
 #   - .claude/hooks/{session-start,beat-aware-prompt,template-guard,pre-write-spelling,pre-commit-secret-scan,pre-commit-gate}.sh
 #   - Content inside <!-- agentic-blueprint:begin/end --> in CLAUDE.md
 #
@@ -61,7 +61,6 @@ blueprint_skill_dirs=(
   ".claude/skills/australian-spelling"
   ".claude/skills/hard-rules-check"
   ".claude/skills/signal-sync"
-  ".claude/skills/starter-verify"
 )
 
 run() { if [[ $DRY_RUN -eq 1 ]]; then echo "DRY: $*"; else eval "$*"; fi; }
