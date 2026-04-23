@@ -6,41 +6,30 @@ Automation patterns that fire after a PR is merged. Different from `post-deploy.
 
 ## Overview
 
-Post-merge automation keeps secondary state (plan files, project boards, status dashboards) in sync with what's actually shipped. The most useful pattern is updating plan-file status markers so the team can see at a glance which phases of a multi-PR feature have landed.
+Post-merge automation closes the loop between a shipped PR and the Signal beat's bookkeeping artefacts — CHANGELOG entries, cross-reference audits, stale-brief archival. v5 centralises this work in the `signal-sync` skill, so most teams just wire a hook to invoke it.
 
 ---
 
-## Pattern 1: Update Plan Status Markers
+## Pattern 1: Run `signal-sync` after every merge to `main`
 
-Plan files (`docs/specs/<feature>/plan.md`) carry inline status markers that this hook updates whenever a PR closes a numbered phase.
+The `signal-sync` skill handles the post-merge bookkeeping v4 used to scatter across ad-hoc scripts:
 
-### Convention
+- Appends the merged PR to `CHANGELOG.md`'s `[Unreleased]` block (if user-visible)
+- Updates any status markers the spec carries
+- Cross-references the PR against the spec's acceptance criteria
+- Flags stale briefs in `docs/research/` that no longer match shipped state
 
-Every phase heading in a plan file ends with a status marker in HTML comment form:
+### As a Claude Code hook
 
-```markdown
-## Phase 1: Schema and types <!-- status: pending -->
-## Phase 2: API routes <!-- status: pending -->
-## Phase 3: UI <!-- status: pending -->
-```
-
-When a PR lands that completes a phase, the marker becomes:
-
-```markdown
-## Phase 2: API routes <!-- status: shipped (#42) -->
-```
-
-### As a Claude Code Hook
-
-The hook fires whenever Claude Code observes a successful `git merge` or `gh pr merge`. It looks at the merged PR's title and body for a `Phase N` reference and the PR number, then runs:
+Configure in `.claude/settings.local.json`:
 
 ```json
 {
   "hooks": {
     "post-merge": [
       {
-        "command": "claude-config/scripts/update-plan-status.sh \"$PLAN_FILE\" \"$PHASE_LABEL\" \"$PR_NUMBER\"",
-        "description": "Mark a plan phase as shipped after its PR lands",
+        "command": "bash .claude/skills/signal-sync/scripts/sync.sh",
+        "description": "Run signal-sync after every merge to main",
         "blocking": false
       }
     ]
@@ -48,50 +37,37 @@ The hook fires whenever Claude Code observes a successful `git merge` or `gh pr 
 }
 ```
 
-The hook needs three env vars set by the wrapper:
+### As a manual step
 
-- `PLAN_FILE` — path to the plan file (e.g. `docs/specs/user-profile/plan.md`)
-- `PHASE_LABEL` — the phase string to match (e.g. `Phase 2`)
-- `PR_NUMBER` — the merged PR's number (just digits)
-
-In practice the wrapper extracts these from the PR's metadata and the spec being implemented. Most teams configure the hook to be invoked manually from the plan-execution prompt:
+After merging a PR, from a Claude Code session on `main`:
 
 ```
-> I just merged PR #42 which completed Phase 2 of the user-profile plan.
-> Run claude-config/scripts/update-plan-status.sh on the plan file to mark
-> Phase 2 as shipped, then commit the change as "docs: mark user-profile
-> Phase 2 as shipped".
+/signal sync
 ```
 
-### As a Manual Check
-
-After a PR lands:
-
-```bash
-./claude-config/scripts/update-plan-status.sh docs/specs/user-profile/plan.md "Phase 2" 42
-```
-
-Idempotent — re-running with the same args is a no-op (the marker already contains the PR number, so the script's regex won't match a second time).
+Picks up the merge SHA automatically and runs the same flow.
 
 ---
 
-## Pattern 2: Doc Sweep
+## Pattern 2: Doc-sweep checklist prompt
 
-After every merge to `main`, run the doc-sweep checklist from `agentic-workflow.md` Phase 10. This is documented as a manual step rather than an automated hook because most of the checks need a human eye (does the README headline still accurately describe what the project does?). The post-merge hook can prompt the operator with the checklist:
+Most doc-drift checks need a human eye (does the README headline still describe the project?). The post-merge hook can prompt the operator rather than running checks itself:
 
 ```json
 {
   "hooks": {
     "post-merge": [
       {
-        "command": "echo 'Run doc-sweep checklist? See agentic-workflow.md Phase 10.'",
-        "description": "Prompt for doc sweep after merging to main",
+        "command": "echo 'Doc-sweep checklist — see docs/guides/tool-reference.md.'",
+        "description": "Nudge the operator through the post-merge doc sweep",
         "blocking": false
       }
     ]
   }
 }
 ```
+
+The canonical checklist lives in `docs/guides/tool-reference.md` under "Doc-sweep checklist (post-ship)".
 
 ---
 
@@ -99,4 +75,4 @@ After every merge to `main`, run the doc-sweep checklist from `agentic-workflow.
 
 - **Keep post-merge hooks non-blocking.** A failing post-merge hook should never prevent the operator from continuing — the merge has already happened and the hook is bookkeeping. Always use `"blocking": false`.
 - **Idempotency matters.** Hooks fire on every merge, including `git pull` that fast-forwards local `main`. Scripts they invoke must be safe to re-run.
-- **Don't put validation in post-merge hooks.** Validation belongs in CI or in the PR template's Test plan checklist. Post-merge is for state synchronisation only.
+- **Don't put validation in post-merge hooks.** Validation belongs in CI or the PR template's Test plan checklist. Post-merge is for state synchronisation only.

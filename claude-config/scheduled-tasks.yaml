@@ -1,4 +1,4 @@
-# Agentic Blueprint v4 — Signal-beat scheduled tasks.
+# Agentic Blueprint — Signal-beat scheduled tasks.
 #
 # Adopters copy this file via `/beat install`; `/signal init` reconciles it
 # with Claude Scheduled Tasks (or GitHub Actions cron for adopters without
@@ -43,7 +43,7 @@ tasks:
     secrets: [GITHUB_TOKEN, ANTHROPIC_API_KEY]
 
   - name: post-merge-doc-sync
-    description: Daily /signal sync on main. Updates plan-status markers, validates CHANGELOG cross-references, archives stale briefs.
+    description: Daily /signal sync on main. Validates CHANGELOG cross-references, archives stale briefs, flags spec-vs-shipped drift.
     cron: "0 8 * * 1-5"       # 08:00 UTC Mon–Fri
     max_tokens_per_run: 20000
     max_runs_per_day: 3

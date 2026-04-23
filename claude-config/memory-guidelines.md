@@ -64,14 +64,16 @@ CLAUDE.md is the most important file in the repo for Claude Code. It must stay a
 
 ### When to Update CLAUDE.md
 
+The exact sections depend on how your CLAUDE.md is structured (see `claude-config/CLAUDE.md.template` for the v5 default). Common triggers:
+
 | Trigger | What to Update |
 |---|---|
-| New table added to schema | Data Model section |
-| New service integrated | Stack table |
+| New service integrated or removed | Stack table |
 | New environment created | Environments table |
-| New critical file identified | Do NOT Touch section |
-| New pattern established | Key Patterns section |
-| Hard rule added or changed | Hard Rules list |
+| Hard rule added, changed, or retired | Hard Rules list (plus the `hard-rules-check` script if it's hook-gated) |
+| New contract added to `docs/contracts/` | Harness map — Reference contracts row |
+| Project-specific convention established | A dedicated section your CLAUDE.md already carries (e.g. "Key Patterns", "Do NOT Touch"), or add one |
+| Adopting a new Claude Code primitive | Harness map |
 
 ### When NOT to Update CLAUDE.md
 
