@@ -1,6 +1,6 @@
 ---
 name: australian-spelling
-description: Use when reviewing or authoring prose, markdown, comments, or string literals. Enforces Australian English spelling — favour, colour, organisation, behaviour, licence/license, -ise/-yse endings. Runs scripts/check.sh against the wordlist in references/wordlist.md to flag US-English variants. Keywords — spelling, Australian, British English, prose review, -ize to -ise, copy-edit, AU English.
+description: Use when reviewing or authoring prose, markdown, comments, or string literals. Enforces Australian English spelling — favour, colour, organisation, behaviour, `licence/license`, -ise/-yse endings. Runs scripts/check.sh against the wordlist in references/wordlist.md to flag US-English variants. Keywords — spelling, Australian, British English, prose review, `-ize to -ise`, copy-edit, AU English.
 allowed-tools: Read, Edit, Bash
 model: haiku
 ---

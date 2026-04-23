@@ -56,7 +56,7 @@ for entry in "${labels[@]}"; do
   # The "${REPO_ARG[@]+"${REPO_ARG[@]}"}" expansion is the bash-strict-mode safe way to splice
   # in an optional array — without the +"..." form, an empty array trips `set -u` (nounset).
   gh label create "${name}" \
-    --color "${colour}" \
+    --color "${colour}" \   # spell-ignore — GitHub CLI flag is literally `--color`
     --description "${description}" \
     --force \
     ${REPO_ARG[@]+"${REPO_ARG[@]}"} \

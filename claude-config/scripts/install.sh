@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Agentic Blueprint v4 — /beat install.
+# Agentic Blueprint — /beat install (v5).
 # Copies the blueprint bundle into an existing repo without touching source.
 #
 # Usage:
@@ -8,7 +8,8 @@
 # Behaviour:
 #   - Refuses on a dirty working tree unless --force
 #   - Merges existing CLAUDE.md via <!-- agentic-blueprint:begin/end --> fence
-#   - Creates docs/ scaffolding (templates, specs, research, operations, signal)
+#   - Creates docs/ scaffolding (templates, contracts, specs, research, operations, signal)
+#   - Copies the sacred templates + stack-agnostic reference contracts
 #   - Installs .github/workflows/hard-rules.yml (GitHub repos only)
 #   - Appends .env*, *.pem, *.key patterns to .gitignore
 #   - Writes claude-config/VERSION to the adopter repo
@@ -60,10 +61,10 @@ run() { if [[ $DRY_RUN -eq 1 ]]; then echo "DRY: $*"; else eval "$*"; fi; }
 
 # 3. Copy .claude/ bundle (backup any pre-existing locals).
 if [[ -d .claude ]]; then
-  run "mkdir -p .claude/_pre-v4-backup"
+  run "mkdir -p .claude/_pre-install-backup"
   for sub in commands agents skills hooks; do
     if [[ -d ".claude/$sub" ]]; then
-      run "cp -R .claude/$sub .claude/_pre-v4-backup/$sub"
+      run "cp -R .claude/$sub .claude/_pre-install-backup/$sub"
     fi
   done
 fi
@@ -84,7 +85,7 @@ if [[ -f CLAUDE.md ]]; then
   if grep -q "$BLUEPRINT_PREAMBLE_START" CLAUDE.md 2>/dev/null; then
     echo "CLAUDE.md already has an agentic-blueprint fence — skipping merge (use /beat update to refresh)"
   else
-    run "cp CLAUDE.md CLAUDE.md.pre-v4.bak"
+    run "cp CLAUDE.md CLAUDE.md.pre-install.bak"
     if [[ $DRY_RUN -eq 0 ]]; then
       {
         echo "$BLUEPRINT_PREAMBLE_START"
@@ -103,17 +104,28 @@ else
 fi
 
 # 5. docs/ scaffolding.
-for d in docs/templates docs/specs docs/research docs/operations docs/signal; do
+for d in docs/templates docs/contracts docs/specs docs/research docs/operations docs/signal; do
   run "mkdir -p \"$d\""
 done
 
-# Copy the 9 v4 templates if docs/templates/ is empty of them.
+# Copy the sacred templates if docs/templates/ is empty of them.
 if [[ -d "$SRC_DIR/docs/templates" ]]; then
   for t in "$SRC_DIR/docs/templates"/*.md; do
     [[ -f "$t" ]] || continue
     base=$(basename "$t")
     if [[ ! -f "docs/templates/$base" ]]; then
       run "cp \"$t\" \"docs/templates/$base\""
+    fi
+  done
+fi
+
+# Copy the stack-agnostic reference contracts (v5+).
+if [[ -d "$SRC_DIR/docs/contracts" ]]; then
+  for c in "$SRC_DIR/docs/contracts"/*.md; do
+    [[ -f "$c" ]] || continue
+    base=$(basename "$c")
+    if [[ ! -f "docs/contracts/$base" ]]; then
+      run "cp \"$c\" \"docs/contracts/$base\""
     fi
   done
 fi
