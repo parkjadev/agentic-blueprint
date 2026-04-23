@@ -22,20 +22,19 @@ Rerunning `/ship` on the same branch is **idempotent**: it detects current state
 2. **Implementation plan.** Read `docs/specs/<slug>.md` (and parent spec if linked via `parent:` frontmatter). Produce a one-page implementation sequence. Present to user for approval.
 3. **Execute.** Write code, run tests as you go. Commit in logical chunks with conventional-commit subjects (prefix per tagged-exception table if applicable).
 4. **Gate.** Run `bash .claude/skills/hard-rules-check/scripts/check-all.sh` locally. All 4 rules must pass.
-5. **Starter check (if touched).** Invoke the `starter-verify` skill — runs the starter smoke-test in isolation so noisy output stays out of this conversation.
-6. **Changelog.** If the change is user-visible, invoke the `signal-sync` skill (its changelog sub-command) to append an `[Unreleased]` entry. Skip for `[infra]`/`[docs]`/`chore/*` work that has no user-facing effect.
-7. **Open PR.** Push branch, open PR via GitHub MCP, link to issue + parent spec. Wait for CI.
-8. **Preview smoke-test.** When Vercel/platform posts the preview URL, curl the health endpoint and the one or two critical paths the spec named.
-9. **Squash-merge on green.** Confirm with user before merging, unless the project has configured auto-merge.
-10. **Post-merge verification.** Watch the production auto-deploy, re-curl the health endpoint. Hand off to `/signal sync` for CHANGELOG close-out + docs sweep.
+5. **Changelog.** If the change is user-visible, invoke the `signal-sync` skill (its changelog sub-command) to append an `[Unreleased]` entry. Skip for `[infra]`/`[docs]`/`chore/*` work that has no user-facing effect.
+6. **Open PR.** Push branch, open PR via GitHub MCP, link to issue + parent spec. Wait for CI.
+7. **Preview smoke-test.** When the preview URL is available, curl the health endpoint and the one or two critical paths the spec named.
+8. **Squash-merge on green.** Confirm with user before merging, unless the project has configured auto-merge.
+9. **Post-merge verification.** Watch the production auto-deploy, re-curl the health endpoint. Hand off to `/signal sync` for CHANGELOG close-out + docs sweep.
 
 ## Rerun semantics
 
 Common resume points:
 - Branch exists, no commits → resume at step 3 (Execute).
-- Commits on branch, no PR → resume at step 7 (Open PR).
-- PR open, CI green, not merged → resume at step 9 (Squash-merge).
-- PR merged, no post-merge verification yet → resume at step 10.
+- Commits on branch, no PR → resume at step 6 (Open PR).
+- PR open, CI green, not merged → resume at step 8 (Squash-merge).
+- PR merged, no post-merge verification yet → resume at step 9.
 
 `/ship` prints its detected state at the top of each run so the user sees where it's picking up.
 

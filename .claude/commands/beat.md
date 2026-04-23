@@ -1,6 +1,6 @@
 ---
 description: Beat — where am I in the three-beat lifecycle? Plus install / update for adopters.
-argument-hint: [status|install|update] [--json|--new <project>|--force]
+argument-hint: [status|install|update] [--json|--force]
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 ---
 
@@ -13,8 +13,7 @@ allowed-tools: Bash, Read, Write, Edit, Glob, Grep
 | Sub-verb | Purpose |
 |---|---|
 | `/beat` (no args) / `/beat status` | Report current beat + next-best command. First-time onboarding reads "follow the arrow" |
-| `/beat install` | Adopt-in-place — copy the blueprint into an existing repo without touching source code |
-| `/beat install --new <project>` | Greenfield install — scaffold from `starters/nextjs/` or `starters/flutter/` + install blueprint on top |
+| `/beat install` | Adopt-in-place — copy the blueprint into an existing repo without touching source code. For a new project, run this in an empty repo then use `/spec idea <product>` — v5 has no bundled starter scaffold. |
 | `/beat update` | Pull newer blueprint version into an adopter repo; respect customisations |
 
 ## Steps — `/beat status` (default)
@@ -61,12 +60,6 @@ No spec yet. Run:
 8. **Append to `.gitignore`.** Ensure `.env*` (except `.env.example`), `*.pem`, `*.key` are present.
 9. **Write `claude-config/VERSION`.** Semver string from the blueprint source.
 10. **Print post-install report.** "Installed N commands, M agents, X skills, Y hooks; wrote Z templates; your `CLAUDE.md` was merged; next: `/beat status`."
-
-## Steps — `/beat install --new <project>`
-
-1. Prompt for starter choice: `nextjs` or `flutter`.
-2. Scaffold the chosen starter into `<project>/` (git-init it).
-3. Run the standard `/beat install` flow against the new directory.
 
 ## Steps — `/beat update`
 

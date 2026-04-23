@@ -49,27 +49,23 @@ Writes code, runs tests as it goes, commits in logical chunks with conventional-
 
 Runs `bash .claude/skills/hard-rules-check/scripts/check-all.sh`. All 4 Hard Rules must pass. Tagged-exception prefixes in the commit range are honoured.
 
-### 5. Starter check (if touched)
-
-Invokes the `starter-verify` skill for any `starters/` path changes. The skill runs the canonical smoke-test (`claude-config/scripts/smoke-test.sh <target>`) in isolation so multi-minute build output stays out of the main conversation.
-
-### 6. CHANGELOG entry
+### 5. CHANGELOG entry
 
 For user-visible changes, invokes the `signal-sync` skill's `append-changelog.sh` script to add an `[Unreleased]` entry under the correct keepachangelog category. Skipped for `[infra]`/`[docs]`/`chore/*` work with no user-facing effect.
 
-### 7. Open PR
+### 6. Open PR
 
 Pushes the branch, opens a PR via GitHub MCP, links to the issue and parent spec. Fills the PR body from the technical-spec frontmatter + implementation-plan summary.
 
-### 8. Preview smoke-test
+### 7. Preview smoke-test
 
 When the platform posts the preview URL, curls the health endpoint and the one or two critical paths the spec named as acceptance criteria. Screenshots or log captures go to `docs/signal/` if the project has that convention.
 
-### 9. Squash-merge on green
+### 8. Squash-merge on green
 
 Requires explicit user confirmation unless the project has auto-merge configured. Conversation-resolution and CI checks must be green.
 
-### 10. Verify
+### 9. Verify
 
 Watches the production auto-deploy, re-curls the health endpoint, inspects runtime logs for error-rate spikes. Hands off to `/signal sync` for CHANGELOG close-out and cross-reference audit.
 
@@ -109,7 +105,6 @@ See `docs/guides/tool-reference.md` for the full matrix.
 
 | Anti-pattern | Why it fails | Do this instead |
 |---|---|---|
-| Skip the starter-verify step | Breaks Rule 2 silently; next clean-clone reveals the broken state | Always run `starter-verify` when `starters/` paths are touched |
 | Rebase-and-merge to `main` | Rewrites commit SHAs; breaks any multi-tier flow and confuses history | Always squash-merge; never "Rebase and merge" in the UI |
 | "While I'm here" scope creep | One-file fix becomes a 20-file refactor; reviewer can't isolate the intended change | If you notice something unrelated, file an issue and keep the current PR tight |
 | No regression test for a bug fix | The fix "works" until the bug reappears; you've spent effort without building protection | Regression test must fail before the fix and pass after; commit them together |
