@@ -30,14 +30,26 @@ The three-beat model collapses the older Research & Think → Plan → Build →
 
 ### Option A — Adopt into an existing repo
 
-The most common path. The Blueprint ports into an existing codebase without touching source code:
+The most common path. The Blueprint ports into an existing codebase without touching source code.
+
+**First-time install** (no `.claude/` in your repo yet) — run `bootstrap.sh` from outside Claude Code:
+
+```bash
+# From the target repo's root:
+bash <(curl -fsSL https://raw.githubusercontent.com/parkjadev/agentic-blueprint/main/bootstrap.sh) --dry-run
+# Review the dry-run output, then re-run without --dry-run:
+bash <(curl -fsSL https://raw.githubusercontent.com/parkjadev/agentic-blueprint/main/bootstrap.sh)
+```
+
+**Subsequent operations** (after the bundle is in your repo) — use the Claude Code slash commands:
 
 ```bash
 # From inside your repo, using Claude Code:
-/beat install
+/beat update    # pull newer blueprint; respects your customisations
+/beat status    # report current beat + next command
 ```
 
-`/beat install` detects your layout, dry-runs, then copies the `.claude/` bundle, merges your existing `CLAUDE.md` via a fenced block (your content stays intact), installs the GitHub Actions hard-rules wrapper, and writes `claude-config/VERSION` so future `/beat update` runs can reason about drift.
+Both paths run `claude-config/scripts/install.sh` under the hood: detect your layout, dry-run, then copy the `.claude/` bundle, merge your existing `CLAUDE.md` via a fenced block (your content stays intact), copy the templates + contracts, install the GitHub Actions hard-rules wrapper, and write `claude-config/VERSION` so future `/beat update` runs can reason about drift.
 
 ### Option B — New project
 

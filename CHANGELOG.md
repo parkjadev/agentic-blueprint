@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [5.0.1] — 2026-04-23
+
+Patch release. Closes the first-time adopter bootstrap gap v5.0 shipped with and trims the last cross-version migration artefact.
+
+### Added
+
+- **`bootstrap.sh`** at repo root — non-circular install entry point. v5.0's documented install path (`/beat install`) assumes the `.claude/` bundle is already in the adopter's repo; for first-time adopters that's a chicken-and-egg. `bootstrap.sh` works via `bash <(curl -fsSL …/bootstrap.sh)` or a local clone; it clones the blueprint to a tmp dir if needed and delegates to `claude-config/scripts/install.sh`. No logic duplication — dispatch-only (#126).
+
+### Removed
+
+- **`MIGRATION-v3-to-v4.md`** (repo root) — v3→v4 upgrade guide. No live references; only mention was in the v4 research brief (archival context). Same reasoning that kept v5.0 from shipping a v4 migration guide: cross-version migration support has no users to serve (#126).
+
 ## [5.0.0] — 2026-04-23
 
 The platform-agnostic redesign. Stack selection becomes an output of the Spec beat (via `spec-researcher`), not an assumption baked into opinionated starters. The load-bearing IP from the retired v4 starters — interface contracts like the `ApiResponse<T>` envelope, error taxonomy, auth-token shape, telemetry schema — is lifted into first-class reference artefacts under `docs/contracts/`, protected by Rule 4. Hard Rules reduce to 4 (1, 3, 4, 5) + 3 meta-principles; Rule 2 is retired with its numbering preserved so downstream references don't shift.
