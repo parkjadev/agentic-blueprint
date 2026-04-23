@@ -1,7 +1,7 @@
 ---
 description: Beat — where am I in the three-beat lifecycle? Plus install / update for adopters.
 argument-hint: [status|install|update] [--json|--force]
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep
+allowed-tools: Bash Read Write Edit Glob Grep
 ---
 
 # /beat — Beat status, install, update (v4)

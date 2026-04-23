@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+## [5.0.3] — 2026-04-23
+
+Patch release. Fixes `allowed-tools` frontmatter format on all four slash-command definitions so Claude Code actually parses the tool allow-list instead of treating it as a literal string.
+
+### Fixed
+
+- **`allowed-tools` frontmatter converted from comma-separated to space-separated.** All four slash commands (`/spec`, `/ship`, `/signal`, `/beat`) previously carried `allowed-tools: Bash, Read, Write, Edit, Glob, Grep` — the comma-separated form is human-readable but not a valid YAML list, and Claude Code's command loader read it as a literal string. Commands ran but triggered permission prompts for every tool the frontmatter should have granted. Fixed to space-separated form across both the live `.claude/commands/` and the bundle mirror at `claude-config/.claude/commands/` (#128).
+
 ## [5.0.2] — 2026-04-23
 
 Patch release. Fixes `install.sh` crashes on first real adopter use — the v5.0.1 `bootstrap.sh` one-liner runs cleanly but the underlying installer was broken at several source paths, producing mid-install crashes (`cat: …/CLAUDE.md: No such file or directory`) and latent bugs that `--dry-run` couldn't see because it only echoed commands without stat-ing sources.

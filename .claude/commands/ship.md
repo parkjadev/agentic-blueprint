@@ -1,7 +1,7 @@
 ---
 description: Ship — build + test + deploy as one idempotent PR-driven loop with automated gates.
 argument-hint: [--resume]
-allowed-tools: Bash, Read, Write, Edit, Glob, Grep
+allowed-tools: Bash Read Write Edit Glob Grep
 ---
 
 # /ship — Ship beat (v4)
